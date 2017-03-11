@@ -2,6 +2,7 @@ package serverpkg;
 
 import clientpkg.ClientStartController;
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -18,8 +19,10 @@ public class ServerMain {
     private ServerCommunicator communicator;
     private ServerStartController startController;
     private ServerConfigController configController;
+    private ServerManageController manageController;
     private Scene startScene;
     private Scene configScene;
+    private Scene managePage;
     private ServerValues values;
     private Stage stage;
    private HashMap<Socket, ServerMessenger> messengers;
@@ -34,8 +37,11 @@ public class ServerMain {
 
         configureSartPage();
         configureConfigPage();
+        configureManagePage();
         primaryStage.setScene(configScene);
         primaryStage.show();
+
+
 
 
         //primaryStage.setScene(startScene);
@@ -77,6 +83,19 @@ public class ServerMain {
         }
     }
 
+    private void configureManagePage(){
+        try {
+            FXMLLoader loader = new FXMLLoader();
+            loader.setLocation(getClass().getResource("server_manage.fxml"));
+            Parent root = loader.load();
+            manageController = loader.getController();
+            manageController.setMain(this);
+            managePage = new Scene(root, 600, 400);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+
     public int getPort(){return port;}
 
     public Stage getStage() {
@@ -95,10 +114,17 @@ public class ServerMain {
     public void createExam(String name, int startTime, int duration, int warningTime, int backupInterval, String validIDs, String alloableApps,
                            String answerpath, String questionPath, String rules) {
 
-        exams.put(name, new Exam(this, name, startTime, duration, warningTime, backupInterval, validIDs,
-                alloableApps, answerpath, questionPath, rules));
+        Exam exam = new Exam(this, name, startTime, duration, warningTime, backupInterval, validIDs,
+                alloableApps, answerpath, questionPath, rules);
+        exams.put(name, exam);
 
+        showManagePage();
+        manageController.setExam(exam);
 
+    }
+
+    public void showManagePage(){
+        stage.setScene(managePage);
     }
 
 
@@ -118,7 +144,13 @@ public class ServerMain {
         return names;
     }
 
-    public void sendQuestionPaper(Socket socket, String filePath) {
-        messengers.get(socket).sendFile(filePath);
+    public void sendQuestionPaper(Socket socket,String message,  String filePath) {
+        messengers.get(socket).sendFile(message, filePath);
+    }
+
+
+
+    public void log(String msg){
+        manageController.updateLog(msg);
     }
 }

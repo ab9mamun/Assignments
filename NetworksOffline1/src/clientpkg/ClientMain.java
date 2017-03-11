@@ -137,10 +137,21 @@ public class ClientMain extends Application {
         return myExamName;
     }
 
-
+    public Stage getStage() {
+        return stage;
+    }
 
     @Override
     public void stop(){
         System.exit(112);
+    }
+
+    public void log(String s) {
+        examController.updateLog(s);
+        homeController.updateLog(s);
+    }
+
+    public void updateCorrection(String s) {
+        examController.updateCorrection(s);
     }
 }

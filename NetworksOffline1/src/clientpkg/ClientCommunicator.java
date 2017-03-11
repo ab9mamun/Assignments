@@ -2,12 +2,15 @@ package clientpkg;
 
 import javafx.application.Platform;
 import javafx.scene.control.Alert;
+import javafx.stage.DirectoryChooser;
+import javafx.stage.FileChooser;
 
 import javax.swing.*;
 import java.io.*;
 import java.net.Socket;
 import java.util.AbstractCollection;
 import java.util.ArrayList;
+import java.util.Scanner;
 import java.util.StringTokenizer;
 
 public class ClientCommunicator implements Runnable {
@@ -17,6 +20,7 @@ public class ClientCommunicator implements Runnable {
     private String serverIP;
     private int port;
     private String stdID;
+    private boolean downloadPermitted;
 
     private PrintWriter writer;
     private BufferedReader reader;
@@ -62,7 +66,7 @@ public class ClientCommunicator implements Runnable {
             Platform.runLater(()->main.showHomePage());
         }
         catch (Exception e){
-            System.out.println(e);
+            e.printStackTrace();
         }
 
     }
@@ -92,52 +96,30 @@ public class ClientCommunicator implements Runnable {
                         if (opcode.startsWith("UPDATE")) {
                             String update = tok.nextToken();
                             if (update.startsWith("EXAM START")) {
-                                Platform.runLater(() ->
-                                        {
-                                            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-                                            alert.setTitle("Message for examinee");
-                                            alert.setHeaderText(null);
-                                            alert.setContentText("Exam started");
-
-                                            alert.show();
-                                        }
-                                );
+                                Platform.runLater(()->main.log("Exam started")); ;
 
                             } else if (update.startsWith("EXAM END")) {
-                                    Platform.runLater(() ->
-                                            {
-                                                Alert alert = new Alert(Alert.AlertType.INFORMATION);
-                                                alert.setTitle("Message for Examinee");
-                                                alert.setHeaderText(null);
-                                                alert.setContentText("Exam ended");
+                                   Platform.runLater(()->main.log("Exam ended")); ;
+                            }
+                            else if(update.startsWith("CORRECTION")){
+                                Platform.runLater(()->{main.updateCorrection(tok.nextToken());main.log("Corrections updated");}
 
-                                                alert.show();
-                                            }
-                                    );
+                                );
+                                ;
                             }
 
-                        } else if (opcode.startsWith("REJECTED")) {
+                        }
+                        else if(opcode.startsWith("RECEIVE FILE")){
+                            downloadFile();
+
+                        }
+                        else if (opcode.startsWith("REJECTED")) {
                                 String message = tok.nextToken();
-
-                                Platform.runLater(() -> {
-                                    Alert alert = new Alert(Alert.AlertType.ERROR);
-                                    alert.setTitle("Oops");
-                                    alert.setHeaderText("Error message for examinee");
-                                    alert.setContentText(message);
-
-                                    alert.show();
-                                });
+                                main.log("registration failed");
                             } else if (opcode.startsWith("ACCEPTED")) {
                                 String details = tok.nextToken();
 
-                                Platform.runLater(() -> {
-                                    Alert alert = new Alert(Alert.AlertType.INFORMATION);
-                                    alert.setTitle("Message for examinee");
-                                    alert.setHeaderText(null);
-                                    alert.setContentText("Registration Successful");
-
-                                    alert.show();
-                                });
+                                Platform.runLater(()->main.log("registration successful"));;
 
                                 Platform.runLater(() -> main.showExamPage(myExamName, details));
                             }
@@ -166,5 +148,33 @@ public class ClientCommunicator implements Runnable {
     public void start(){
         t = new Thread(this);
         t.start();
+    }
+
+    private void downloadFile(){
+
+        try {
+
+
+
+            BufferedOutputStream bos = new BufferedOutputStream(
+                    new FileOutputStream(ClientValues.filePath())
+            );
+            int bytesRead = 0;
+
+            while (true)    //loop is continued until received byte=totalfilesize
+            {
+                byte[] contents = new byte[100000];
+                bytesRead = fileDownloader.read(contents);
+                if(bytesRead<=0) break;
+                bos.write(contents, 0, bytesRead);
+            }
+            bos.flush();
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
+
+        Platform.runLater(()->main.log("Question received"));;
+
     }
 }

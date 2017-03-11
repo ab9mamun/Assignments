@@ -104,7 +104,33 @@ public class ServerMessenger {
 
     }
 
-    public void sendFile(String filePath) {
+    public void sendFile(String message, String filePath) {
+        sendMessage(message);
+        try
+        {
+            File file = new File(filePath);
+            FileInputStream fis = new FileInputStream(file);
+            BufferedInputStream bis = new BufferedInputStream(fis);
+            byte[] data;
+
+            int size = 100000;
+            while(true){
+
+                data = new byte[size];
+                int byteRead = bis.read(data);
+                if(byteRead<=0) break;
+                fileUploader.write(data, 0, byteRead);
+                //System.out.println("Sending file ... "+(current*100)/fileLength+"% complete!");
+            }
+            fileUploader.flush();
+            System.out.println("File sent successfully!");
+        }
+        catch(Exception e)
+        {
+            System.err.println("Could not transfer file.");
+        }
+    //    writer.println("Downloaded.");
+      //  writer.flush();
 
     }
 }

@@ -4,6 +4,7 @@ import javafx.fxml.FXML;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 
+import java.util.ArrayList;
 import java.util.StringTokenizer;
 
 public class ClientExamController {
@@ -33,6 +34,8 @@ public class ClientExamController {
 
     @FXML
     private TextArea examCorrections;
+    @FXML
+    private TextArea log;
 
 
 
@@ -41,15 +44,16 @@ public class ClientExamController {
 
 
     public void initialize(){
-        examName.setDisable(true);
-        examStartTime.setDisable(true);
-        examBackupInterval.setDisable(true);
-        serverTime.setDisable(true);
-        examDuration.setDisable(true);
-        allowableApps.setDisable(true);
+        examName.setEditable(false);
+        examStartTime.setEditable(false);
+        examBackupInterval.setEditable(false);
+        serverTime.setEditable(false);
+        examDuration.setEditable(false);
+        allowableApps.setEditable(false);
 
-        examRules.setDisable(true);
-        examCorrections.setDisable(true);
+        examRules.setEditable(false);
+        examCorrections.setEditable(false);
+        log.setEditable(false);
 
 
     }
@@ -69,5 +73,14 @@ public class ClientExamController {
     }
     public void setMain(ClientMain main) {
         this.main = main;
+    }
+
+
+    public void updateLog(String msg){
+        log.setText(log.getText()+msg+"\n");
+    }
+
+    public void updateCorrection(String s) {
+        examCorrections.setText(s);
     }
 }

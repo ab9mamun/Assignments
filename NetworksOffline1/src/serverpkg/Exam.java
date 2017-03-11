@@ -10,6 +10,7 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Optional;
+import java.util.Scanner;
 
 public class Exam {
     ServerMain main;
@@ -26,6 +27,8 @@ public class Exam {
     private String answerPath;
     private String questionPath;
     private  String rules;
+    private boolean sameIPAllowed;
+    private boolean sameStdIdAllowed;
 
     private int currentTime;
 
@@ -56,6 +59,8 @@ public class Exam {
         startExamMonitor();
     }
 
+
+
     public String registerRequest(int stdID, Socket socket){
         String ip = socket.getInetAddress().getHostAddress();
         for(Examinee x:examinees){
@@ -66,44 +71,13 @@ public class Exam {
                 return stdID+":"+name+":"+"REJECTED:You have already registered.\n";
             }
             if(i.equals(ip)) {
-                Platform.runLater(()->{
-                    Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-                    alert.setTitle("Confirmation Dialog for server");
-                    alert.setHeaderText("Another registration request from the same ip");
-                    alert.setContentText("Are you ok with this?");
 
-                    Optional<ButtonType> result = alert.showAndWait();
-                    if (result.get() == ButtonType.OK){
-                        // ... user chose OK
-                        flag =true;
-
-                    } else {
-                        // ... user chose CANCEL or closed the dialog
-                        flag = false;
-                    }
-
-                });
-                if(flag) break;
+                if(sameIPAllowed) break;
                 return stdID+":"+name+":"+"REJECTED:Registration denied.";
             }
             if(id==stdID){
-               Platform.runLater(()->{
-                   Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-                   alert.setTitle("Confirmation Dialog for server");
-                   alert.setHeaderText("Another registration request from the student id");
-                   alert.setContentText("Are you ok with this?");
 
-                   Optional<ButtonType> result = alert.showAndWait();
-                   if (result.get() == ButtonType.OK){
-                       // ... user chose OK
-                       flag = true;
-
-                   } else {
-                       // ... user chose CANCEL or closed the dialog
-                       flag = false;
-                   }
-               });
-                if(flag) break;
+                if(sameStdIdAllowed) break;
                 return stdID+":"+name+":"+"REJECTED:Registration denied.";
 
             }
@@ -137,15 +111,15 @@ public class Exam {
 /////-----------------------------------------------------------------------------------------------------------exam started-----------------
                 for(Examinee x: examinees){
                     main.sendMessage(x.getSocket(), x.getStdID()+":"+name+ ":UPDATE"+":"+"EXAM START");
-                }
-                Platform.runLater(()->{
-                    Alert alert = new Alert(Alert.AlertType.INFORMATION);
-                    alert.setTitle("Message for server");
-                    alert.setHeaderText(null);
-                    alert.setContentText("Exam Started");
 
-                    alert.show();
-                });
+                    new Thread(){
+                        @Override
+                        public void run(){
+                            main.sendQuestionPaper(x.getSocket(), x.getStdID()+":"+name+":RECEIVE FILE",questionPath);
+                        }
+                    }.start();
+                }
+                System.out.println("Exam started:");
 
                 while(currentTime<(startTime+duration)){
                     try {
@@ -159,22 +133,8 @@ public class Exam {
                 for(Examinee x: examinees){
                     main.sendMessage(x.getSocket(), x.getStdID()+":"+name+":UPDATE"+":"+"EXAM END");
 
-                    new Thread(){
-                        @Override
-                        public void run(){
-                            main.sendQuestionPaper(x.getSocket(), questionPath);
-                        }
-                    }.start();
-
                 }
-                Platform.runLater(()->{
-                    Alert alert = new Alert(Alert.AlertType.INFORMATION);
-                    alert.setTitle("Message for server");
-                    alert.setHeaderText(null);
-                    alert.setContentText("Exam Ended");
-
-                    alert.show();
-                });
+                System.out.println("Exam Ended");
             }
 
         }.start();
@@ -262,4 +222,29 @@ public class Exam {
     public void setRules(String rules) {
         this.rules = rules;
     }
+
+
+
+    public boolean isSameIPAllowed() {
+        return sameIPAllowed;
+    }
+
+    public void setSameIPAllowed(boolean sameIPAllowed) {
+        this.sameIPAllowed = sameIPAllowed;
+    }
+
+    public boolean isSameStdIdAllowed() {
+        return sameStdIdAllowed;
+    }
+
+    public void setSameStdIdAllowed(boolean sameStdIdAllowed) {
+        this.sameStdIdAllowed = sameStdIdAllowed;
+    }
+
+    public void sendCorrection(String text) {
+        for(Examinee x: examinees){
+            main.sendMessage(x.getSocket(), x.getStdID()+":"+name+":UPDATE:CORRECTION:"+text);
+        }
+    }
+
 }
