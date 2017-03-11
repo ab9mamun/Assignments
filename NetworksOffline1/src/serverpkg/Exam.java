@@ -27,6 +27,8 @@ public class Exam {
     private String questionPath;
     private  String rules;
 
+    private int currentTime;
+
     private ArrayList<Examinee> examinees;
 
 
@@ -38,6 +40,8 @@ public class Exam {
 
         this.main = main;
 
+        currentTime = 0;
+
         this.name = name;
         this.startTime = startTime;
         this.duration = duration;
@@ -48,6 +52,8 @@ public class Exam {
         this.answerPath = answerPath;
         this.questionPath = questionPath;
         this.rules = rules;
+
+        startExamMonitor();
     }
 
     public String registerRequest(int stdID, Socket socket){
@@ -60,25 +66,31 @@ public class Exam {
                 return "REJECTED:You have already registered.\n";
             }
             if(i.equals(ip)) {
-                Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-                alert.setTitle("Confirmation Dialog");
-                alert.setHeaderText("Look, a Confirmation Dialog");
-                alert.setContentText("Are you ok with this?");
+                Platform.runLater(()->{
+                    Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+                    alert.setTitle("Confirmation Dialog for server");
+                    alert.setHeaderText("Another registration request from the same ip");
+                    alert.setContentText("Are you ok with this?");
 
-                Optional<ButtonType> result = alert.showAndWait();
-                if (result.get() == ButtonType.OK){
-                    // ... user chose OK
-                    break;
-                } else {
-                    // ... user chose CANCEL or closed the dialog
-                }
+                    Optional<ButtonType> result = alert.showAndWait();
+                    if (result.get() == ButtonType.OK){
+                        // ... user chose OK
+                        flag =true;
+
+                    } else {
+                        // ... user chose CANCEL or closed the dialog
+                        flag = false;
+                    }
+
+                });
+                if(flag) break;
                 return "REJECTED:Registration denied.";
             }
             if(id==stdID){
                Platform.runLater(()->{
                    Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-                   alert.setTitle("Confirmation Dialog");
-                   alert.setHeaderText("Look, a Confirmation Dialog");
+                   alert.setTitle("Confirmation Dialog for server");
+                   alert.setHeaderText("Another registration request from the student id");
                    alert.setContentText("Are you ok with this?");
 
                    Optional<ButtonType> result = alert.showAndWait();
@@ -99,7 +111,7 @@ public class Exam {
 
         }
         register(stdID,socket);
-        return "ACCEPTED:"+name+"|"+startTime+"|"+currentTime()+"|"+duration+"|"+backupInterval+"|"+rules+"|"+allowableApps;
+        return "ACCEPTED:"+name+"|"+startTime+"|"+currentTime+"|"+duration+"|"+backupInterval+"|"+rules+"|"+allowableApps;
     }
     private void register(int stdid, Socket socket){
         examinees.add(new Examinee(stdid, socket));
@@ -109,9 +121,59 @@ public class Exam {
 
 
 
-    public String currentTime(){
-        return "asfdlkj";
+
+    public void startExamMonitor(){
+        new Thread(){
+            @Override
+            public void run(){
+                while(currentTime<startTime) {
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    currentTime++;
+                }
+/////-----------------------------------------------------------------------------------------------------------exam started-----------------
+                for(Examinee x: examinees){
+                    main.sendMessage(x.getSocket(), x.getStdID()+":"+"UPDATE"+":"+"EXAM START");
+                }
+                Platform.runLater(()->{
+                    Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                    alert.setTitle("Message for server");
+                    alert.setHeaderText(null);
+                    alert.setContentText("Exam Started");
+
+                    alert.show();
+                });
+
+                while(currentTime<(startTime+duration)){
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    currentTime++;
+                }
+///----------------------------------------------------------------------------------------------------------exam ends--------------
+                for(Examinee x: examinees){
+                    main.sendMessage(x.getSocket(), x.getStdID()+":"+"UPDATE"+":"+"EXAM END");
+                }
+                Platform.runLater(()->{
+                    Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                    alert.setTitle("Message for server");
+                    alert.setHeaderText(null);
+                    alert.setContentText("Exam Ended");
+
+                    alert.show();
+                });
+            }
+
+        }.start();
     }
+
+
+
 
     public String getName() {
         return name;

@@ -74,47 +74,79 @@ public class ClientCommunicator implements Runnable {
                 try {
                     while (true) {
                         String msg = reader.readLine();
-                        if(msg==null || msg.equals("")) continue;
+                        if (msg == null || msg.equals("")) continue;
 
                         System.out.println(msg);
                         StringTokenizer tok = new StringTokenizer(msg, ":");
 
                         String id = tok.nextToken();
-                        if(!id.startsWith(stdID)){
-                           continue;
+                        if (!id.startsWith(stdID)) {
+                            continue;
                         }
 
                         String myExamName = main.getMyExamName();
-                        String examname = tok.nextToken();
-                        if(!examname.startsWith(myExamName)) continue;
-
                         String opcode = tok.nextToken();
-                        if(opcode.startsWith("REJECTED")){
-                            String message = tok.nextToken();
 
-                           Platform.runLater(()->{Alert alert = new Alert(Alert.AlertType.ERROR);
-                               alert.setTitle("Oops");
-                               alert.setHeaderText("Error");
-                               alert.setContentText(message);
+                        if (opcode.startsWith("UPDATE")) {
+                            String update = tok.nextToken();
+                            if (update.startsWith("EXAM START")) {
+                                Platform.runLater(() ->
+                                        {
+                                            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                                            alert.setTitle("Message for examinee");
+                                            alert.setHeaderText(null);
+                                            alert.setContentText("Exam started");
 
-                               alert.show();});
+                                            alert.show();
+                                        }
+                                );
+
+                            } else if (update.startsWith("EXAM END")) {
+                                if (update.startsWith("EXAM START")) {
+                                    Platform.runLater(() ->
+                                            {
+                                                Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                                                alert.setTitle("Message for Examinee");
+                                                alert.setHeaderText(null);
+                                                alert.setContentText("Exam ended");
+
+                                                alert.show();
+                                            }
+                                    );
+                                }
+                            }
+                        } else {
+                            String examName = opcode;
+                            if (!examName.startsWith(myExamName)) continue;
+                            String decision = tok.nextToken();
+                            if (decision.startsWith("REJECTED")) {
+                                String message = tok.nextToken();
+
+                                Platform.runLater(() -> {
+                                    Alert alert = new Alert(Alert.AlertType.ERROR);
+                                    alert.setTitle("Oops");
+                                    alert.setHeaderText("Error message for examinee");
+                                    alert.setContentText(message);
+
+                                    alert.show();
+                                });
+                            } else if (decision.startsWith("ACCEPTED")) {
+                                String details = tok.nextToken();
+
+                                Platform.runLater(() -> {
+                                    Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                                    alert.setTitle("Message for examinee");
+                                    alert.setHeaderText(null);
+                                    alert.setContentText("Registration Successful");
+
+                                    alert.show();
+                                });
+
+                                Platform.runLater(() -> main.showExamPage(myExamName, details));
+                            }
+
+
                         }
-                        else if(opcode.startsWith("ACCEPTED")){
-                            String details = tok.nextToken();
-
-                            Platform.runLater(()->{
-                                Alert alert = new Alert(Alert.AlertType.INFORMATION);
-                                alert.setTitle("Information Dialog");
-                                alert.setHeaderText(null);
-                                alert.setContentText("Registration Successful");
-
-                                alert.show();
-                            });
-
-                            Platform.runLater(()->main.showExamPage(myExamName, details));
-                        }
-
-
                     }
 
 

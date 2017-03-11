@@ -21,13 +21,13 @@
             <Font size="18.0" />
          </font>
       </Label>
-      <TextField fx:id="validIDs" layoutX="177.0" layoutY="353.0" prefHeight="25.0" prefWidth="410.0" text="sadfsdf" />
-      <Label layoutX="23.0" layoutY="82.0" text="Starts after (seconds)">
+      <TextField fx:id="validIDs" layoutX="177.0" layoutY="353.0" prefHeight="25.0" prefWidth="410.0" text="1305003-1305120" />
+      <Label layoutX="23.0" layoutY="82.0" text="Starts Time (seconds)">
          <font>
             <Font size="16.0" />
          </font>
       </Label>
-      <TextField fx:id="examStartTime" layoutX="45.0" layoutY="107.0" prefHeight="25.0" prefWidth="52.0" text="12" />
+      <TextField fx:id="examStartTime" layoutX="45.0" layoutY="107.0" prefHeight="25.0" prefWidth="52.0" text="15" />
       <Label layoutX="201.0" layoutY="82.0" text="Duration(seconds)">
          <font>
             <Font size="16.0" />

@@ -22,7 +22,7 @@ public class ServerMain {
     private Scene configScene;
     private ServerValues values;
     private Stage stage;
-   private ArrayList<ServerMessenger> messengers;
+   private HashMap<Socket, ServerMessenger> messengers;
     private HashMap<String, Exam> exams;
 
     public static final int port=6000;
@@ -40,7 +40,7 @@ public class ServerMain {
 
         //primaryStage.setScene(startScene);
 
-        messengers = new ArrayList<>();
+        messengers = new HashMap<>();
         exams = new HashMap<>();
 
         communicator = new ServerCommunicator(this);
@@ -84,12 +84,12 @@ public class ServerMain {
     }
 
     public void createMessenger(Socket socket){
-        messengers.add( new ServerMessenger(this, socket));
+        messengers.put( socket, new ServerMessenger(this, socket));
     }
 
 
-    public void sendMessage(String ip, String message){
-
+    public void sendMessage(Socket socket, String message){
+        messengers.get(socket).sendMessage(message);
     }
 
     public void createExam(String name, int startTime, int duration, int warningTime, int backupInterval, String validIDs, String alloableApps,
@@ -97,7 +97,7 @@ public class ServerMain {
 
         exams.put(name, new Exam(this, name, startTime, duration, warningTime, backupInterval, validIDs,
                 alloableApps, answerpath, questionPath, rules));
-        
+
 
     }
 
