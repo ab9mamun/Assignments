@@ -10,7 +10,7 @@
 
 <AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="484.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8.0.111" xmlns:fx="http://javafx.com/fxml/1" fx:controller="serverpkg.ServerConfigController">
    <children>
-      <TextField fx:id="examName" layoutX="22.0" layoutY="41.0" prefHeight="25.0" prefWidth="209.0" />
+      <TextField fx:id="examName" layoutX="22.0" layoutY="41.0" prefHeight="25.0" prefWidth="209.0" text="computer" />
       <Label layoutX="22.0" layoutY="14.0" text="Exam name">
          <font>
             <Font size="18.0" />
@@ -21,37 +21,37 @@
             <Font size="18.0" />
          </font>
       </Label>
-      <TextField fx:id="validIDs" layoutX="177.0" layoutY="353.0" prefHeight="25.0" prefWidth="410.0" />
+      <TextField fx:id="validIDs" layoutX="177.0" layoutY="353.0" prefHeight="25.0" prefWidth="410.0" text="sadfsdf" />
       <Label layoutX="23.0" layoutY="82.0" text="Starts after (seconds)">
          <font>
             <Font size="16.0" />
          </font>
       </Label>
-      <TextField fx:id="examStartTime" layoutX="45.0" layoutY="107.0" prefHeight="25.0" prefWidth="52.0" />
+      <TextField fx:id="examStartTime" layoutX="45.0" layoutY="107.0" prefHeight="25.0" prefWidth="52.0" text="12" />
       <Label layoutX="201.0" layoutY="82.0" text="Duration(seconds)">
          <font>
             <Font size="16.0" />
          </font>
       </Label>
-      <TextField fx:id="examDuration" layoutX="248.0" layoutY="107.0" prefHeight="25.0" prefWidth="52.0" />
+      <TextField fx:id="examDuration" layoutX="248.0" layoutY="107.0" prefHeight="25.0" prefWidth="52.0" text="60" />
       <Label layoutX="410.0" layoutY="82.0" text="Warn before (seconds)">
          <font>
             <Font size="16.0" />
          </font>
       </Label>
-      <TextField fx:id="examWarningTime" layoutX="474.0" layoutY="107.0" prefHeight="25.0" prefWidth="52.0" />
+      <TextField fx:id="examWarningTime" layoutX="474.0" layoutY="107.0" prefHeight="25.0" prefWidth="52.0" text="15" />
       <Label layoutX="14.0" layoutY="176.0" text="Backup interval (seconds)">
          <font>
             <Font size="16.0" />
          </font>
       </Label>
-      <TextField fx:id="examBackupInterval" layoutX="45.0" layoutY="201.0" prefHeight="25.0" prefWidth="52.0" />
+      <TextField fx:id="examBackupInterval" layoutX="45.0" layoutY="201.0" prefHeight="25.0" prefWidth="52.0" text="10" />
       <Label layoutX="274.0" layoutY="176.0" text="Rules and Regulations">
          <font>
             <Font size="16.0" />
          </font>
       </Label>
-      <TextArea fx:id="examRules" layoutX="274.0" layoutY="214.0" prefHeight="109.0" prefWidth="209.0" />
+      <TextArea fx:id="examRules" layoutX="274.0" layoutY="214.0" prefHeight="109.0" prefWidth="209.0" text="2sdfsdfsdfasd" />
       <Label layoutX="19.0" layoutY="236.0" prefHeight="25.0" prefWidth="83.0" text="Question Paper">
          <font>
             <Font size="11.0" />
@@ -69,7 +69,7 @@
             <Font size="18.0" />
          </font>
       </Label>
-      <TextField fx:id="allowableApps" layoutX="29.0" layoutY="432.0" prefHeight="25.0" prefWidth="562.0" />
+      <TextField fx:id="allowableApps" layoutX="29.0" layoutY="432.0" prefHeight="25.0" prefWidth="562.0" text="asdfasdfasdf" />
       <HBox layoutX="18.0" layoutY="311.0">
          <children>
             <TextField fx:id="examAnswerPath" prefHeight="25.0" prefWidth="129.0" />

@@ -97,6 +97,7 @@ public class ServerMain {
 
         exams.put(name, new Exam(this, name, startTime, duration, warningTime, backupInterval, validIDs,
                 alloableApps, answerpath, questionPath, rules));
+        
 
     }
 

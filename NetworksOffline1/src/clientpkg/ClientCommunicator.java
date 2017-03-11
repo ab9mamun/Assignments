@@ -1,6 +1,7 @@
 package clientpkg;
 
 import javafx.application.Platform;
+import javafx.scene.control.Alert;
 
 import javax.swing.*;
 import java.io.*;
@@ -90,11 +91,26 @@ public class ClientCommunicator implements Runnable {
                         String opcode = tok.nextToken();
                         if(opcode.startsWith("REJECTED")){
                             String message = tok.nextToken();
-                            ( new JOptionPane()).showMessageDialog(null, message);
+
+                           Platform.runLater(()->{Alert alert = new Alert(Alert.AlertType.ERROR);
+                               alert.setTitle("Oops");
+                               alert.setHeaderText("Error");
+                               alert.setContentText(message);
+
+                               alert.show();});
                         }
                         else if(opcode.startsWith("ACCEPTED")){
                             String details = tok.nextToken();
-                            ( new JOptionPane()).showMessageDialog(null, "Registration successful");
+
+                            Platform.runLater(()->{
+                                Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                                alert.setTitle("Information Dialog");
+                                alert.setHeaderText(null);
+                                alert.setContentText("Registration Successful");
+
+                                alert.show();
+                            });
+
                             Platform.runLater(()->main.showExamPage(myExamName, details));
                         }
 

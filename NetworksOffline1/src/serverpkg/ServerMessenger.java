@@ -34,7 +34,7 @@ public class ServerMessenger {
             fileDownloader = socket.getInputStream();
 
         }catch (Exception e ){
-            System.out.println(e);
+            e.printStackTrace();
         }
 
         createReader();
@@ -76,7 +76,7 @@ public class ServerMessenger {
 
 
                 }catch (Exception e){
-                    System.out.println(e);
+                   e.printStackTrace();
                 }
             }
         }.start();
@@ -99,7 +99,7 @@ public class ServerMessenger {
                     bos.flush();
                 }
                 catch (Exception e){
-                    System.out.println(e);
+                   e.printStackTrace();
                 }
 
     }

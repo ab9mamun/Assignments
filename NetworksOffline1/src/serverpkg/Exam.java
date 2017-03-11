@@ -1,15 +1,20 @@
 package serverpkg;
 
+import javafx.application.Platform;
+import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonType;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Optional;
 
 public class Exam {
     ServerMain main;
 
+    private boolean flag;
 
     private  String name;
     private  int startTime;
@@ -55,15 +60,38 @@ public class Exam {
                 return "REJECTED:You have already registered.\n";
             }
             if(i.equals(ip)) {
-                JOptionPane jon = new JOptionPane();
-                int choice = jon.showConfirmDialog(null, "Registration request from existing IP.\nDo you accept?");
-                if (choice == 0) register(stdID, socket);
+                Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+                alert.setTitle("Confirmation Dialog");
+                alert.setHeaderText("Look, a Confirmation Dialog");
+                alert.setContentText("Are you ok with this?");
+
+                Optional<ButtonType> result = alert.showAndWait();
+                if (result.get() == ButtonType.OK){
+                    // ... user chose OK
+                    break;
+                } else {
+                    // ... user chose CANCEL or closed the dialog
+                }
                 return "REJECTED:Registration denied.";
             }
             if(id==stdID){
-                JOptionPane jon = new JOptionPane();
-                int choice = jon.showConfirmDialog(null, "Registration request from existing Student ID.\nDo you accept?");
-                if (choice == 0) register(stdID, socket);
+               Platform.runLater(()->{
+                   Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+                   alert.setTitle("Confirmation Dialog");
+                   alert.setHeaderText("Look, a Confirmation Dialog");
+                   alert.setContentText("Are you ok with this?");
+
+                   Optional<ButtonType> result = alert.showAndWait();
+                   if (result.get() == ButtonType.OK){
+                       // ... user chose OK
+                       flag = true;
+
+                   } else {
+                       // ... user chose CANCEL or closed the dialog
+                       flag = false;
+                   }
+               });
+                if(flag) break;
                 return "REJECTED:Registration denied.";
 
             }
