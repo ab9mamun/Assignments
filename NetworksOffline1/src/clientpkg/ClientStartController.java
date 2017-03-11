@@ -19,6 +19,16 @@ public class ClientStartController {
     public void connectToServer(){
 
         System.out.println(stdID.getText());
-        ClientMain.main().connectToServer(serverIP.getText(), serverPort.getText(), stdID.getText());
+       main.connectToServer(serverIP.getText(), serverPort.getText(), stdID.getText());
+    }
+
+
+    public void setMain(ClientMain main){
+        this.main = main;
+    }
+
+
+    public void initialize(){
+
     }
 }

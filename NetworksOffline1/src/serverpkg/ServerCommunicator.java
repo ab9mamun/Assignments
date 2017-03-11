@@ -9,17 +9,17 @@ public class ServerCommunicator implements Runnable {
     private ServerMain main;
     private ServerSocket serverSocket;
 
-    public ServerCommunicator(){
-        main = ServerMain.main();
+    public ServerCommunicator(ServerMain main){
+        this.main = main;
     }
 
     @Override
     public void run(){
         try {
-            serverSocket = new ServerSocket(ServerValues.port);
+            serverSocket = new ServerSocket(main.getPort());
             while(true){
                 Socket clientSocket = serverSocket.accept();
-                System.out.println("accepted");
+                System.out.println("CONNECTED");
 
                 new Thread(){
                     public void run() {
@@ -45,13 +45,11 @@ public class ServerCommunicator implements Runnable {
     private void doAfterConnect(Socket clientSocket){
         try {
             PrintWriter writer = new PrintWriter(new OutputStreamWriter(clientSocket.getOutputStream()));
-            writer.println("accepted");
+
+            writer.println("CONNECTED"+main.getAllExamNames());
             writer.flush();
 
-            BufferedReader reader = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-            String stdID = reader.readLine();
-
-            main.verifyStudent(clientSocket, stdID);
+            main.createMessenger(clientSocket);
         } catch (IOException e) {
             e.printStackTrace();
         }

@@ -2,6 +2,9 @@ package clientpkg;
 
 import java.io.*;
 import java.net.Socket;
+import java.util.AbstractCollection;
+import java.util.ArrayList;
+import java.util.StringTokenizer;
 
 public class ClientCommunicator implements Runnable {
     private Thread t;
@@ -12,8 +15,8 @@ public class ClientCommunicator implements Runnable {
     private String stdID;
 
 
-    public ClientCommunicator(String serverIP, int port, String stdID){
-        main = ClientMain.main();
+    public ClientCommunicator(ClientMain main, String serverIP, int port, String stdID){
+        this.main = main;
         this.serverIP = serverIP;
         this.port = port;
         this.stdID = stdID;
@@ -26,7 +29,20 @@ public class ClientCommunicator implements Runnable {
             BufferedReader reader = new BufferedReader(new InputStreamReader(s.getInputStream()));
             String ack = reader.readLine(); //receives the acknowledgement
 
-            if(!ack.contains("accepted")) return;
+            if(!ack.startsWith("CONNECTED")) return;
+            StringTokenizer tok = new StringTokenizer(ack, ":");
+            String str = tok.nextToken(); //first one is discarded, cause it is the message connected itself
+
+
+            ArrayList<String> examNames = new ArrayList<>();
+            while(tok.hasMoreTokens()){
+                str = tok.nextToken();
+                if(!str.equals("")){
+                    examNames.add(str);
+                }
+            }
+            main.setExamList(examNames);
+
 
             PrintWriter writer = new PrintWriter(new OutputStreamWriter(s.getOutputStream()));
 
