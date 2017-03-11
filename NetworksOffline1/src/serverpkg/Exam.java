@@ -71,7 +71,7 @@ public class Exam {
 
         }
         register(stdID,socket);
-        return "ACCEPTED:"+name+":"+startTime+":"+currentTime()+":"+warningTime+":"+backupInterval+":"+rules;
+        return "ACCEPTED:"+name+"|"+startTime+"|"+currentTime()+"|"+duration+"|"+backupInterval+"|"+rules+"|"+allowableApps;
     }
     private void register(int stdid, Socket socket){
         examinees.add(new Examinee(stdid, socket));

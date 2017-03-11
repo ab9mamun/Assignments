@@ -1,5 +1,8 @@
 package clientpkg;
 
+import javafx.application.Platform;
+
+import javax.swing.*;
 import java.io.*;
 import java.net.Socket;
 import java.util.AbstractCollection;
@@ -14,6 +17,11 @@ public class ClientCommunicator implements Runnable {
     private int port;
     private String stdID;
 
+    private PrintWriter writer;
+    private BufferedReader reader;
+    private InputStream fileDownloader;
+    private OutputStream fileUploader;
+
 
     public ClientCommunicator(ClientMain main, String serverIP, int port, String stdID){
         this.main = main;
@@ -26,7 +34,7 @@ public class ClientCommunicator implements Runnable {
     public void run(){
         try {
             s = new Socket(serverIP, port); //sets up the connection
-            BufferedReader reader = new BufferedReader(new InputStreamReader(s.getInputStream()));
+            reader = new BufferedReader(new InputStreamReader(s.getInputStream()));
             String ack = reader.readLine(); //receives the acknowledgement
 
             if(!ack.startsWith("CONNECTED")) return;
@@ -44,15 +52,70 @@ public class ClientCommunicator implements Runnable {
             main.setExamList(examNames);
 
 
-            PrintWriter writer = new PrintWriter(new OutputStreamWriter(s.getOutputStream()));
 
-            writer.println(stdID);
-            writer.flush();
+
+             writer = new PrintWriter(new OutputStreamWriter(s.getOutputStream()));
+            fileDownloader = s.getInputStream();
+            fileUploader = s.getOutputStream();
+            createReader();
+            Platform.runLater(()->main.showHomePage());
         }
         catch (Exception e){
             System.out.println(e);
         }
 
+    }
+
+    private void createReader(){
+        new Thread(){
+            @Override
+            public void run(){
+                try {
+                    while (true) {
+                        String msg = reader.readLine();
+                        if(msg==null || msg.equals("")) continue;
+
+                        System.out.println(msg);
+                        StringTokenizer tok = new StringTokenizer(msg, ":");
+
+                        String id = tok.nextToken();
+                        if(!id.startsWith(stdID)){
+                           continue;
+                        }
+
+                        String myExamName = main.getMyExamName();
+                        String examname = tok.nextToken();
+                        if(!examname.startsWith(myExamName)) continue;
+
+                        String opcode = tok.nextToken();
+                        if(opcode.startsWith("REJECTED")){
+                            String message = tok.nextToken();
+                            ( new JOptionPane()).showMessageDialog(null, message);
+                        }
+                        else if(opcode.startsWith("ACCEPTED")){
+                            String details = tok.nextToken();
+                            ( new JOptionPane()).showMessageDialog(null, "Registration successful");
+                            Platform.runLater(()->main.showExamPage(myExamName, details));
+                        }
+
+
+                    }
+
+
+                }catch (Exception e){
+                    e.printStackTrace();
+                }
+            }
+        }.start();
+
+    }
+
+
+
+    public boolean tryRegistration(String examName){
+        writer.println("REGISTER:"+examName+":"+stdID);
+        writer.flush();
+        return false;
     }
 
 

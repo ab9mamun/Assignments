@@ -54,6 +54,7 @@ public class ServerMessenger {
                 try {
                     while (true) {
                         String msg = reader.readLine();
+                        System.out.println(msg);
                         StringTokenizer tok = new StringTokenizer(msg, ":");
 
                         String opcode = tok.nextToken();
@@ -61,7 +62,7 @@ public class ServerMessenger {
                             String examName = tok.nextToken();
                             String studentId = tok.nextToken();
                             String message = main.registerForExam(examName, studentId, socket);
-                            writer.println(studentId+":"+":"+examName+":"+message);
+                            writer.println(studentId+":"+examName+":"+message);
                             writer.flush();
                         }
 
