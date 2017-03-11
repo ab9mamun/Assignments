@@ -62,7 +62,7 @@ public class ServerMessenger {
                             String examName = tok.nextToken();
                             String studentId = tok.nextToken();
                             String message = main.registerForExam(examName, studentId, socket);
-                            writer.println(studentId+":"+examName+":"+message);
+                            writer.println(message);
                             writer.flush();
                         }
 
@@ -101,6 +101,10 @@ public class ServerMessenger {
                 catch (Exception e){
                    e.printStackTrace();
                 }
+
+    }
+
+    public void sendFile(String filePath) {
 
     }
 }

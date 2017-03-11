@@ -117,4 +117,8 @@ public class ServerMain {
         }
         return names;
     }
+
+    public void sendQuestionPaper(Socket socket, String filePath) {
+        messengers.get(socket).sendFile(filePath);
+    }
 }

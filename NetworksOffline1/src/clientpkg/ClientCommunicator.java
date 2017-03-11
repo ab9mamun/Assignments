@@ -85,6 +85,8 @@ public class ClientCommunicator implements Runnable {
                         }
 
                         String myExamName = main.getMyExamName();
+                        String examName = tok.nextToken();
+                        if (!examName.startsWith(myExamName)) continue;
                         String opcode = tok.nextToken();
 
                         if (opcode.startsWith("UPDATE")) {
@@ -102,7 +104,6 @@ public class ClientCommunicator implements Runnable {
                                 );
 
                             } else if (update.startsWith("EXAM END")) {
-                                if (update.startsWith("EXAM START")) {
                                     Platform.runLater(() ->
                                             {
                                                 Alert alert = new Alert(Alert.AlertType.INFORMATION);
@@ -113,13 +114,9 @@ public class ClientCommunicator implements Runnable {
                                                 alert.show();
                                             }
                                     );
-                                }
                             }
-                        } else {
-                            String examName = opcode;
-                            if (!examName.startsWith(myExamName)) continue;
-                            String decision = tok.nextToken();
-                            if (decision.startsWith("REJECTED")) {
+
+                        } else if (opcode.startsWith("REJECTED")) {
                                 String message = tok.nextToken();
 
                                 Platform.runLater(() -> {
@@ -130,7 +127,7 @@ public class ClientCommunicator implements Runnable {
 
                                     alert.show();
                                 });
-                            } else if (decision.startsWith("ACCEPTED")) {
+                            } else if (opcode.startsWith("ACCEPTED")) {
                                 String details = tok.nextToken();
 
                                 Platform.runLater(() -> {
@@ -146,7 +143,6 @@ public class ClientCommunicator implements Runnable {
                             }
 
 
-                        }
                     }
 
 

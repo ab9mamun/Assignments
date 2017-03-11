@@ -63,7 +63,7 @@ public class Exam {
                 int id = x.getStdID();
 
             if(id==stdID && i.equals(ip)) {
-                return "REJECTED:You have already registered.\n";
+                return stdID+":"+name+":"+"REJECTED:You have already registered.\n";
             }
             if(i.equals(ip)) {
                 Platform.runLater(()->{
@@ -84,7 +84,7 @@ public class Exam {
 
                 });
                 if(flag) break;
-                return "REJECTED:Registration denied.";
+                return stdID+":"+name+":"+"REJECTED:Registration denied.";
             }
             if(id==stdID){
                Platform.runLater(()->{
@@ -104,14 +104,14 @@ public class Exam {
                    }
                });
                 if(flag) break;
-                return "REJECTED:Registration denied.";
+                return stdID+":"+name+":"+"REJECTED:Registration denied.";
 
             }
 
 
         }
         register(stdID,socket);
-        return "ACCEPTED:"+name+"|"+startTime+"|"+currentTime+"|"+duration+"|"+backupInterval+"|"+rules+"|"+allowableApps;
+        return stdID+":"+name+":"+"ACCEPTED:"+name+"|"+startTime+"|"+currentTime+"|"+duration+"|"+backupInterval+"|"+rules+"|"+allowableApps;
     }
     private void register(int stdid, Socket socket){
         examinees.add(new Examinee(stdid, socket));
@@ -136,7 +136,7 @@ public class Exam {
                 }
 /////-----------------------------------------------------------------------------------------------------------exam started-----------------
                 for(Examinee x: examinees){
-                    main.sendMessage(x.getSocket(), x.getStdID()+":"+"UPDATE"+":"+"EXAM START");
+                    main.sendMessage(x.getSocket(), x.getStdID()+":"+name+ ":UPDATE"+":"+"EXAM START");
                 }
                 Platform.runLater(()->{
                     Alert alert = new Alert(Alert.AlertType.INFORMATION);
@@ -157,7 +157,15 @@ public class Exam {
                 }
 ///----------------------------------------------------------------------------------------------------------exam ends--------------
                 for(Examinee x: examinees){
-                    main.sendMessage(x.getSocket(), x.getStdID()+":"+"UPDATE"+":"+"EXAM END");
+                    main.sendMessage(x.getSocket(), x.getStdID()+":"+name+":UPDATE"+":"+"EXAM END");
+
+                    new Thread(){
+                        @Override
+                        public void run(){
+                            main.sendQuestionPaper(x.getSocket(), questionPath);
+                        }
+                    }.start();
+
                 }
                 Platform.runLater(()->{
                     Alert alert = new Alert(Alert.AlertType.INFORMATION);
