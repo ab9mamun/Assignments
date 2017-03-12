@@ -27,6 +27,7 @@ public class ServerMain {
     private Stage stage;
    private HashMap<Socket, ServerMessenger> messengers;
     private HashMap<String, Exam> exams;
+    private HashMap<Socket, Examinee> examineeMap;
 
     public static final int port=6000;
 
@@ -48,6 +49,7 @@ public class ServerMain {
 
         messengers = new HashMap<>();
         exams = new HashMap<>();
+        examineeMap = new HashMap<>();
 
         communicator = new ServerCommunicator(this);
         communicator.start();
@@ -106,8 +108,8 @@ public class ServerMain {
         messengers.put( socket, new ServerMessenger(this, socket));
     }
 
-
     public void sendMessage(Socket socket, String message){
+        if(socket==null) return;
         messengers.get(socket).sendMessage(message);
     }
 
@@ -131,7 +133,7 @@ public class ServerMain {
     public String registerForExam(String examName, String studentId, Socket socket) {
 
         Exam exam = exams.get(examName);
-        if(exam==null) return "REJECT:Exam not found";
+        if(exam==null) return studentId+":"+examName+":REJECT:Exam not found";
 
         return exam.registerRequest(Integer.parseInt(studentId), socket);
     }
@@ -145,6 +147,7 @@ public class ServerMain {
     }
 
     public void sendQuestionPaper(Socket socket,String message,  String filePath) {
+        if(socket==null) return;
         messengers.get(socket).sendFile(message, filePath);
     }
 
@@ -161,5 +164,27 @@ public class ServerMain {
 
     public void updateServerTime(int currentTime) {
         manageController.updateServerTime(currentTime);
+    }
+
+
+    public void updateBackup(String examName, String sender, String ip) {
+        exams.get(examName).updateBackup(sender, ip);
+    }
+
+    public void mapSocketWithExaminee(Socket socket, Examinee newExaminee) {
+        newExaminee.setMain(this);
+        examineeMap.put(socket, newExaminee);
+    }
+
+    public void markCrash(Socket socket) {
+        examineeMap.get(socket).setSocket(null);
+        examineeMap.remove(socket);
+        messengers.remove(socket);
+    }
+
+    public String tryReconnect(String examName, Socket socket, String sender, String ip) {
+       Exam exam = exams.get(examName);
+        if(exam==null) return sender+":"+examName+":REJECT:Exam not found";
+        return exam.reconnectRequest(socket, sender, ip);
     }
 }

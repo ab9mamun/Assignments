@@ -10,7 +10,7 @@
    <children>
       <TextField fx:id="serverIP" layoutX="151.0" layoutY="77.0" text="127.0.0.1" />
       <TextField fx:id="serverPort" layoutX="151.0" layoutY="121.0" text="6000" />
-      <TextField fx:id="stdID" layoutX="151.0" layoutY="175.0" text="13456" />
+      <TextField fx:id="stdID" layoutX="151.0" layoutY="175.0" text="1305003" />
       <Button layoutX="376.0" layoutY="79.0" mnemonicParsing="false" onAction="#connectToServer" prefHeight="118.0" prefWidth="85.0" text="Connect" />
       <Label layoutX="51.0" layoutY="76.0" text="Server IP">
          <font>

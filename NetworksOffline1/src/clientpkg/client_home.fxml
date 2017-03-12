@@ -17,5 +17,9 @@
       <Button layoutX="252.0" layoutY="275.0" mnemonicParsing="false" onAction="#chooseAnswerPath" prefHeight="25.0" prefWidth="23.0" text="..." />
       <TextArea fx:id="log" layoutX="378.0" layoutY="175.0" prefHeight="200.0" prefWidth="200.0" />
       <Label layoutX="378.0" layoutY="149.0" text="Log" />
+      <TextField fx:id="stdID" layoutX="412.0" layoutY="56.0" />
+      <Label layoutX="412.0" layoutY="34.0" text="StudentID" />
+      <Button mnemonicParsing="false" text="Button" />
+      <Button layoutX="455.0" layoutY="96.0" mnemonicParsing="false" onAction="#applyForReconnect" prefHeight="25.0" prefWidth="106.0" text="Reconnect" />
    </children>
 </AnchorPane>

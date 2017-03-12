@@ -21,7 +21,8 @@ public class ClientHomeController {
     private TextField answerPath;
     @FXML
     private TextArea log;
-
+    @FXML
+    private TextField stdID;
 
     public void chooseAnswerPath(){
 
@@ -38,10 +39,20 @@ public class ClientHomeController {
 
     public void applyForRegistration(){
         String examName = examNames.getValue();
+        main.setStdID(stdID.getText());
         if(examName==null || examName.equals("")) return;
         System.out.println(examName);
         //ClientValues.setFilePath(answerPath.getText()+"\\answer.docx");
         main.tryRegistration(examName);
+    }
+
+    public void applyForReconnect(){
+        String examName = examNames.getValue();
+        main.setStdID(stdID.getText());
+        if(examName==null || examName.equals("")) return;
+        System.out.println(examName);
+        //ClientValues.setFilePath(answerPath.getText()+"\\answer.docx");
+        main.tryReconnecting(examName);
     }
 
 
@@ -65,9 +76,15 @@ public class ClientHomeController {
 
     public void initialize(){
         log.setEditable(false);
+
     }
 
     public void updateLog(String msg) {
         log.setText(log.getText()+msg+"\n");
+    }
+
+
+    public void setStdID(String stdID) {
+        this.stdID.setText(stdID);
     }
 }

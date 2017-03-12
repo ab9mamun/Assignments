@@ -133,7 +133,7 @@ public class ClientCommunicator implements Runnable {
 
                         else if (opcode.startsWith("REJECTED")) {
                                 String message = tok.nextToken();
-                                main.log("registration failed");
+                                Platform.runLater(()->main.log(message));
                             } else if (opcode.startsWith("ACCEPTED")) {
                                 String details = tok.nextToken();
 
@@ -141,10 +141,15 @@ public class ClientCommunicator implements Runnable {
 
                                 Platform.runLater(() -> main.showExamPage(myExamName, details));
                             }
+                        else if(opcode.startsWith("ACCEPTED_RECONNECT")){
+                            String details = tok.nextToken();
+                            Platform.runLater(()->main.log("Reconnected"));
+                            Platform.runLater(()->main.showExamPage(myExamName,details));
+
+                        }
 
 
                     }
-
 
                 }catch (Exception e){
                     e.printStackTrace();
@@ -156,9 +161,9 @@ public class ClientCommunicator implements Runnable {
 
 
 
-    public boolean tryRegistration(String examName){
+    public void tryRegistration(String examName){
         sendMessage("REGISTER:"+examName+":"+stdID);
-        return false;
+
     }
 
 
@@ -240,5 +245,14 @@ public class ClientCommunicator implements Runnable {
         //    writer.println("Downloaded.");
         //  writer.flush();
 
+    }
+
+
+    public void setStdID(String stdID) {
+        this.stdID = stdID;
+    }
+
+    public void tryReconnection(String examName) {
+        sendMessage("RECONNECT:"+examName+":"+stdID);
     }
 }

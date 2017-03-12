@@ -97,12 +97,14 @@ public class ClientMain extends Application {
     public void showHomePage(){
         stage.setScene(homePage);
         homeController.updateExamList(examList);
+        homeController.setStdID(stdID);
     }
 
 
 
     public void setStdID(String stdID){
         this.stdID = stdID;
+        communicator.setStdID(stdID);
     }
 
     public void connectToServer(String serverIP, String port, String stdID){
@@ -154,5 +156,15 @@ public class ClientMain extends Application {
 
     public void updateCorrection(String s) {
         examController.updateCorrection(s);
+    }
+
+
+    public String getStdID() {
+        return stdID;
+    }
+
+    public void tryReconnecting(String examName) {
+        myExamName = examName;
+        communicator.tryReconnection(examName);
     }
 }

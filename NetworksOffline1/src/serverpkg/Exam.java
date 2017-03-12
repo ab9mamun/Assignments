@@ -34,6 +34,7 @@ public class Exam {
     private int currentTime;
 
     private ArrayList<Examinee> examinees;
+    private HashMap<String, Examinee> map;
 
 
     public Exam(ServerMain main, String name, int startTime, int duration, int warningTime,
@@ -41,6 +42,7 @@ public class Exam {
                 String answerPath, String questionPath, String rules) {
 
         examinees = new ArrayList<>();
+        map = new HashMap<>();
 
         this.main = main;
 
@@ -63,6 +65,10 @@ public class Exam {
 
 
     public String registerRequest(int stdID, Socket socket){
+
+        if(ServerValues.verify(validIDs, stdID)==false) return stdID+":"+name+":"+"REJECTED:Please sign up with a valid StudentID.\n";
+
+
         String ip = socket.getInetAddress().getHostAddress();
         for(Examinee x:examinees){
                 String i = x.getIp();
@@ -73,12 +79,34 @@ public class Exam {
             }
             if(i.equals(ip)) {
 
-                if(sameIPAllowed) break;
+                Platform.runLater(()->main.log("Registration request from "+ip+" again. 5 seconds to decide."));;
+                try {
+                    Thread.sleep(5000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+
+                if(sameIPAllowed) {
+                    Platform.runLater(()->main.log("Registration accepted for "+ip));;
+                    break;
+                }
+                Platform.runLater(()->main.log("Registration rejected for "+ip));;
                 return stdID+":"+name+":"+"REJECTED:Registration denied.";
             }
             if(id==stdID){
 
-                if(sameStdIdAllowed) break;
+                Platform.runLater(()->main.log("Registration request from "+stdID+" again. 5 seconds to decide."));;
+                try {
+                    Thread.sleep(5000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+
+                if(sameStdIdAllowed) {
+                    Platform.runLater(()->main.log("Registration accepted for "+stdID));;
+                    break;
+                }
+                Platform.runLater(()->main.log("Registration rejected for "+stdID));;
                 return stdID+":"+name+":"+"REJECTED:Registration denied.";
 
             }
@@ -89,8 +117,10 @@ public class Exam {
         return stdID+":"+name+":"+"ACCEPTED:"+name+"|"+startTime+"|"+currentTime+"|"+duration+"|"+backupInterval+"|"+rules+"|"+allowableApps;
     }
     private void register(int stdid, Socket socket){
-        Examinee newExaminee = new Examinee(stdid, socket);
+        Examinee newExaminee = new Examinee(stdid, socket, startTime);
         examinees.add(newExaminee);
+        map.put(stdid+"_"+newExaminee.getIp(), newExaminee);
+        main.mapSocketWithExaminee(socket, newExaminee);
         (new File(answerPath+"\\"+newExaminee.getStdID()+"_"+newExaminee.getIp())).mkdir();
 
 
@@ -135,26 +165,47 @@ public class Exam {
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
-                    currentTime++;
+
                     if(currentTime== startTime+duration-warningTime){
                         for(Examinee x:examinees){
                             main.sendMessage(x.getSocket(),x.getStdID()+":"+name+":UPDATE"+":WARNING:"+warningTime+" seconds left");
                         }
                     }
-                     if(currentTime%backupInterval==0){
+                     if(currentTime!=startTime && (currentTime-startTime)%backupInterval==0 && currentTime != startTime+duration){
                         for(Examinee x:examinees){
                             main.sendMessage(x.getSocket(),x.getStdID()+":"+name+":SEND FILE");
+                            checkLastBackup(x);
                         }
                     }
+                    currentTime++;
+
+
                 }
 ///----------------------------------------------------------------------------------------------------------exam ends--------------
                 for(Examinee x: examinees){
-                    main.sendMessage(x.getSocket(), x.getStdID()+":"+name+":UPDATE"+":"+"EXAM END");
 
+                    main.sendMessage(x.getSocket(), x.getStdID()+":"+name+":UPDATE"+":"+"EXAM END");
+                    main.sendMessage(x.getSocket(),x.getStdID()+":"+name+":SEND FILE");
+                    checkLastBackup(x);
                 }
                 Platform.runLater(()->main.log("Exam ended"));;
             }
 
+
+
+        }.start();
+    }
+
+
+    private void checkLastBackup(Examinee x){
+
+        new Thread(){
+            @Override
+            public void run(){
+                if(x.getLastBackup() < currentTime-backupInterval*1.5){
+                    Platform.runLater(()->main.log(x.getStdID()+"_"+x.getIp()+" is not sending backups"));;
+                }
+            }
         }.start();
     }
 
@@ -267,5 +318,40 @@ public class Exam {
 
     public String getAnswerPathForStudent(String stdId, String ip) {
         return answerPath+"\\"+stdId+"_"+ip+"\\backupAnswer.docx";
+    }
+
+    public void updateBackup(String sender, String ip) {
+        map.get(sender+"_"+ip).setLastBackup(currentTime);
+    }
+
+
+    public String reconnectRequest(Socket socket, String sender, String ip) {
+        Examinee examinee = map.get(sender+"_"+ip);
+        if(examinee==null) return sender+":"+name+":REJECTED:You were not registered";
+        if(examinee.getSocket()!=null) return sender+":"+name+":REJECTED:You were conencted from another process";
+        if(currentTime>=startTime+duration) return sender+":"+name+":REJECTED:Exam ended";
+
+        ///--------------------------
+        examinee.setSocket(socket);
+
+        Thread backupSender = new Thread(){
+            @Override
+            public void run(){
+                try {
+                    Thread.sleep(3000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                if(examinee.getLastBackup()> startTime)
+                main.sendQuestionPaper(socket,sender+":"+name+":RECEIVE FILE", getAnswerPathForStudent(sender, ip));
+
+                else if(examinee.getLastBackup()==startTime){
+                    main.sendQuestionPaper(socket,sender+":"+name+":RECEIVE FILE", questionPath);
+                }
+            }
+        };
+
+         backupSender.start();
+        return sender+":"+name+":"+"ACCEPTED_RECONNECT:"+name+"|"+startTime+"|"+currentTime+"|"+duration+"|"+backupInterval+"|"+rules+"|"+allowableApps;
     }
 }

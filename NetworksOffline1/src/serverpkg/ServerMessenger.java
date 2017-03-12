@@ -79,13 +79,24 @@ public class ServerMessenger {
                             String sender = tok.nextToken();
                             String fileSize = tok.nextToken();
                             downloadFile(examName, sender, Integer.parseInt(fileSize));
+
+                            main.updateBackup(examName, sender,ip);
                            // System.out.println("file downloaded");
                         }
+                        else if(opcode.startsWith("RECONNECT")){
+                            String examName = tok.nextToken();
+                            String sender = tok.nextToken();
+                            String message = main.tryReconnect(examName, socket, sender, ip);
+                            sendMessage(message);
+
+                        }
+
                     }
 
 
                 }catch (Exception e){
                    e.printStackTrace();
+                    main.markCrash(socket);
                 }
             }
         }.start();
@@ -160,4 +171,5 @@ public class ServerMessenger {
       //  writer.flush();
 
     }
+
 }

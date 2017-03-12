@@ -6,11 +6,15 @@ public class Examinee {
     private int StdID;
     private String ip;
     private Socket socket;
+    private int lastBackup;
 
-    public Examinee(int stdID, Socket socket) {
+    private ServerMain main;
+
+    public Examinee(int stdID, Socket socket, int lastBackup) {
         StdID = stdID;
         this.socket = socket;
         ip = socket.getInetAddress().getHostAddress();
+        this.lastBackup = lastBackup;
     }
 
     public int getStdID() {
@@ -32,5 +36,18 @@ public class Examinee {
 
     public String getIp() {
         return ip;
+    }
+
+    public void setLastBackup(int lastBackup) {
+        this.lastBackup = lastBackup;
+    }
+
+    public int getLastBackup() {
+        return lastBackup;
+    }
+
+
+    public void setMain(ServerMain main) {
+        this.main = main;
     }
 }
