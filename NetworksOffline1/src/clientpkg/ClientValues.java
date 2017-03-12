@@ -13,12 +13,13 @@ public class ClientValues {
 
     public static String filePath(){
         if(filePath==null){
-            filePath = projectPath()+"\\Client\\answer.docx";
+            filePath = projectPath()+"\\answer.docx";
         }
         return filePath;
     }
 
     public static void setFilePath(String filePath) {
-        ClientValues.filePath = filePath;
+        if(filePath==null || filePath.equals("")) return;
+                ClientValues.filePath = filePath;
     }
 }

@@ -30,6 +30,7 @@ public class ClientHomeController {
         File file = directoryChooser.showDialog(main.getStage());
         if(file!=null) {
             answerPath.setText(file.getAbsolutePath());
+           ClientValues.setFilePath(file.getAbsolutePath()+"\\answer.docx");
         }
     }
 
@@ -39,7 +40,7 @@ public class ClientHomeController {
         String examName = examNames.getValue();
         if(examName==null || examName.equals("")) return;
         System.out.println(examName);
-        ClientValues.setFilePath(answerPath.getText()+"\\answer.docx");
+        //ClientValues.setFilePath(answerPath.getText()+"\\answer.docx");
         main.tryRegistration(examName);
     }
 

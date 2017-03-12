@@ -105,24 +105,29 @@ public class ServerMessenger {
     }
 
     public void sendFile(String message, String filePath) {
-        sendMessage(message);
+
         try
         {
             File file = new File(filePath);
             FileInputStream fis = new FileInputStream(file);
             BufferedInputStream bis = new BufferedInputStream(fis);
-            byte[] data;
 
-            int size = 100000;
-            while(true){
+            int size = (int) file.length();
+            byte[] data  = new byte [size];
+            sendMessage(message+":"+(size));
 
-                data = new byte[size];
+            int total = 0;
+            while(total<size){
+
                 int byteRead = bis.read(data);
                 if(byteRead<=0) break;
-                fileUploader.write(data, 0, byteRead);
-                //System.out.println("Sending file ... "+(current*100)/fileLength+"% complete!");
+                fileUploader.write(data, total, byteRead);
+                total+= byteRead;
+                fileUploader.flush();
+                System.out.println("Sending file ..");
             }
-            fileUploader.flush();
+
+            bis.close();
             System.out.println("File sent successfully!");
         }
         catch(Exception e)

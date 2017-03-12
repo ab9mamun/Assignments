@@ -110,7 +110,7 @@ public class ClientCommunicator implements Runnable {
 
                         }
                         else if(opcode.startsWith("RECEIVE FILE")){
-                            downloadFile();
+                            downloadFile(Integer.parseInt(tok.nextToken()));
 
                         }
                         else if (opcode.startsWith("REJECTED")) {
@@ -150,7 +150,7 @@ public class ClientCommunicator implements Runnable {
         t.start();
     }
 
-    private void downloadFile(){
+    private void downloadFile(int size){
 
         try {
 
@@ -159,16 +159,21 @@ public class ClientCommunicator implements Runnable {
             BufferedOutputStream bos = new BufferedOutputStream(
                     new FileOutputStream(ClientValues.filePath())
             );
-            int bytesRead = 0;
+            int total = 0;
 
-            while (true)    //loop is continued until received byte=totalfilesize
+            byte[] contents = new byte[size];
+            while (total<=size)    //loop is continued until received byte=totalfilesize
             {
-                byte[] contents = new byte[100000];
-                bytesRead = fileDownloader.read(contents);
+                int bytesRead = fileDownloader.read(contents, total, size-total);
                 if(bytesRead<=0) break;
-                bos.write(contents, 0, bytesRead);
+                bos.write(contents, total, bytesRead);
+                total+= bytesRead;
+                bos.flush();
+                System.out.println("file reading");
             }
-            bos.flush();
+
+            System.out.println("file reading end");
+            bos.close();
         }
         catch (Exception e){
             e.printStackTrace();
