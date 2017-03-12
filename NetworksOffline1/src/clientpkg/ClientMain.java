@@ -120,6 +120,7 @@ public class ClientMain extends Application {
     public void showExamPage(String examName, String examDetails){
         examController.setDetails(examDetails);
         stage.setScene(examPage);
+
     }
 
     public static void main(String[] args) {

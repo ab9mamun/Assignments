@@ -1,6 +1,8 @@
 package clientpkg;
 
+import javafx.application.Platform;
 import javafx.fxml.FXML;
+import javafx.scene.control.Pagination;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 
@@ -70,6 +72,9 @@ public class ClientExamController {
         examRules.setText(tok.nextToken());
         allowableApps.setText(tok.nextToken());
 
+        stopWatch();
+
+
     }
     public void setMain(ClientMain main) {
         this.main = main;
@@ -82,5 +87,32 @@ public class ClientExamController {
 
     public void updateCorrection(String s) {
         examCorrections.setText(s);
+    }
+
+
+
+
+    public void stopWatch(){
+        new Thread(){
+            @Override
+            public void run(){
+                int currentTime = Integer.parseInt(serverTime.getText());
+                int endTime = Integer.parseInt(examStartTime.getText())+ Integer.parseInt(examDuration.getText());
+                while(currentTime<=endTime){
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+
+                    currentTime++;
+                    final int x = currentTime;
+                    Platform.runLater(
+                            ()->serverTime.setText(x+"")
+                    );
+                }
+
+            }
+        }.start();
     }
 }

@@ -1,5 +1,8 @@
 package serverpkg;
 
+import clientpkg.ClientValues;
+import javafx.application.Platform;
+
 import java.io.*;
 import java.net.Socket;
 import java.util.StringTokenizer;
@@ -69,8 +72,9 @@ public class ServerMessenger {
                         else if(opcode.startsWith("RECEIVE FILE")) {
                             String examName = tok.nextToken();
                             String sender = tok.nextToken();
-                            //downloadFile(sender);
-                            System.out.println("file downloaded");
+                            String fileSize = tok.nextToken();
+                            downloadFile(examName, sender, Integer.parseInt(fileSize));
+                           // System.out.println("file downloaded");
                         }
                     }
 
@@ -82,25 +86,37 @@ public class ServerMessenger {
         }.start();
 
     }
-    private void downloadFile(String sender){
-                try {
-                    byte[] contents = new byte[10000];
-                    BufferedOutputStream bos = new BufferedOutputStream(
-                            new FileOutputStream(ServerValues.answerPath()+"\\"+sender+"_"+"\\answer.docx")
-                    );
-                    int bytesRead = 0;
+    private void downloadFile(String examName, String stdId, int size){
 
-                    while (true)    //loop is continued until received byte=totalfilesize
-                    {
-                        bytesRead = fileDownloader.read(contents);
-                        if(bytesRead<=0) break;
-                        bos.write(contents, 0, bytesRead);
-                    }
-                    bos.flush();
-                }
-                catch (Exception e){
-                   e.printStackTrace();
-                }
+        try {
+            BufferedOutputStream bos = new BufferedOutputStream(
+                    new FileOutputStream(main.getAnswerPath(examName, stdId, ip))
+            );
+            int total = 0;
+
+            //byte[] contents = new byte[size];
+            while (total<=size)    //loop is continued until received byte=totalfilesize
+            {
+                int datasize = Math.min(10000,size-total);
+                byte[] data = new byte[datasize];
+
+                int bytesRead = fileDownloader.read(data, 0, datasize);
+                if(bytesRead<=0) break;
+                bos.write(data, 0, bytesRead);
+                total+= bytesRead;
+                bos.flush();
+                System.out.println("file reading");
+            }
+
+            System.out.println("file reading end");
+            bos.close();
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
+
+        Platform.runLater(()->main.log("Backup received"));
+
 
     }
 
@@ -113,15 +129,18 @@ public class ServerMessenger {
             BufferedInputStream bis = new BufferedInputStream(fis);
 
             int size = (int) file.length();
-            byte[] data  = new byte [size];
-            sendMessage(message+":"+(size));
+
+            sendMessage(message+":"+size);
 
             int total = 0;
             while(total<size){
 
-                int byteRead = bis.read(data);
+                int datasize = Math.min(10000,size-total);
+                byte[] data = new byte[datasize];
+
+                int byteRead = bis.read(data, 0, datasize);
                 if(byteRead<=0) break;
-                fileUploader.write(data, total, byteRead);
+                fileUploader.write(data, 0, byteRead);
                 total+= byteRead;
                 fileUploader.flush();
                 System.out.println("Sending file ..");

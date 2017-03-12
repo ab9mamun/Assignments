@@ -5,18 +5,21 @@
 <?import javafx.scene.control.CheckBox?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.AnchorPane?>
 
-<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8.0.111" xmlns:fx="http://javafx.com/fxml/1" fx:controller="serverpkg.ServerManageController">
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="421.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8.0.111" xmlns:fx="http://javafx.com/fxml/1" fx:controller="serverpkg.ServerManageController">
    <children>
-      <TextArea fx:id="corrections" layoutX="28.0" layoutY="27.0" prefHeight="129.0" prefWidth="156.0" />
-      <Label layoutX="28.0" layoutY="10.0" text="Correction" />
-      <Button layoutX="184.0" layoutY="27.0" mnemonicParsing="false" onAction="#sendCorrections" prefHeight="129.0" prefWidth="43.0" text="Send" />
+      <TextArea fx:id="corrections" layoutX="23.0" layoutY="107.0" prefHeight="129.0" prefWidth="156.0" />
+      <Label layoutX="22.0" layoutY="83.0" text="Correction" />
+      <Button layoutX="179.0" layoutY="107.0" mnemonicParsing="false" onAction="#sendCorrections" prefHeight="129.0" prefWidth="43.0" text="Send" />
       <TextArea fx:id="log" layoutX="386.0" layoutY="14.0" prefHeight="377.0" prefWidth="200.0" />
       <Label layoutX="358.0" layoutY="18.0" text="Log" />
       <Group layoutX="23.0" layoutY="293.0" />
       <Group layoutX="32.0" layoutY="358.0" />
       <CheckBox fx:id="dupID" layoutX="32.0" layoutY="285.0" mnemonicParsing="false" onAction="#onDupID" text="Registration from duplicate StudentID" />
       <CheckBox fx:id="dupIP" layoutX="32.0" layoutY="334.0" mnemonicParsing="false" onAction="#onDupIP" text="Registration from duplicate IP" />
+      <Label layoutX="18.0" layoutY="6.0" text="Server Time" />
+      <TextField fx:id="serverTime" layoutX="84.0" layoutY="6.0" prefHeight="25.0" prefWidth="56.0" />
    </children>
 </AnchorPane>

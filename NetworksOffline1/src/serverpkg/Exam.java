@@ -6,6 +6,7 @@ import javafx.scene.control.ButtonType;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
+import java.io.File;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -52,7 +53,7 @@ public class Exam {
         this.backupInterval = backupInterval;
         this.validIDs = validIDs;
         this.allowableApps = allowableApps;
-        this.answerPath = answerPath;
+        this.answerPath = answerPath+"\\"+name; (new File(this.answerPath)).mkdir();
         this.questionPath = questionPath;
         this.rules = rules;
 
@@ -88,7 +89,10 @@ public class Exam {
         return stdID+":"+name+":"+"ACCEPTED:"+name+"|"+startTime+"|"+currentTime+"|"+duration+"|"+backupInterval+"|"+rules+"|"+allowableApps;
     }
     private void register(int stdid, Socket socket){
-        examinees.add(new Examinee(stdid, socket));
+        Examinee newExaminee = new Examinee(stdid, socket);
+        examinees.add(newExaminee);
+        (new File(answerPath+"\\"+newExaminee.getStdID()+"_"+newExaminee.getIp())).mkdir();
+
 
     }
 
@@ -101,6 +105,8 @@ public class Exam {
             @Override
             public void run(){
                 while(currentTime<startTime) {
+                    main.updateServerTime(currentTime);
+
                     try {
                         Thread.sleep(1000);
                     } catch (InterruptedException e) {
@@ -119,22 +125,34 @@ public class Exam {
                         }
                     }.start();
                 }
-                System.out.println("Exam started:");
+                Platform.runLater(()->main.log("Exam started"));;
 
                 while(currentTime<(startTime+duration)){
+                    main.updateServerTime(currentTime);
+
                     try {
                         Thread.sleep(1000);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
                     currentTime++;
+                    if(currentTime== startTime+duration-warningTime){
+                        for(Examinee x:examinees){
+                            main.sendMessage(x.getSocket(),x.getStdID()+":"+name+":UPDATE"+":WARNING:"+warningTime+" seconds left");
+                        }
+                    }
+                     if(currentTime%backupInterval==0){
+                        for(Examinee x:examinees){
+                            main.sendMessage(x.getSocket(),x.getStdID()+":"+name+":SEND FILE");
+                        }
+                    }
                 }
 ///----------------------------------------------------------------------------------------------------------exam ends--------------
                 for(Examinee x: examinees){
                     main.sendMessage(x.getSocket(), x.getStdID()+":"+name+":UPDATE"+":"+"EXAM END");
 
                 }
-                System.out.println("Exam Ended");
+                Platform.runLater(()->main.log("Exam ended"));;
             }
 
         }.start();
@@ -247,4 +265,7 @@ public class Exam {
         }
     }
 
+    public String getAnswerPathForStudent(String stdId, String ip) {
+        return answerPath+"\\"+stdId+"_"+ip+"\\backupAnswer.docx";
+    }
 }

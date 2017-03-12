@@ -107,12 +107,26 @@ public class ClientCommunicator implements Runnable {
                                 );
                                 ;
                             }
+                            else if(update.startsWith("WARNING")){
+                                Platform.runLater(()->main.log("Warning:"+tok.nextToken()));
+                            }
+
 
                         }
                         else if(opcode.startsWith("RECEIVE FILE")){
                             downloadFile(Integer.parseInt(tok.nextToken()));
 
                         }
+                        else if(opcode.startsWith("SEND FILE")){
+                            new Thread(){
+                                @Override
+                                public void run(){
+                                    sendFile("RECEIVE FILE:"+examName+":"+stdID, ClientValues.filePath());
+                                }
+
+                            }.start();
+                        }
+
                         else if (opcode.startsWith("REJECTED")) {
                                 String message = tok.nextToken();
                                 main.log("registration failed");
@@ -161,12 +175,15 @@ public class ClientCommunicator implements Runnable {
             );
             int total = 0;
 
-            byte[] contents = new byte[size];
+           // byte[] contents = new byte[size];
             while (total<=size)    //loop is continued until received byte=totalfilesize
             {
-                int bytesRead = fileDownloader.read(contents, total, size-total);
+                int datasize = Math.min(10000,size-total);
+                byte[] data = new byte[datasize];
+
+                int bytesRead = fileDownloader.read(data, 0, datasize);
                 if(bytesRead<=0) break;
-                bos.write(contents, total, bytesRead);
+                bos.write(data, 0, bytesRead);
                 total+= bytesRead;
                 bos.flush();
                 System.out.println("file reading");
@@ -180,6 +197,50 @@ public class ClientCommunicator implements Runnable {
         }
 
         Platform.runLater(()->main.log("Question received"));;
+
+    }
+
+
+    public void sendMessage(String message){
+        writer.println(message);
+        writer.flush();
+    }
+
+    public void sendFile(String message, String filePath) {
+
+        try
+        {
+            File file = new File(filePath);
+            FileInputStream fis = new FileInputStream(file);
+            BufferedInputStream bis = new BufferedInputStream(fis);
+
+            int size = (int) file.length();
+           // byte[] data  = new byte [size];
+            sendMessage(message+":"+(size));
+
+            int total = 0;
+            while(total<size){
+                int datasize = Math.min(10000,size-total);
+                byte[] data = new byte[datasize];
+
+                int byteRead = bis.read(data, 0, datasize);
+                if(byteRead<=0) break;
+                fileUploader.write(data, 0, byteRead);
+                total+= byteRead;
+                fileUploader.flush();
+                System.out.println("Sending file ..");
+            }
+
+            bis.close();
+            System.out.println("File sent successfully!");
+            Platform.runLater(()->main.log("Backup sent"));
+        }
+        catch(Exception e)
+        {
+            System.err.println("Could not transfer file.");
+        }
+        //    writer.println("Downloaded.");
+        //  writer.flush();
 
     }
 }

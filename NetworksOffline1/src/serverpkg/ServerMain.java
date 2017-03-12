@@ -153,4 +153,13 @@ public class ServerMain {
     public void log(String msg){
         manageController.updateLog(msg);
     }
+
+
+    public String getAnswerPath(String examName, String stdId, String ip){
+        return  exams.get(examName).getAnswerPathForStudent(stdId, ip);
+    }
+
+    public void updateServerTime(int currentTime) {
+        manageController.updateServerTime(currentTime);
+    }
 }

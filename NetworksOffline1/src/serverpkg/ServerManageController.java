@@ -4,6 +4,7 @@ import javafx.fxml.FXML;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.TextArea;
+import javafx.scene.control.TextField;
 
 public class ServerManageController {
     private ServerMain main;
@@ -16,6 +17,8 @@ public class ServerManageController {
     private CheckBox dupIP;
     @FXML
     private CheckBox dupID;
+    @FXML
+    private TextField serverTime;
 
 
 
@@ -47,5 +50,9 @@ public class ServerManageController {
 
     public void updateLog(String msg) {
         log.setText(log.getText()+msg+"\n");
+    }
+
+    public void updateServerTime(int currentTime) {
+        serverTime.setText(currentTime+"");
     }
 }
