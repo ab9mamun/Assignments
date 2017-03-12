@@ -45,7 +45,7 @@ public class ServerMessenger {
     }
 
     public void sendMessage(String message){
-        writer.println(message);
+        writer.println(message.replace('\n', '#'));
         writer.flush();
     }
 
@@ -57,16 +57,21 @@ public class ServerMessenger {
                 try {
                     while (true) {
                         String msg = reader.readLine();
+                        if(msg==null || msg.equals("")) continue;
+
                         System.out.println(msg);
+                        msg = msg.replace('#', '\n');
+
                         StringTokenizer tok = new StringTokenizer(msg, ":");
 
+                        if(!tok.hasMoreTokens()) continue;
                         String opcode = tok.nextToken();
+
                         if(opcode.startsWith("REGISTER")){
                             String examName = tok.nextToken();
                             String studentId = tok.nextToken();
                             String message = main.registerForExam(examName, studentId, socket);
-                            writer.println(message);
-                            writer.flush();
+                            sendMessage(message);
                         }
 
                         else if(opcode.startsWith("RECEIVE FILE")) {

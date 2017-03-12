@@ -51,7 +51,7 @@
             <Font size="16.0" />
          </font>
       </Label>
-      <TextArea fx:id="examRules" layoutX="274.0" layoutY="214.0" prefHeight="109.0" prefWidth="209.0" text="2sdfsdfsdfasd" />
+      <TextArea fx:id="examRules" layoutX="274.0" layoutY="214.0" prefHeight="109.0" prefWidth="209.0" text="no cheating&#10;no sidetalk&#10;no app except the allowable apps" />
       <Label layoutX="19.0" layoutY="236.0" prefHeight="25.0" prefWidth="83.0" text="Question Paper">
          <font>
             <Font size="11.0" />

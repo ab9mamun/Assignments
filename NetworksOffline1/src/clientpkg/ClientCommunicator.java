@@ -79,11 +79,15 @@ public class ClientCommunicator implements Runnable {
                     while (true) {
                         String msg = reader.readLine();
                         if (msg == null || msg.equals("")) continue;
-
                         System.out.println(msg);
+                        msg = msg.replace('#', '\n');
+
+
                         StringTokenizer tok = new StringTokenizer(msg, ":");
 
-                        String id = tok.nextToken();
+                        if(!tok.hasMoreTokens()) continue;
+                           String id = tok.nextToken();
+
                         if (!id.startsWith(stdID)) {
                             continue;
                         }
@@ -153,8 +157,7 @@ public class ClientCommunicator implements Runnable {
 
 
     public boolean tryRegistration(String examName){
-        writer.println("REGISTER:"+examName+":"+stdID);
-        writer.flush();
+        sendMessage("REGISTER:"+examName+":"+stdID);
         return false;
     }
 
@@ -199,7 +202,7 @@ public class ClientCommunicator implements Runnable {
 
 
     public void sendMessage(String message){
-        writer.println(message);
+        writer.println(message.replace('\n','#'));
         writer.flush();
     }
 

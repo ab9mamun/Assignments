@@ -7,19 +7,29 @@ import java.io.*;
 
 public class Test {
     public static void main(String[] args) {
+
+
+        String s = "no cheating\n" +
+                "no sidetalk\n" +
+                "no app except the allowable apps";
+        System.out.println(s.replace('\n', '#'));
+    }
+
+
+    public void lame(){
         final String dir = System.getProperty("user.dir");
         System.out.println("current dir = " + dir);
 
-    //    JOptionPane jon = new JOptionPane();
-      //  int x = jon.showConfirmDialog(null, "Registration request from existing IP.\nDo you accept?");
-      //  System.out.println(x);
+        //    JOptionPane jon = new JOptionPane();
+        //  int x = jon.showConfirmDialog(null, "Registration request from existing IP.\nDo you accept?");
+        //  System.out.println(x);
 
 
         File file = new File(ServerValues.questionPath());
         File file2 = new File(ServerValues.questionPath()+"p");
 
         try {
-           BufferedInputStream bis = new BufferedInputStream(new FileInputStream(file));
+            BufferedInputStream bis = new BufferedInputStream(new FileInputStream(file));
             BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(file2));
             int byteread = 0;
             byte[] contents = new byte[100000];
