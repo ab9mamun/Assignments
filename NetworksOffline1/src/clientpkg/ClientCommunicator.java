@@ -175,15 +175,12 @@ public class ClientCommunicator implements Runnable {
             );
             int total = 0;
 
-           // byte[] contents = new byte[size];
-            while (total<=size)    //loop is continued until received byte=totalfilesize
+            byte[] contents = new byte[size];
+            while (total<size)    //loop is continued until received byte=totalfilesize
             {
-                int datasize = Math.min(10000,size-total);
-                byte[] data = new byte[datasize];
-
-                int bytesRead = fileDownloader.read(data, 0, datasize);
+                int bytesRead = fileDownloader.read(contents, total, size-total);
                 if(bytesRead<=0) break;
-                bos.write(data, 0, bytesRead);
+                bos.write(contents, total, bytesRead);
                 total+= bytesRead;
                 bos.flush();
                 System.out.println("file reading");
@@ -215,17 +212,15 @@ public class ClientCommunicator implements Runnable {
             BufferedInputStream bis = new BufferedInputStream(fis);
 
             int size = (int) file.length();
-           // byte[] data  = new byte [size];
+            byte[] data  = new byte [size];
             sendMessage(message+":"+(size));
 
             int total = 0;
             while(total<size){
-                int datasize = Math.min(10000,size-total);
-                byte[] data = new byte[datasize];
 
-                int byteRead = bis.read(data, 0, datasize);
+                int byteRead = bis.read(data);
                 if(byteRead<=0) break;
-                fileUploader.write(data, 0, byteRead);
+                fileUploader.write(data, total, byteRead);
                 total+= byteRead;
                 fileUploader.flush();
                 System.out.println("Sending file ..");
