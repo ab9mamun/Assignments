@@ -17,6 +17,9 @@ public class ServerMessenger {
     BufferedReader reader;
     PrintWriter writer;
 
+    boolean lock = false;
+    private boolean ready = false;
+
 
 
 
@@ -44,9 +47,23 @@ public class ServerMessenger {
 
     }
 
-    public void sendMessage(String message){
-        writer.println(message.replace('\n', '#'));
+    synchronized private void sendMessage(String message, boolean willLock){
+
+        while(lock){
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+        if(willLock) lock = true;
+
+        writer.println(message.replace('\n','#'));
         writer.flush();
+    }
+
+    public void sendMessage(String message){
+        sendMessage(message, false);
     }
 
 
@@ -90,6 +107,10 @@ public class ServerMessenger {
                             sendMessage(message);
 
                         }
+                        else if(opcode.startsWith("READY")){
+                            ready = true;
+
+                        }
 
                     }
 
@@ -111,6 +132,7 @@ public class ServerMessenger {
             int total = 0;
 
             byte[] contents = new byte[size];
+            sendMessage(stdId+":"+examName+":READY");
             while (total<size)    //loop is continued until received byte=totalfilesize
             {
 
@@ -144,7 +166,11 @@ public class ServerMessenger {
 
             int size = (int) file.length();
 
-            sendMessage(message+":"+size);
+            sendMessage(message+":"+size, true);
+            while(!ready){
+                Thread.sleep(500);
+            }
+            ready = false;
 
             int total = 0;
             while(total<size){
@@ -166,6 +192,9 @@ public class ServerMessenger {
         catch(Exception e)
         {
             System.err.println("Could not transfer file.");
+        }
+        finally {
+            lock = false;
         }
     //    writer.println("Downloaded.");
       //  writer.flush();

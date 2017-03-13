@@ -21,6 +21,8 @@ public class ClientCommunicator implements Runnable {
     private int port;
     private String stdID;
     private boolean downloadPermitted;
+    private boolean lock = false;
+    private boolean ready = false;
 
     private PrintWriter writer;
     private BufferedReader reader;
@@ -147,6 +149,9 @@ public class ClientCommunicator implements Runnable {
                             Platform.runLater(()->main.showExamPage(myExamName,details));
 
                         }
+                        else if(opcode.startsWith("READY")){
+                            ready = true;
+                        }
 
 
                     }
@@ -162,7 +167,14 @@ public class ClientCommunicator implements Runnable {
 
 
     public void tryRegistration(String examName){
-        sendMessage("REGISTER:"+examName+":"+stdID);
+        while(lock) {
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+        sendMessage("REGISTER:" + examName + ":" + stdID);
 
     }
 
@@ -184,6 +196,9 @@ public class ClientCommunicator implements Runnable {
             int total = 0;
 
             byte[] contents = new byte[size];
+
+            sendMessage("READY:"+main.getMyExamName()+":"+main.getStdID());
+
             while (total<size)    //loop is continued until received byte=totalfilesize
             {
                 int bytesRead = fileDownloader.read(contents, total, size-total);
@@ -205,10 +220,23 @@ public class ClientCommunicator implements Runnable {
 
     }
 
+    synchronized private void sendMessage(String message, boolean willLock){
 
-    public void sendMessage(String message){
+        while(lock){
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+        if(willLock) lock = true;
+
         writer.println(message.replace('\n','#'));
         writer.flush();
+    }
+
+  public void sendMessage(String message){
+       sendMessage(message, false);
     }
 
     public void sendFile(String message, String filePath) {
@@ -221,7 +249,12 @@ public class ClientCommunicator implements Runnable {
 
             int size = (int) file.length();
             byte[] data  = new byte [size];
-            sendMessage(message+":"+(size));
+            sendMessage(message+":"+(size), true);
+
+            while(!ready){
+                Thread.sleep(500);
+            }
+            ready = false;
 
             int total = 0;
             while(total<size){
@@ -241,6 +274,9 @@ public class ClientCommunicator implements Runnable {
         catch(Exception e)
         {
             System.err.println("Could not transfer file.");
+        }
+        finally {
+            lock = false;
         }
         //    writer.println("Downloaded.");
         //  writer.flush();
