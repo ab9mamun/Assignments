@@ -167,13 +167,7 @@ public class ClientCommunicator implements Runnable {
 
 
     public void tryRegistration(String examName){
-        while(lock) {
-            try {
-                Thread.sleep(500);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
+
         sendMessage("REGISTER:" + examName + ":" + stdID);
 
     }

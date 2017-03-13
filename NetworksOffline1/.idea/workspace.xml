@@ -75,17 +75,17 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="ClientCommunicator.java" pinned="false" current-in-tab="false">
+      <file leaf-file-name="ClientCommunicator.java" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/clientpkg/ClientCommunicator.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="348">
-              <caret line="255" column="13" selection-start-line="255" selection-start-column="13" selection-end-line="255" selection-end-column="13" />
+            <state relative-caret-position="161">
+              <caret line="223" column="13" selection-start-line="223" selection-start-column="13" selection-end-line="223" selection-end-column="13" />
               <folding>
                 <element signature="imports" expanded="true" />
-                <element signature="e#7684#7685#0" expanded="true" />
-                <element signature="e#7726#7727#0" expanded="true" />
-                <element signature="e#9098#9099#0" expanded="true" />
-                <element signature="e#9158#9159#0" expanded="true" />
+                <element signature="e#7502#7503#0" expanded="true" />
+                <element signature="e#7544#7545#0" expanded="true" />
+                <element signature="e#8916#8917#0" expanded="true" />
+                <element signature="e#8976#8977#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -146,11 +146,11 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="Exam.java" pinned="false" current-in-tab="true">
+      <file leaf-file-name="Exam.java" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/serverpkg/Exam.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="280">
-              <caret line="146" column="69" selection-start-line="146" selection-start-column="69" selection-end-line="146" selection-end-column="69" />
+            <state relative-caret-position="-1097">
+              <caret line="140" column="12" selection-start-line="140" selection-start-column="12" selection-end-line="140" selection-end-column="12" />
               <folding>
                 <element signature="imports" expanded="true" />
                 <element signature="e#4190#6822#0" expanded="true" />
@@ -254,8 +254,8 @@
         <option value="$PROJECT_DIR$/src/serverpkg/ServerMain.java" />
         <option value="$PROJECT_DIR$/src/clientpkg/ClientMain.java" />
         <option value="$PROJECT_DIR$/src/serverpkg/Exam.java" />
-        <option value="$PROJECT_DIR$/src/clientpkg/ClientCommunicator.java" />
         <option value="$PROJECT_DIR$/src/serverpkg/ServerMessenger.java" />
+        <option value="$PROJECT_DIR$/src/clientpkg/ClientCommunicator.java" />
       </list>
     </option>
   </component>
@@ -916,10 +916,10 @@
           <caret line="45" column="5" selection-start-line="45" selection-start-column="5" selection-end-line="45" selection-end-column="5" />
           <folding>
             <element signature="imports" expanded="true" />
-            <element signature="e#7684#7685#0" expanded="true" />
-            <element signature="e#7726#7727#0" expanded="true" />
-            <element signature="e#9098#9099#0" expanded="true" />
-            <element signature="e#9158#9159#0" expanded="true" />
+            <element signature="e#7502#7503#0" expanded="true" />
+            <element signature="e#7544#7545#0" expanded="true" />
+            <element signature="e#8916#8917#0" expanded="true" />
+            <element signature="e#8976#8977#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -1214,19 +1214,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/clientpkg/ClientHomeController.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="264">
-          <caret line="54" column="39" selection-start-line="54" selection-start-column="39" selection-end-line="54" selection-end-column="39" />
-          <folding>
-            <element signature="e#1988#1989#0" expanded="true" />
-            <element signature="e#2020#2021#0" expanded="true" />
-            <element signature="e#2225#2226#0" expanded="true" />
-            <element signature="e#2266#2267#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/serverpkg/Examinee.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="276">
@@ -1242,45 +1229,12 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/clientpkg/ClientExamController.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-24">
-          <caret line="67" column="0" selection-start-line="67" selection-start-column="0" selection-end-line="67" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/serverpkg/ServerStartController.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="136">
-          <caret line="8" column="5" selection-start-line="8" selection-start-column="5" selection-end-line="8" selection-end-column="5" />
-          <folding>
-            <element signature="e#129#130#0" expanded="true" />
-            <element signature="e#161#162#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/clientpkg/ClientMain.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="276">
           <caret line="168" column="5" selection-start-line="168" selection-start-column="5" selection-end-line="168" selection-end-column="5" />
           <folding>
             <element signature="imports" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/clientpkg/ClientCommunicator.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="348">
-          <caret line="255" column="13" selection-start-line="255" selection-start-column="13" selection-end-line="255" selection-end-column="13" />
-          <folding>
-            <element signature="imports" expanded="true" />
-            <element signature="e#7684#7685#0" expanded="true" />
-            <element signature="e#7726#7727#0" expanded="true" />
-            <element signature="e#9098#9099#0" expanded="true" />
-            <element signature="e#9158#9159#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -1322,8 +1276,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/serverpkg/Exam.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="280">
-          <caret line="146" column="69" selection-start-line="146" selection-start-column="69" selection-end-line="146" selection-end-column="69" />
+        <state relative-caret-position="-1097">
+          <caret line="140" column="12" selection-start-line="140" selection-start-column="12" selection-end-line="140" selection-end-column="12" />
           <folding>
             <element signature="imports" expanded="true" />
             <element signature="e#4190#6822#0" expanded="true" />
@@ -1336,6 +1290,52 @@
             <element signature="e#9650#9651#0" expanded="true" />
             <element signature="e#10183#10797#0" expanded="true" />
             <element signature="e#10796#10797#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/clientpkg/ClientExamController.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-24">
+          <caret line="67" column="0" selection-start-line="67" selection-start-column="0" selection-end-line="67" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/serverpkg/ServerStartController.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="136">
+          <caret line="8" column="5" selection-start-line="8" selection-start-column="5" selection-end-line="8" selection-end-column="5" />
+          <folding>
+            <element signature="e#129#130#0" expanded="true" />
+            <element signature="e#161#162#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/clientpkg/ClientHomeController.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="264">
+          <caret line="54" column="39" selection-start-line="54" selection-start-column="39" selection-end-line="54" selection-end-column="39" />
+          <folding>
+            <element signature="e#1988#1989#0" expanded="true" />
+            <element signature="e#2020#2021#0" expanded="true" />
+            <element signature="e#2225#2226#0" expanded="true" />
+            <element signature="e#2266#2267#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/clientpkg/ClientCommunicator.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="161">
+          <caret line="223" column="13" selection-start-line="223" selection-start-column="13" selection-end-line="223" selection-end-column="13" />
+          <folding>
+            <element signature="imports" expanded="true" />
+            <element signature="e#7502#7503#0" expanded="true" />
+            <element signature="e#7544#7545#0" expanded="true" />
+            <element signature="e#8916#8917#0" expanded="true" />
+            <element signature="e#8976#8977#0" expanded="true" />
           </folding>
         </state>
       </provider>
