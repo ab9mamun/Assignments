@@ -34,8 +34,13 @@ Assumptions:
 ///---------------------let's define a class (struct :-/ ) for students------------------------------------
 typedef struct {
     int id;
- //   int meetAgainAfter = 0;   ///B or D will set this time if student's application is not found---------------------------
+    int meetAgainAfter;   ///B or D will set this time if student's application is not found---------------------------
     char password[PASSWORD_SIZE];
+
+    sem_t full;
+    sem_t empty;
+    pthread_mutex_t lock;
+
 } Student;
 
 
@@ -47,11 +52,17 @@ int dupStudents[DUP_STUDENTS_SIZE];
 Student* DQ[DQ_SIZE];
 
 
-int lengthBQ =0;
-int lengthAppQ =0;
+int frontBQ =0;
+int rearBQ =0;
+
+int frontAppQ =0;
+int rearAppQ =0;
+
 int lengthDupFilter =0;
 int lengthDupStudents = 0;
-int lengthDQ = 0;
+
+int frontDQ = 0;
+int rearDQ =0;
 
 ///----------------let's declare some semaphores for the containers----------------------
 sem_t emptyAppQ;
@@ -94,7 +105,103 @@ void sleep(unsigned int seconds)
     while (goal > clock());
 }
 
-///--------let's define some methods for containers-------------------------------------
+///-------------------let's define some methods for containers--------------------------------------------------------------------------------------------------------------------------------------
+
+///----appQ methods------
+void enqueueAppQ(int id){
+        sem_wait(&emptyAppQ);  ///wait for a place to be free in the queue--increase #empty
+        pthread_mutex_lock(&lockAppQ);  ///aquire lock before writing on the queue
+
+        int newRear = (rearAppQ+1)%APPQ_SIZE;
+        if(newRear==frontAppQ) {printf("bug found at enqueueAppQ"); return;}     ///in any case if length>size
+
+        appQ[newRear] = id; ///insertion done
+
+		pthread_mutex_unlock(&lockAppQ);  ///now unlock the queue
+		sem_post(&fullAppQ);  ///decrease #full
+}
+
+int dequeueAppQ(){
+        sem_wait(&fullAppQ);  ///wait for a place to be free in the queue--increase #empty
+		pthread_mutex_lock(&lockAppQ);  ///aquire lock before writing on the queue
+
+		if(rearAppQ==frontAppQ) {printf("bug found at dequeueAppQ"); return;}     ///in any case if length<0
+
+
+       int id = appQ[frontAppQ]; ///dequeue successful
+        frontAppQ = (frontAppQ+1)%APPQ_SIZE;
+
+		pthread_mutex_unlock(&lockAppQ);  ///now unlock the queue
+		sem_post(&emptyAppQ);  ///decrease #full
+
+		return id;
+
+}
+
+///BQ methods -----------------
+void enqueueBQ(Student* stu){
+        sem_wait(&emptyBQ);  ///wait for a place to be free in the queue--increase #empty
+        pthread_mutex_lock(&lockBQ);  ///aquire lock before writing on the queue
+
+        int newRear = (rearBQ+1)%BQ_SIZE;
+        if(newRear==frontBQ) {printf("bug found at enqueueBQ"); return;}     ///in any case if length>size
+
+        BQ[newRear] = stu; ///insertion done
+
+		pthread_mutex_unlock(&lockBQ);  ///now unlock the queue
+		sem_post(&fullBQ);  ///decrease #full
+}
+
+int dequeueBQ(){
+        sem_wait(&fullBQ);  ///wait for a place to be free in the queue--increase #empty
+		pthread_mutex_lock(&lockBQ);  ///aquire lock before writing on the queue
+
+		if(rearBQ==frontBQ) {printf("bug found at dequeueBQ"); return;}     ///in any case if length<0
+
+
+       Student* stu = BQ[frontBQ]; ///dequeue successful
+        frontBQ = (frontBQ+1)%BQ_SIZE;
+
+		pthread_mutex_unlock(&lockBQ);  ///now unlock the queue
+		sem_post(&emptyBQ);  ///decrease #full
+
+		return stu;
+
+}
+
+///methods for DQ ---------
+void enqueueDQ(Student* stu){
+        sem_wait(&emptyDQ);  ///wait for a place to be free in the queue--increase #empty
+        pthread_mutex_lock(&lockDQ);  ///aquire lock before writing on the queue
+
+        int newRear = (rearDQ+1)%DQ_SIZE;
+        if(newRear==frontDQ) {printf("bug found at enqueueDQ"); return;}     ///in any case if length>size
+
+        DQ[newRear] = stu; ///insertion done
+
+		pthread_mutex_unlock(&lockDQ);  ///now unlock the queue
+		sem_post(&fullDQ);  ///decrease #full
+}
+
+int dequeueDQ(){
+        sem_wait(&fullDQ);  ///wait for a place to be free in the queue--increase #empty
+		pthread_mutex_lock(&lockDQ);  ///aquire lock before writing on the queue
+
+		if(rearDQ==frontDQ) {printf("bug found at dequeueDQ"); return;}     ///in any case if length<0
+
+
+       Student* stu = DQ[frontDQ]; ///dequeue successful
+        frontBQ = (frontDQ+1)%DQ_SIZE;
+
+		pthread_mutex_unlock(&lockDQ);  ///now unlock the queue
+		sem_post(&emptyDQ);  ///decrease #full
+
+		return stu;
+
+}
+///----duplicate filter-------
+
+
 
 
 
