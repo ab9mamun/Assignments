@@ -26,9 +26,12 @@ Assumptions:
 #define DQ_SIZE 1
 #define DUP_FILTER_SIZE 200
 #define DUP_STUDENTS_SIZE 200
+#define PASSWORD_LIST_SIZE 200
 
 #define STU_COUNT 30
 #define STU_PROCESS_COUNT 45
+
+#define NEXT_MEETING_TIME 5
 
 
 ///---------------------let's define a class (struct :-/ ) for students------------------------------------
@@ -43,6 +46,11 @@ typedef struct {
 
 } Student;
 
+///----------------------we need a class (struct :-/ ) for passwords too ---------------------
+typedef struct {
+    int stdId;
+    char password[PASSWORD_SIZE];
+} Password;
 
 ///-----------------------let's now define the containers------------------------------------
 Student* BQ[BQ_SIZE];
@@ -50,6 +58,7 @@ int appQ[APPQ_SIZE];
 int dupFilter[DUP_FILTER_SIZE];
 int dupStudents[DUP_STUDENTS_SIZE];
 Student* DQ[DQ_SIZE];
+Password passwords[PASSWORD_LIST_SIZE];
 
 
 int frontBQ =0;
@@ -63,6 +72,8 @@ int lengthDupStudents = 0;
 
 int frontDQ = 0;
 int rearDQ =0;
+
+int lengthPasswords;
 
 ///----------------let's declare some semaphores for the containers----------------------
 sem_t emptyAppQ;
@@ -104,6 +115,30 @@ void sleep(unsigned int seconds)
     clock_t goal = mseconds + clock();
     while (goal > clock());
 }
+
+///--------------students communication with B & D-------------------
+void setMeetAgain(Student* stu, int nextTime){
+    sem_wait(&stu->empty);
+    pthread_mutex_lock(&stu->lock);
+
+    stu->meetAgainAfter = nextTime;
+
+    pthread_mutex_unlock(&stu->lock);
+    sem_post(&stu->full);
+}
+
+int getMeetAgain(Student* stu){
+    sem_wait(&stu->full);
+    pthread_mutex_lock(&stu->lock);
+
+    int x = stu->meetAgainAfter;
+
+    pthread_mutex_unlock(&stu->lock);
+    sem_post(&stu->empty);
+
+    return x;
+}
+
 
 ///-------------------let's define some methods for containers--------------------------------------------------------------------------------------------------------------------------------------
 
@@ -199,11 +234,85 @@ int dequeueDQ(){
 		return stu;
 
 }
-///----duplicate filter-------
+///----duplicate students---------
+int isAlreadyDuplicate(int id){
+    int i;
+    for(i=0; i<lengthDupStudents; i++){
+        if(dupStudents[i]==id) return 1;
+    }
+    return 0;
+}
+void addDuplicate(int id){
+    if(lengthDupStudents==DUP_STUDENTS_SIZE) {printf("Bug in addDuplicate"); return;}
+    dupStudents[lengthDupStudents++] = id;
+}
+
+///----duplicate filter ---------
+void addToDupFilter(int id){
+
+    pthread_mutex_lock(lockDupFilter);
+
+    if(lengthDupFilter==DUP_FILTER_SIZE) {printf("Bug in addToDupFilter");return;}
+    dupStudents[lengthDupFilter++] = id;
+
+    pthread_mutex_unlock(lockDupFilter);
+}
+
+void checkDupSendMeetAgain(Student* stu){
+
+    int id = stu->id;
+
+    if(isAlreadyDuplicate(id)) {
+            setMeetAgain(stu, 0);
+            return;
+    }
+
+    pthread_mutex_lock(lockDupFilter);
+
+    int i, index, j, k, dup;
+    index = -1;
+    dup = 0;
+    for(i=0; i<lengthDupFilter; i++){
+        if(dupFilter[i]==id){
+            index = i;   ///found
+            setMeetAgain(stu, 0);                  ///no need to keep the student locked for so long-----------------
+            break;
+        }
+    }
+    if(index<0) {
+        pthread_mutex_unlock(lockDupFilter);
+        setMeetAgain(stu, NEXT_MEETING_TIME);
+        return ;  ///as not found, next meeting is needed...
+    }
+    for(i=index+1; i<lengthDupFilter; i++){
+        if(dupFilter[i]==id){   ///duplicate entry found-----------------------------------
+                dup = 1;
+
+                for(j=lengthDupFilter-1; j>=i; j--){              ///at first remove the occurrences after the first one
+                    if(dupFilter[j]==id)
+                        dupFilter[j] = dupFilter[--lengthDupFilter];
+                }
+                addToDupFilter(id);
+                break;
+        }
+    }
+    dupFilter[index] = dupFilter[--lengthDupFilter];  ///remove the first occurrence irrespective of it is a duplicate or not
+
+     pthread_mutex_unlock(lockDupFilter);
+
+   // if(dup==0) generatePassword(id);
+
+    return 0;   ///no need to wait in either case....
+
+}
+
+/// password------------------
 
 
 
 
+
+///----------------------------------run methods of the threads----------------------------------------------
 
 void * run_ACE(void * arg) {
     char name = *(char* ) arg;
