@@ -16,8 +16,9 @@ Assumptions:
 #include<stdlib.h>
 #include <time.h>
 #include<unistd.h>
+#include <math.h>
 
-///-----------------------let's define the sizes for the containers-------------------------------------
+///-----------------------let's define some constants-------------------------------------
 #define PASSWORD_SIZE 9                                 ///this means the passwords will be of 8 characters. cause we need a place for '\0'
 
 #define APPQ_SIZE 10
@@ -25,6 +26,9 @@ Assumptions:
 #define DQ_SIZE 1
 #define DUP_FILTER_SIZE 200
 #define DUP_STUDENTS_SIZE 200
+
+#define STU_COUNT 30
+#define STU_PROCESS_COUNT 45
 
 
 ///---------------------let's define a class (struct :-/ ) for students------------------------------------
@@ -94,39 +98,48 @@ void sleep(unsigned int seconds)
 
 
 
-
-
-
-
 void * run_ACE(void * arg) {
+    char name = *(char* ) arg;
+
+    printf("I am %c\n", name);
 }
 
 void * run_B(void * arg) {
+     char name = *(char* ) arg;
 
+    printf("I am %c\n", name);
 }
 
 void * run_D(void * arg) {
+ char name = *(char* ) arg;
 
+    printf("I am %c\n", name);
 }
 void * run_Student(void *arg){
+ int id = *(int* ) arg;
 
+    printf("I am %d\n", id);
 }
 
 
 int main(void)
 {
+    ///-------------------declare the teacher threads---------------------------
 	pthread_t A;
 	pthread_t B;
 	pthread_t C;
 	pthread_t D;
 	pthread_t E;
+    int i, j, k, l, m, n;
+
 
 	init_semaphore();
+	srand(time(NULL));
 
-	char * message1 = "i am producer";
-	char * message2 = "i am consumer";
     char* teacherNames = "ACEBD";
 
+
+///------------------------create the teacher threads---------------------------------
 	pthread_create(&A,NULL,run_ACE,(void*) &teacherNames[0] );
 	pthread_create(&C, NULL, run_ACE, (void*) &teacherNames[1]);
     pthread_create(&E, NULL, run_ACE, (void*) &teacherNames[2]);
@@ -134,6 +147,13 @@ int main(void)
 	pthread_create(&B,NULL,run_B,(void*) &teacherNames[3] );
 	pthread_create(&D,NULL,run_D,(void*) &teacherNames[4] );
 
+	///-----------let's now create the student threads-----------------------------
+	for(i=1; i<=STU_PROCESS_COUNT; i++) {
+            int id = rand()%STU_COUNT+1;
+            pthread_t t;
+            pthread_create(&t,NULL,run_Student,(void*) &id );
+
+	}
 
 
 	while(1){
