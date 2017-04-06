@@ -32,6 +32,9 @@ Assumptions:
 #define STU_PROCESS_COUNT 45
 
 #define NEXT_MEETING_TIME 5
+#define APPROVED_BY_B 1
+#define NOT_FOUND_BY_B 0
+#define DUPLICATE_FOUND_BY_B 2
 
 
 ///---------------------let's define a class (struct :-/ ) for students------------------------------------
@@ -51,6 +54,11 @@ typedef struct {
     int stdId;
     char password[PASSWORD_SIZE];
 } Password;
+
+
+///------------formalities aka prototypes--------------------
+void generateAndAddPassword(int);
+
 
 ///-----------------------let's now define the containers------------------------------------
 Student* BQ[BQ_SIZE];
@@ -258,20 +266,20 @@ void addToDupFilter(int id){
     pthread_mutex_unlock(&lockDupFilter);
 }
 
-void checkDupSendMeetAgain(Student* stu){
+int checkDupFilter(Student* stu){   ///returns 1 if approved. 0 otherwise
 
     int id = stu->id;
 
     if(isAlreadyDuplicate(id)) {
             setMeetAgain(stu, 0);
-            return;
+            return NOT_FOUND_BY_B;
     }
 
     pthread_mutex_lock(&lockDupFilter);
 
-    int i, index, j, k, dup;
+    int i, index, j, k, val;
     index = -1;
-    dup = 0;
+    val = APPROVED_BY_B;
     for(i=0; i<lengthDupFilter; i++){
         if(dupFilter[i]==id){
             index = i;   ///found
@@ -286,7 +294,7 @@ void checkDupSendMeetAgain(Student* stu){
     }
     for(i=index+1; i<lengthDupFilter; i++){
         if(dupFilter[i]==id){   ///duplicate entry found-----------------------------------
-                dup = 1;
+                val = DUPLICATE_FOUND_BY_B;           ///it will be used to represent duplicate
 
                 for(j=lengthDupFilter-1; j>=i; j--){              ///at first remove the occurrences after the first one
                     if(dupFilter[j]==id)
@@ -299,10 +307,7 @@ void checkDupSendMeetAgain(Student* stu){
     dupFilter[index] = dupFilter[--lengthDupFilter];  ///remove the first occurrence irrespective of it is a duplicate or not
 
      pthread_mutex_unlock(&lockDupFilter);
-
-    if(dup==0) {
-            generateAndAddPassword(id);
-    }
+     return val;  ///if not duplicate, then approve
 
 }
 
@@ -365,30 +370,104 @@ void generateAndAddPassword(int id){
 
 }
 
+///-----------student initiator--------------------------
+void init_student(Student* stu){
+    stu->meetAgainAfter = 0;
+
+    sem_init(&stu->empty, 0, 1);
+    sem_init(&stu->full, 0, 0);
+    pthread_mutex_init(&stu->lock,0);
+}
+
+
 
 ///----------------------------------run methods of the threads----------------------------------------------
 
 void * run_ACE(void * arg) {
     char name = *(char* ) arg;
- //   while(true);
-  //  enqueueAppQ(id);
+    int id;
+    while(1){
+            id = dequeueAppQ();
+            addToDupFilter(id);
+            printf("Teacher %c has approved the application of Student %d\n\n", name, id);
+    }
+
 }
 
 void * run_B(void * arg) {
      char name = *(char* ) arg;
+     Student * stu;
+     int id;
+     int approved;
+     while(1){
 
-    printf("I am %c\n", name);
+        sleep(3);
+
+        stu = dequeueBQ();
+        id = stu->id;
+        approved = checkDupFilter(stu);
+
+        if(approved==APPROVED_BY_B) {
+                printf("-----------------------------------------------------------------------------------------\n\
+                       <APPROVED> Teacher %c has approved the application of Student %d\n\
+                       -----------------------------------------------------------------------------------------\n", name, id);
+                generateAndAddPassword(id);
+        }
+        else if(approved==DUPLICATE_FOUND_BY_B){
+                 printf("-----------------------------------------------------------------------------------------\n\
+                       <REJECTED> Teacher %c has found duplicate applications from Student %d\n\
+                       -----------------------------------------------------------------------------------------\n", name, id);
+        }
+        else {
+                printf("Teacher %c has not found the application of Student %d\n\n", name, id);
+        }
+     }
 }
 
 void * run_D(void * arg) {
- char name = *(char* ) arg;
-
-    printf("I am %c\n", name);
+    char name = *(char* ) arg;
+    Student * stu;
+    int id;
+    int found;
+    char pass[PASSWORD_SIZE];
+    while(1){
+        stu= dequeueDQ();
+        id = stu->id;
+        found =  getPassword(id,pass);
+        if(found) {
+                strcpy(stu->password, pass);
+                setMeetAgain(stu, 0);
+        }
+        else setMeetAgain(stu, NEXT_MEETING_TIME);
+    }
 }
-void * run_Student(void *arg){
- int id = *(int* ) arg;
 
-    printf("I am %d\n", id);
+void * run_Student(void *arg){
+    int id = *(int* ) arg;
+    Student* stu = (Student*) malloc(sizeof(Student));
+    stu->id = id;
+    init_student(stu);
+    int nextMeet;
+    enqueueAppQ(id);
+    while(1){
+        enqueueBQ(stu);
+        nextMeet = getMeetAgain(stu);
+        if(nextMeet==0) break;
+        sleep(nextMeet);
+    }
+    while(1){
+        enqueueDQ(stu);
+        printf("Student %d has asked for password to Teacher D", id);
+        nextMeet = getMeetAgain(stu);
+        if(nextMeet==0) break;
+
+
+        sleep(nextMeet);
+    }
+    printf("-----------------------------------------------------------------------------------------\n\
+                       <SUCCESS> Student %d has got password: %s\n\
+                       -----------------------------------------------------------------------------------------\n", id, stu->password);
+
 }
 
 
