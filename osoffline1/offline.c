@@ -250,12 +250,12 @@ void addDuplicate(int id){
 ///----duplicate filter ---------
 void addToDupFilter(int id){
 
-    pthread_mutex_lock(lockDupFilter);
+    pthread_mutex_lock(&lockDupFilter);
 
     if(lengthDupFilter==DUP_FILTER_SIZE) {printf("Bug in addToDupFilter");return;}
     dupStudents[lengthDupFilter++] = id;
 
-    pthread_mutex_unlock(lockDupFilter);
+    pthread_mutex_unlock(&lockDupFilter);
 }
 
 void checkDupSendMeetAgain(Student* stu){
@@ -267,7 +267,7 @@ void checkDupSendMeetAgain(Student* stu){
             return;
     }
 
-    pthread_mutex_lock(lockDupFilter);
+    pthread_mutex_lock(&lockDupFilter);
 
     int i, index, j, k, dup;
     index = -1;
@@ -280,7 +280,7 @@ void checkDupSendMeetAgain(Student* stu){
         }
     }
     if(index<0) {
-        pthread_mutex_unlock(lockDupFilter);
+        pthread_mutex_unlock(&lockDupFilter);
         setMeetAgain(stu, NEXT_MEETING_TIME);
         return ;  ///as not found, next meeting is needed...
     }
@@ -298,26 +298,80 @@ void checkDupSendMeetAgain(Student* stu){
     }
     dupFilter[index] = dupFilter[--lengthDupFilter];  ///remove the first occurrence irrespective of it is a duplicate or not
 
-     pthread_mutex_unlock(lockDupFilter);
+     pthread_mutex_unlock(&lockDupFilter);
 
-   // if(dup==0) generatePassword(id);
-
-    return 0;   ///no need to wait in either case....
+    if(dup==0) {
+            generateAndAddPassword(id);
+    }
 
 }
 
 /// password------------------
+void addPassword(int id, char pass[]){
+    pthread_mutex_lock(&lockPasswords);
+
+    if(lengthPasswords==PASSWORD_LIST_SIZE) {printf("Bug in addPassword"); return;}   ///bug found. so, why should i release the lock??
+
+    passwords[lengthPasswords].stdId = id;
+    strcpy(passwords[lengthPasswords].password, pass);
+    lengthPasswords++;
+
+    pthread_mutex_unlock(&lockPasswords);
+}
+
+int getPassword(int id, char whereToSave[]){
+    pthread_mutex_lock(&lockPasswords);
+    int i,  found = 0;
+    for(i=0; i<lengthPasswords; i++){
+            if(passwords[i].stdId==id){
+
+                strcpy(whereToSave, passwords[i].password);
+            }
+            found =1;
+            break;
+    }
+    pthread_mutex_unlock(&lockPasswords);
+    return found;
+}
 
 
+///------------------------------------------------------------utility methods-----------------------------------------
+void generateAndAddPassword(int id){
+    /**
+        0-9: 48-57  (total 10)
+        A-Z: 65-90   (total 26)
+        a-z: 97-122  (total 26)
 
+        Total: 26+26+10 = 62 valid characters...
+    */
+    char buffer[PASSWORD_SIZE];
+    int i;
+    char c;
+
+    for(i=0; i<PASSWORD_SIZE-1; i++){
+        c = rand()%62;
+        if(c<10) ///it's a number
+            c+= '0';
+        else if(c<36)
+            c+= 'A';
+        else
+            c+= 'a';
+
+        buffer[i] = c;
+    }
+    buffer[PASSWORD_SIZE-1] = 0;
+
+    addPassword(id, buffer);
+
+}
 
 
 ///----------------------------------run methods of the threads----------------------------------------------
 
 void * run_ACE(void * arg) {
     char name = *(char* ) arg;
-
-    printf("I am %c\n", name);
+ //   while(true);
+  //  enqueueAppQ(id);
 }
 
 void * run_B(void * arg) {
