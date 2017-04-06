@@ -2,6 +2,7 @@ package serverpkg;
 
 import clientpkg.ClientValues;
 import javafx.application.Platform;
+import sun.security.tools.keytool.Main;
 
 import java.io.*;
 import java.net.Socket;
@@ -116,7 +117,9 @@ public class ServerMessenger {
 
 
                 }catch (Exception e){
-                   e.printStackTrace();
+                   //e.printStackTrace();
+                   // main.log(socket.getInetAddress());
+                   // Platform.runLater(()->main.log(ip+" crashed"));
                     main.markCrash(socket);
                 }
             }

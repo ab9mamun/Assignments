@@ -177,8 +177,15 @@ public class ServerMain {
     }
 
     public void markCrash(Socket socket) {
-        examineeMap.get(socket).setSocket(null);
+        Examinee examinee = examineeMap.get(socket);
+        //if(examinee!=null) {
+          //  examinee.setSocket(null);
+           // examineeMap.remove(socket);
+            //Platform.runLater(()-> log(examinee.getStdID()+"_"+examinee.getIp()+" has crashed"));
+       // }
+        examinee.setSocket(null);
         examineeMap.remove(socket);
+
         messengers.remove(socket);
     }
 
