@@ -293,15 +293,23 @@ void addToDupFilter(int id){
 int checkDupFilter(Student* stu){   ///returns 1 if approved. 0 otherwise
 
     int id = stu->id;
+    int i, j;
 
     if(isAlreadyDuplicate(id)) {
             setMeetAgain(stu, 0);
+               pthread_mutex_lock(&lockDupFilter);
+             for(j=lengthDupFilter-1; j>=0; j--){              ///at first remove the occurrences after the first one
+                    if(dupFilter[j]==id)
+                        dupFilter[j] = dupFilter[--lengthDupFilter];
+                     //   printf("i'm stuck here\n");
+                }
+            pthread_mutex_unlock(&lockDupFilter);
             return DUPLICATE_FOUND_BY_B;
     }
 
     pthread_mutex_lock(&lockDupFilter);
 
-    int i, index, j, k, val;
+    int  index, k, val;
     index = -1;
     val = APPROVED_BY_B;
     for(i=0; i<lengthDupFilter; i++){
