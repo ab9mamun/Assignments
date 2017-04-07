@@ -28,10 +28,10 @@ Assumptions:
 #define DUP_STUDENTS_SIZE 200
 #define PASSWORD_LIST_SIZE 200
 
-#define STU_COUNT 30
-#define STU_PROCESS_COUNT 45
+#define STU_COUNT 20
+#define STU_PROCESS_COUNT 30
 
-#define NEXT_MEETING_TIME 5
+#define NEXT_MEETING_TIME 6
 #define APPROVED_BY_B 1
 #define NOT_FOUND_BY_B 0
 #define DUPLICATE_FOUND_BY_B 2
@@ -59,7 +59,8 @@ typedef struct {
 ///------------formalities aka prototypes--------------------
 void generateAndAddPassword(int);
 void printDupFilter();
-
+void printAppQ();
+void printDupStudents();
 
 ///-----------------------let's now define the containers------------------------------------
 Student* BQ[BQ_SIZE];
@@ -101,6 +102,7 @@ pthread_mutex_t lockDupFilter;
 pthread_mutex_t lockPasswords;
 pthread_mutex_t lockDQ;
 pthread_mutex_t lockConsole;
+pthread_mutex_t lockDupStudents;
 
 ///---------------let's define an initiator for them---------------------------
 
@@ -120,14 +122,16 @@ void init_semaphore()
 	pthread_mutex_init(&lockDupFilter, 0);
 	pthread_mutex_init(&lockPasswords, 0);
 	pthread_mutex_init(&lockConsole, 0);
+	pthread_mutex_init(&lockDupStudents, 0);
 }
 
 ///----------define a library for windows users--------------------------------------
 void sleep(unsigned int seconds)
 {
     int mseconds = seconds*1000;
-    clock_t goal = mseconds + clock();
-    while (goal > clock());
+   // clock_t goal = mseconds + clock();
+    //while (goal > clock());
+    Sleep(mseconds);
 }
 
 ///--------------students communication with B & D-------------------
@@ -257,14 +261,22 @@ int dequeueDQ(){
 ///----duplicate students---------
 int isAlreadyDuplicate(int id){
     int i;
+    int ans = 0;
+    pthread_mutex_lock(&lockDupStudents);
     for(i=0; i<lengthDupStudents; i++){
-        if(dupStudents[i]==id) return 1;
+        if(dupStudents[i]==id) {
+                ans = 1;
+                break;
+        }
     }
-    return 0;
+    pthread_mutex_unlock(&lockDupStudents);
+    return ans;
 }
 void addDuplicate(int id){
+    pthread_mutex_lock(&lockDupStudents);
     if(lengthDupStudents==DUP_STUDENTS_SIZE) {printf("Bug in addDuplicate"); return;}
     dupStudents[lengthDupStudents++] = id;
+    pthread_mutex_unlock(&lockDupStudents);
 }
 
 ///----duplicate filter ---------
@@ -311,14 +323,17 @@ int checkDupFilter(Student* stu){   ///returns 1 if approved. 0 otherwise
                 for(j=lengthDupFilter-1; j>=i; j--){              ///at first remove the occurrences after the first one
                     if(dupFilter[j]==id)
                         dupFilter[j] = dupFilter[--lengthDupFilter];
+
+                     //   printf("i'm stuck here\n");
                 }
-                addToDupFilter(id);
+                addDuplicate(id);  ///this was addToDupFilter(id), and that was the biggest bug of the code
                 break;
         }
     }
     dupFilter[index] = dupFilter[--lengthDupFilter];  ///remove the first occurrence irrespective of it is a duplicate or not
 
      pthread_mutex_unlock(&lockDupFilter);
+     //printf("i'm coming back\n");
      return val;  ///if not duplicate, then approve
 
 }
@@ -464,7 +479,7 @@ void * run_D(void * arg) {
                 strcpy(stu->password, pass);
                 setMeetAgain(stu, 0);
         }
-        else setMeetAgain(stu, NEXT_MEETING_TIME);
+        else setMeetAgain(stu, NEXT_MEETING_TIME+rand()%10);
     }
 }
 
@@ -484,9 +499,9 @@ void * run_Student(void *arg){
     while(1){
         enqueueDQ(stu);
 
-        pthread_mutex_lock(&lockConsole);
-        printf("Student %d has asked for password to Teacher D\n\n", id);
-        pthread_mutex_unlock(&lockConsole);
+     //   pthread_mutex_lock(&lockConsole);
+      //  printf("Student %d has asked for password to Teacher D\n\n", id);
+   //     pthread_mutex_unlock(&lockConsole);
 
         nextMeet = getMeetAgain(stu);
         if(nextMeet==0) break;
@@ -529,16 +544,63 @@ int main(void)
 	pthread_create(&D,NULL,run_D,(void*) &teacherNames[4] );
 
 	///-----------let's now create the student threads-----------------------------
-	for(i=1; i<=STU_PROCESS_COUNT; i++) {
-            int id = rand()%STU_COUNT+1;
+	int ids[STU_PROCESS_COUNT];
+
+	pthread_mutex_lock(&lockConsole);
+	printf("<New Students>: ");
+	for(i=0; i<STU_PROCESS_COUNT; i++){
+        ids[i]= rand()%STU_COUNT+1;
+        printf("%d ", ids[i]);
+	}
+	printf("\n\n\n");
+	pthread_mutex_unlock(&lockConsole);
+
+	sleep(2);
+
+	for(i=0; i<STU_PROCESS_COUNT; i++) {
+            int id=ids[i];
             pthread_t t;
             pthread_create(&t,NULL,run_Student,(void*) &id );
+	}
 
+
+	///let's take a nap
+	sleep(10);
+	 pthread_mutex_lock(&lockConsole);
+        printAppQ();
+        printDupFilter();
+        printDupStudents();
+        pthread_mutex_unlock(&lockConsole);
+    sleep(20);
+
+	///let's make some applications again---
+	pthread_mutex_lock(&lockConsole);
+	printf("\n\n<New Students>: ");
+	for(i=0; i<STU_PROCESS_COUNT/2; i++){
+        ids[i]= rand()%STU_COUNT+1;
+        printf("%d ", ids[i]);
+	}
+	printf("\n\n\n");
+	pthread_mutex_unlock(&lockConsole);
+
+	sleep(3);
+
+	for(i=0; i<STU_PROCESS_COUNT/2; i++) {
+            int id=ids[i];
+            pthread_t t;
+            pthread_create(&t,NULL,run_Student,(void*) &id );
 	}
 
 
 	while(1){
-        sleep(3);
+
+
+        pthread_mutex_lock(&lockConsole);
+        printAppQ();
+        printDupFilter();
+        printDupStudents();
+        pthread_mutex_unlock(&lockConsole);
+                sleep(20);
         //printf("i'm here");
 	};
 	return 0;
@@ -556,16 +618,38 @@ int main(void)
 
 
 
-
+void printAppQ(){
+    int i;
+    printf("\n\n<App Q>: ");
+    pthread_mutex_lock(&lockAppQ);
+    for(i=0; i<lengthAppQ; i++){
+        printf("%d ", appQ[(frontAppQ+i)%APPQ_SIZE]);
+    }
+    pthread_mutex_unlock(&lockAppQ);
+    printf("\n");
+}
 
 
 
 void printDupFilter(){
     int i;
-    printf("Dup filter: ");
+    printf("<Dup filter>: ");
+    pthread_mutex_lock(&lockDupFilter);
     for(i=0; i<lengthDupFilter; i++){
-        printf(" %d", dupFilter[i]);
+        printf("%d ", dupFilter[i]);
     }
-    printf("\n\n");
+      pthread_mutex_unlock(&lockDupFilter);
+    printf("\n");
 
+}
+
+void printDupStudents(){
+      int i;
+    printf("<Dup Students>: ");
+    pthread_mutex_lock(&lockDupStudents);
+    for(i=0; i<lengthDupStudents; i++){
+        printf("%d ", dupStudents[i]);
+    }
+      pthread_mutex_unlock(&lockDupStudents);
+    printf("\n\n");
 }
