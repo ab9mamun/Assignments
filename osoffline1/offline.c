@@ -58,6 +58,7 @@ typedef struct {
 
 ///------------formalities aka prototypes--------------------
 void generateAndAddPassword(int);
+void printDupFilter();
 
 
 ///-----------------------let's now define the containers------------------------------------
@@ -71,17 +72,20 @@ Password passwords[PASSWORD_LIST_SIZE];
 
 int frontBQ =0;
 int rearBQ =0;
+int lengthBQ=0;
 
 int frontAppQ =0;
 int rearAppQ =0;
+int lengthAppQ = 0;
 
 int lengthDupFilter =0;
 int lengthDupStudents = 0;
 
 int frontDQ = 0;
 int rearDQ =0;
+int lengthDQ = 0;
 
-int lengthPasswords;
+int lengthPasswords = 0;
 
 ///----------------let's declare some semaphores for the containers----------------------
 sem_t emptyAppQ;
@@ -96,6 +100,7 @@ pthread_mutex_t lockBQ;
 pthread_mutex_t lockDupFilter;
 pthread_mutex_t lockPasswords;
 pthread_mutex_t lockDQ;
+pthread_mutex_t lockConsole;
 
 ///---------------let's define an initiator for them---------------------------
 
@@ -114,6 +119,7 @@ void init_semaphore()
 	pthread_mutex_init(&lockBQ, 0);
 	pthread_mutex_init(&lockDupFilter, 0);
 	pthread_mutex_init(&lockPasswords, 0);
+	pthread_mutex_init(&lockConsole, 0);
 }
 
 ///----------define a library for windows users--------------------------------------
@@ -155,10 +161,11 @@ void enqueueAppQ(int id){
         sem_wait(&emptyAppQ);  ///wait for a place to be free in the queue--increase #empty
         pthread_mutex_lock(&lockAppQ);  ///aquire lock before writing on the queue
 
-        int newRear = (rearAppQ+1)%APPQ_SIZE;
-        if(newRear==frontAppQ) {printf("bug found at enqueueAppQ"); return;}     ///in any case if length>size
+        if(lengthAppQ==APPQ_SIZE) {printf("bug found at enqueueAppQ"); return;}     ///in any case if length>size
 
-        appQ[newRear] = id; ///insertion done
+        appQ[rearAppQ] = id;
+        rearAppQ= (rearAppQ+1)%APPQ_SIZE;
+         lengthAppQ++;        ///insertion done
 
 		pthread_mutex_unlock(&lockAppQ);  ///now unlock the queue
 		sem_post(&fullAppQ);  ///decrease #full
@@ -166,13 +173,14 @@ void enqueueAppQ(int id){
 
 int dequeueAppQ(){
         sem_wait(&fullAppQ);  ///wait for a place to be free in the queue--increase #empty
-		pthread_mutex_lock(&lockAppQ);  ///aquire lock before writing on the queue
+		pthread_mutex_lock(&lockAppQ);  ///acquire lock before writing on the queue
 
-		if(rearAppQ==frontAppQ) {printf("bug found at dequeueAppQ"); return;}     ///in any case if length<0
+		if(lengthAppQ==0) {printf("bug found at dequeueAppQ"); return;}     ///in any case if length<0
 
 
-       int id = appQ[frontAppQ]; ///dequeue successful
+       int id = appQ[frontAppQ];
         frontAppQ = (frontAppQ+1)%APPQ_SIZE;
+        lengthAppQ--; ///dequeue successful
 
 		pthread_mutex_unlock(&lockAppQ);  ///now unlock the queue
 		sem_post(&emptyAppQ);  ///decrease #full
@@ -184,12 +192,13 @@ int dequeueAppQ(){
 ///BQ methods -----------------
 void enqueueBQ(Student* stu){
         sem_wait(&emptyBQ);  ///wait for a place to be free in the queue--increase #empty
-        pthread_mutex_lock(&lockBQ);  ///aquire lock before writing on the queue
+        pthread_mutex_lock(&lockBQ);  ///acquire lock before writing on the queue
 
-        int newRear = (rearBQ+1)%BQ_SIZE;
-        if(newRear==frontBQ) {printf("bug found at enqueueBQ"); return;}     ///in any case if length>size
+        if(lengthBQ==BQ_SIZE) {printf("bug found at enqueueBQ"); return;}     ///in any case if length>size
 
-        BQ[newRear] = stu; ///insertion done
+        BQ[rearBQ] = stu;
+         rearBQ = (rearBQ+1)%BQ_SIZE;
+         lengthBQ++;        ///insertion done
 
 		pthread_mutex_unlock(&lockBQ);  ///now unlock the queue
 		sem_post(&fullBQ);  ///decrease #full
@@ -197,13 +206,14 @@ void enqueueBQ(Student* stu){
 
 int dequeueBQ(){
         sem_wait(&fullBQ);  ///wait for a place to be free in the queue--increase #empty
-		pthread_mutex_lock(&lockBQ);  ///aquire lock before writing on the queue
+		pthread_mutex_lock(&lockBQ);  ///acquire lock before writing on the queue
 
-		if(rearBQ==frontBQ) {printf("bug found at dequeueBQ"); return;}     ///in any case if length<0
+		if(lengthBQ==0) {printf("bug found at dequeueBQ"); return;}     ///in any case if length<0
 
 
-       Student* stu = BQ[frontBQ]; ///dequeue successful
+       Student* stu = BQ[frontBQ];
         frontBQ = (frontBQ+1)%BQ_SIZE;
+        lengthBQ--; ///dequeue successful
 
 		pthread_mutex_unlock(&lockBQ);  ///now unlock the queue
 		sem_post(&emptyBQ);  ///decrease #full
@@ -217,10 +227,11 @@ void enqueueDQ(Student* stu){
         sem_wait(&emptyDQ);  ///wait for a place to be free in the queue--increase #empty
         pthread_mutex_lock(&lockDQ);  ///aquire lock before writing on the queue
 
-        int newRear = (rearDQ+1)%DQ_SIZE;
-        if(newRear==frontDQ) {printf("bug found at enqueueDQ"); return;}     ///in any case if length>size
+        if(lengthDQ==DQ_SIZE) {printf("bug found at enqueueDQ"); return;}     ///in any case if length>size
 
-        DQ[newRear] = stu; ///insertion done
+         DQ[rearDQ] = stu;
+        rearDQ = (rearDQ+1)%DQ_SIZE;
+        lengthDQ++;  ///insertion done
 
 		pthread_mutex_unlock(&lockDQ);  ///now unlock the queue
 		sem_post(&fullDQ);  ///decrease #full
@@ -230,11 +241,12 @@ int dequeueDQ(){
         sem_wait(&fullDQ);  ///wait for a place to be free in the queue--increase #empty
 		pthread_mutex_lock(&lockDQ);  ///aquire lock before writing on the queue
 
-		if(rearDQ==frontDQ) {printf("bug found at dequeueDQ"); return;}     ///in any case if length<0
+		if(lengthDQ==0) {printf("bug found at dequeueDQ"); return;}     ///in any case if length<0
 
 
-       Student* stu = DQ[frontDQ]; ///dequeue successful
-        frontBQ = (frontDQ+1)%DQ_SIZE;
+       Student* stu = DQ[frontDQ];
+        frontDQ = (frontDQ+1)%DQ_SIZE;
+        lengthDQ--;   ///dequeue successful
 
 		pthread_mutex_unlock(&lockDQ);  ///now unlock the queue
 		sem_post(&emptyDQ);  ///decrease #full
@@ -261,7 +273,7 @@ void addToDupFilter(int id){
     pthread_mutex_lock(&lockDupFilter);
 
     if(lengthDupFilter==DUP_FILTER_SIZE) {printf("Bug in addToDupFilter");return;}
-    dupStudents[lengthDupFilter++] = id;
+    dupFilter[lengthDupFilter++] = id;
 
     pthread_mutex_unlock(&lockDupFilter);
 }
@@ -331,9 +343,11 @@ int getPassword(int id, char whereToSave[]){
             if(passwords[i].stdId==id){
 
                 strcpy(whereToSave, passwords[i].password);
+                passwords[i] = passwords[--lengthPasswords];
+                found =1;
+                break;
             }
-            found =1;
-            break;
+
     }
     pthread_mutex_unlock(&lockPasswords);
     return found;
@@ -358,9 +372,9 @@ void generateAndAddPassword(int id){
         if(c<10) ///it's a number
             c+= '0';
         else if(c<36)
-            c+= 'A';
+            c+= 'A' -10;
         else
-            c+= 'a';
+            c+= 'a'-36;
 
         buffer[i] = c;
     }
@@ -389,7 +403,12 @@ void * run_ACE(void * arg) {
     while(1){
             id = dequeueAppQ();
             addToDupFilter(id);
+
+            pthread_mutex_lock(&lockConsole);
             printf("Teacher %c has approved the application of Student %d\n\n", name, id);
+            pthread_mutex_unlock(&lockConsole);
+
+            sleep(2);
     }
 
 }
@@ -401,25 +420,32 @@ void * run_B(void * arg) {
      int approved;
      while(1){
 
-        sleep(3);
+        sleep(5);
 
         stu = dequeueBQ();
         id = stu->id;
+      //  printDupFilter();
         approved = checkDupFilter(stu);
 
         if(approved==APPROVED_BY_B) {
+                pthread_mutex_lock(&lockConsole);
                 printf("-----------------------------------------------------------------------------------------\n\
-                       <APPROVED> Teacher %c has approved the application of Student %d\n\
-                       -----------------------------------------------------------------------------------------\n", name, id);
+<APPROVED> Teacher %c has approved the application of Student %d\n\
+-----------------------------------------------------------------------------------------\n", name, id);
+                pthread_mutex_unlock(&lockConsole);
                 generateAndAddPassword(id);
         }
         else if(approved==DUPLICATE_FOUND_BY_B){
+            pthread_mutex_lock(&lockConsole);
                  printf("-----------------------------------------------------------------------------------------\n\
-                       <REJECTED> Teacher %c has found duplicate applications from Student %d\n\
-                       -----------------------------------------------------------------------------------------\n", name, id);
+<REJECTED> Teacher %c has found duplicate applications from Student %d\n\
+-----------------------------------------------------------------------------------------\n", name, id);
+                pthread_mutex_unlock(&lockConsole);
         }
         else {
+            pthread_mutex_lock(&lockConsole);
                 printf("Teacher %c has not found the application of Student %d\n\n", name, id);
+            pthread_mutex_unlock(&lockConsole);
         }
      }
 }
@@ -457,16 +483,22 @@ void * run_Student(void *arg){
     }
     while(1){
         enqueueDQ(stu);
-        printf("Student %d has asked for password to Teacher D", id);
+
+        pthread_mutex_lock(&lockConsole);
+        printf("Student %d has asked for password to Teacher D\n\n", id);
+        pthread_mutex_unlock(&lockConsole);
+
         nextMeet = getMeetAgain(stu);
         if(nextMeet==0) break;
 
 
         sleep(nextMeet);
     }
+    pthread_mutex_lock(&lockConsole);
     printf("-----------------------------------------------------------------------------------------\n\
-                       <SUCCESS> Student %d has got password: %s\n\
-                       -----------------------------------------------------------------------------------------\n", id, stu->password);
+<SUCCESS> Student %d has got password: %s\n\
+-----------------------------------------------------------------------------------------\n", id, stu->password);
+    pthread_mutex_unlock(&lockConsole);
 
 }
 
@@ -510,4 +542,30 @@ int main(void)
         //printf("i'm here");
 	};
 	return 0;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+void printDupFilter(){
+    int i;
+    printf("Dup filter: ");
+    for(i=0; i<lengthDupFilter; i++){
+        printf(" %d", dupFilter[i]);
+    }
+    printf("\n\n");
+
 }
