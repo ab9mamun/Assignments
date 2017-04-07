@@ -12,7 +12,7 @@ Assumptions:
 #include <string.h>
 #include<pthread.h>
 #include<semaphore.h>
-#include <windows.h>
+//#include <windows.h>
 #include<stdlib.h>
 #include <time.h>
 #include<unistd.h>
@@ -126,14 +126,14 @@ void init_semaphore()
 }
 
 ///----------define a library for windows users--------------------------------------
-void sleep(unsigned int seconds)
+/**void sleep(unsigned int seconds)
 {
     int mseconds = seconds*1000;
    // clock_t goal = mseconds + clock();
     //while (goal > clock());
     Sleep(mseconds);
 }
-
+**/
 ///--------------students communication with B & D-------------------
 void setMeetAgain(Student* stu, int nextTime){
     sem_wait(&(stu->empty));
@@ -179,7 +179,7 @@ int dequeueAppQ(){
         sem_wait(&fullAppQ);  ///wait for a place to be free in the queue--increase #empty
 		pthread_mutex_lock(&lockAppQ);  ///acquire lock before writing on the queue
 
-		if(lengthAppQ==0) {printf("bug found at dequeueAppQ"); return;}     ///in any case if length<0
+		if(lengthAppQ==0) {printf("bug found at dequeueAppQ"); return -1;}     ///in any case if length<0
 
 
        int id = appQ[frontAppQ];
@@ -208,11 +208,11 @@ void enqueueBQ(Student* stu){
 		sem_post(&fullBQ);  ///decrease #full
 }
 
-int dequeueBQ(){
+Student* dequeueBQ(){
         sem_wait(&fullBQ);  ///wait for a place to be free in the queue--increase #empty
 		pthread_mutex_lock(&lockBQ);  ///acquire lock before writing on the queue
 
-		if(lengthBQ==0) {printf("bug found at dequeueBQ"); return;}     ///in any case if length<0
+		if(lengthBQ==0) {printf("bug found at dequeueBQ"); return 0;}     ///in any case if length<0
 
 
        Student* stu = BQ[frontBQ];
@@ -241,11 +241,11 @@ void enqueueDQ(Student* stu){
 		sem_post(&fullDQ);  ///decrease #full
 }
 
-int dequeueDQ(){
+Student* dequeueDQ(){
         sem_wait(&fullDQ);  ///wait for a place to be free in the queue--increase #empty
 		pthread_mutex_lock(&lockDQ);  ///aquire lock before writing on the queue
 
-		if(lengthDQ==0) {printf("bug found at dequeueDQ"); return;}     ///in any case if length<0
+		if(lengthDQ==0) {printf("bug found at dequeueDQ"); return 0;}     ///in any case if length<0
 
 
        Student* stu = DQ[frontDQ];
