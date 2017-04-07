@@ -132,23 +132,23 @@ void sleep(unsigned int seconds)
 
 ///--------------students communication with B & D-------------------
 void setMeetAgain(Student* stu, int nextTime){
-    sem_wait(&stu->empty);
+    sem_wait(&(stu->empty));
     pthread_mutex_lock(&stu->lock);
 
     stu->meetAgainAfter = nextTime;
 
-    pthread_mutex_unlock(&stu->lock);
-    sem_post(&stu->full);
+    pthread_mutex_unlock(&(stu->lock));
+    sem_post(&(stu->full));
 }
 
 int getMeetAgain(Student* stu){
-    sem_wait(&stu->full);
-    pthread_mutex_lock(&stu->lock);
+    sem_wait(&(stu->full));
+    pthread_mutex_lock(&(stu->lock));
 
     int x = stu->meetAgainAfter;
 
-    pthread_mutex_unlock(&stu->lock);
-    sem_post(&stu->empty);
+    pthread_mutex_unlock(&(stu->lock));
+    sem_post(&(stu->empty));
 
     return x;
 }
@@ -284,7 +284,7 @@ int checkDupFilter(Student* stu){   ///returns 1 if approved. 0 otherwise
 
     if(isAlreadyDuplicate(id)) {
             setMeetAgain(stu, 0);
-            return NOT_FOUND_BY_B;
+            return DUPLICATE_FOUND_BY_B;
     }
 
     pthread_mutex_lock(&lockDupFilter);
@@ -302,7 +302,7 @@ int checkDupFilter(Student* stu){   ///returns 1 if approved. 0 otherwise
     if(index<0) {
         pthread_mutex_unlock(&lockDupFilter);
         setMeetAgain(stu, NEXT_MEETING_TIME);
-        return ;  ///as not found, next meeting is needed...
+        return NOT_FOUND_BY_B ;  ///as not found, next meeting is needed...
     }
     for(i=index+1; i<lengthDupFilter; i++){
         if(dupFilter[i]==id){   ///duplicate entry found-----------------------------------
@@ -388,9 +388,9 @@ void generateAndAddPassword(int id){
 void init_student(Student* stu){
     stu->meetAgainAfter = 0;
 
-    sem_init(&stu->empty, 0, 1);
-    sem_init(&stu->full, 0, 0);
-    pthread_mutex_init(&stu->lock,0);
+    sem_init(&(stu->empty), 0, 1);
+    sem_init(&(stu->full), 0, 0);
+    pthread_mutex_init(&(stu->lock),0);
 }
 
 
