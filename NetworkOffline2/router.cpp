@@ -9,6 +9,7 @@
 #include "RoutingInfo.h"
 #include "ReceiveSocket.h"
 #include "SendSocket.h"
+#include "HashTable.h"
 
 //let's define some macros
 #define DRIVER_IP "192.168.10.100"
@@ -29,8 +30,8 @@ using namespace std;
 
 class Router{
     ReceiveSocket* receiveSocket;
-    map<string, SendSocket*> sendSockets;
-    map<string, RoutingInfo*> routingTable;
+    StringHashTable<SendSocket>* sendSockets;
+    StringHashTable<RoutingInfo>* routingTable;
 
     string myIp;
     unsigned short myPort;
@@ -44,6 +45,7 @@ class Router{
 
 
 public:
+
     Router(string myIp,unsigned short myPort, string driverIp, vector<string> allRouters, vector<pair<string, int> > neighborInfo){
 
         this->myIp = myIp;
@@ -53,15 +55,20 @@ public:
 
 
         ///-----------------initialize the routing table-----------------------------
+
+        routingTable = new StringHashTable<RoutingInfo>(61);
+
         for(int i=0; i<allRouters.size(); i++){
 
             string ip = allRouters[i];
             RoutingInfo* info = new RoutingInfo(ip);
 
-            routingTable.insert(pair<string, RoutingInfo*> (ip, info));
+            routingTable->put(ip, info);
         }
 
         ///----------------create sockets for neighbors----------------------------
+        sendSockets = new StringHashTable<SendSocket>(17);
+
         receiveSocket = new ReceiveSocket(myIp, myPort);
         sockfd = receiveSocket->getSockfd();
 
@@ -69,11 +76,13 @@ public:
             string ip = neighborInfo[i].first;
             SendSocket* sock = new SendSocket(sockfd, ip, myPort);
 
+            cout<<ip<<" "<<sock<<endl;
+
             neighbors.push_back(ip);
-            sendSockets.insert(pair<string, SendSocket*>(ip, sock));
+            sendSockets->put(ip, sock);
 
             int distance = neighborInfo[i].second;
-            routingTable.find(ip)->second->update(distance, ip);  ///update in routing table for the neighbor...
+            routingTable->get(ip)->update(distance, ip);  ///update in routing table for the neighbor...
         }
 
         printRoutingTable();
@@ -87,12 +96,14 @@ public:
         while(true){
             Packet packet = receiveSocket->receivePacket();
 
+            cout<<packet.getSenderIp()<<" "<<packet.getMessage()<<endl;
+
             if(packet.getSenderIp()==DRIVER_IP) {
-                cout<<"got message from driver"<<endl;
+               // cout<<"got message from driver"<<endl;
                 followInstruction(packet.getMessage());
             }
 
-            cout<<packet.getSenderIp()<<" "<<packet.getMessage()<<endl;
+
         }
 
     }
@@ -108,24 +119,28 @@ public:
 
 void Router::followInstruction(string message){
 
-    printRoutingTable();
+   // printRoutingTable();
+   sendMessage(allRouters[1], message);
 }
 
 
 void Router::updateRoutingTable(Packet packet){
 
 }
-void Router::sendMessage(string ip, string message){
+void Router::sendMessage(string ip, string message){  ///this function is giving segmentation fault.. need to solve this.
 
-    SendSocket* socket = sendSockets.find(ip)->second;
-    socket->sendMessage(message);
+  //  SendSocket* socket = sendSockets.find(ip)->second;
+   // cout<<ip<<" "<<socket<<endl;
+   // socket->sendMessage(message);  ///actually this is where we are getting segmentation fault
 }
 
 void Router::printRoutingTable(){
+    cout<<"======================================"<<endl;
     cout<<"Routing table of "<<myIp<<": "<<endl;
     for(int i=0; i<allRouters.size(); i++){
-        cout<<routingTable.find(allRouters[i])->second->toString()<<endl;
+        cout<<routingTable->get(allRouters[i])->toString()<<endl;
     }
+    cout<<"======================================"<<endl;
 
 }
 
@@ -154,6 +169,7 @@ int main(int argc, char** argv){
 	vector<string> allRouters;
 	vector< pair<string, int> > neighborInfo;
 
+	///populating with some fake data-------------------------
 	for(int i=0; i<10; i++){
         stringstream ss;
         ss<<"192.168.10."<<(i+2);
@@ -165,30 +181,11 @@ int main(int argc, char** argv){
         }
 	}
 
+	///now time to start the router, it will do rest of the works--------------------------
+
 	Router* router = new Router(argv[1], DEFAULT_PORT, DRIVER_IP,allRouters,neighborInfo);
 
 	router->start();
-
-	//ReceiveSocket* mySocket = new ReceiveSocket(argv[1], DEFAULT_PORT);
-	//cout<<mySocket->getIp()<<" "<<mySocket->getPort()<<endl;
-	//setupMySocketAndBind(argv[1]);
-
-   // exit(0);
-/*	while(true){
-		Packet packet = mySocket->receivePacket();
-
-		if(packet.getSenderIp()==DRIVER_IP) {
-			cout<<"got message from driver"<<endl;
-			//followInstruction(message);
-		}
-
-		cout<<packet.getSenderIp()<<" "<<packet.getMessage()<<endl;
-		//cout<<<<endl;
-
-		//if(strcmp(buffer,"shutdown")==0)break;
-
-	}
-	*/
 
 	return 0;
 
