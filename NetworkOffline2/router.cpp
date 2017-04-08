@@ -28,14 +28,35 @@ using namespace std;
 
 
 class Router{
-    map <string, SendSocket*> sockets;
+    ReceiveSocket* receiveSocket;
+    map<string, SendSocket*> sendSockets;
+
     RoutingTable table;
 
+    string myIp;
+    unsigned short myPort;
+
+
+    string driverIp;
+    vector<string> neighbors;
+
+
+
 public:
+    Router(string myIp,unsigned short myPort, string driverIp, vector<string> allRouters, vector<pair<string, string> > neighbors){
+
+        this->myIp = myIp;
+        this->myPort = myPort;
+        this->driverIp = driverIp;
+
+        receiveSocket = new ReceiveSocket(myIp, myPort);
+
+    }
 
     void followInstruction(string message);
     void updateRoutingTable(Packet packet);
     void sendMessage(string ip, string message);
+    void sendRoutingTableToNeighbors();
 
 };
 
@@ -45,14 +66,30 @@ void Router::followInstruction(string message){
 
 }
 
+
 void Router::updateRoutingTable(Packet packet){
 
 }
 void Router::sendMessage(string ip, string message){
 
-    SendSocket* socket = sockets.find(ip)->second;
+    SendSocket* socket = sendSockets.find(ip)->second;
     socket->sendMessage(message);
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 int main(int argc, char** argv){
 
