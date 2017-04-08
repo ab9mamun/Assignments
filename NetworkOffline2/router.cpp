@@ -7,67 +7,79 @@
 
 #include <string>
 #include "RoutingTable.h"
-#include "util.h"
+#include "ReceiveSocket.h"
+#include "SendSocket.h"
+
+//let's define some macros
+#define DRIVER_IP "192.168.10.100"
+#define DEFAULT_PORT 4747
+
+
+
 
 using namespace std;
 
 ///----------------------formalities aka prototypes--------------------
-string getStringIp(unsigned int);
+
 
 //-----
+///---------------------global variables----------------------------------
 
 
 
-int main(){
+class Router{
+    map <string, SendSocket*> sockets;
+    RoutingTable table;
 
-	string message;
-	unsigned short port;
-	string ip;
-	unsigned u_address;
+public:
 
-	int sockfd; 
-	int bind_flag;
-	int bytes_received;
-	socklen_t addrlen;
-	char buffer[1024];
-	struct sockaddr_in server_address;
-	struct sockaddr_in client_address;
+    void followInstruction(string message);
+    void updateRoutingTable(Packet packet);
+    void sendMessage(string ip, string message);
+
+};
 
 
+void Router::followInstruction(string message){
 
 
-	server_address.sin_family = AF_INET;
-	server_address.sin_port = htons(4747);
-	inet_pton(AF_INET,"192.168.10.1", &server_address.sin_addr);
-	
-	sockfd = socket(AF_INET, SOCK_DGRAM, 0);
-	
-	bind_flag = bind(sockfd, (struct sockaddr*) &server_address, sizeof(sockaddr_in));
-	
-	if(bind_flag==0)printf("successful bind\n");
+}
 
+void Router::updateRoutingTable(Packet packet){
+
+}
+void Router::sendMessage(string ip, string message){
+
+    SendSocket* socket = sockets.find(ip)->second;
+    socket->sendMessage(message);
+}
+
+int main(int argc, char** argv){
+
+	if(argc<3){
+		cout<<"Try executing with "<<argv[0]<<" <IP> <topo>\n";
+		exit(1);
+	}
+
+	//Router* router = new Router(argv[1], DEFAULT_PORT);
+
+	ReceiveSocket* mySocket = new ReceiveSocket(argv[1], DEFAULT_PORT);
+	cout<<mySocket->getIp()<<" "<<mySocket->getPort()<<endl;
+	//setupMySocketAndBind(argv[1]);
+
+   // exit(0);
 	while(true){
-		bytes_received = recvfrom(sockfd, buffer, 1024, 0, (struct sockaddr*) &client_address, &addrlen);
-		
-		message = "";
-		message += buffer;
-		
-		u_address = client_address.sin_addr.s_addr;
+		Packet packet = mySocket->receivePacket();
 
-		ip = getStringIp(u_address);
+		if(packet.getSenderIp()==DRIVER_IP) {
+			cout<<"got message from driver"<<endl;
+			//followInstruction(message);
+		}
 
-		port = ntohs(client_address.sin_port);
-		
-		
-		//printf("[%s:%hu]: %s\n", inet_ntoa(client_address.sin_addr), ntohs(client_address.sin_port), buffer);
-		
-		//printf("%hu\n",client_address.sin_port);
-		//printf("%u\n",client_address.sin_addr.s_addr);
-		
-		cout<<ip<<" "<<port<<" "<<message<<endl;
+		cout<<packet.getSenderIp()<<" "<<packet.getMessage()<<endl;
 		//cout<<<<endl;
 
-		if(strcmp(buffer,"shutdown")==0)break;		
+		//if(strcmp(buffer,"shutdown")==0)break;
 
 	}
 
