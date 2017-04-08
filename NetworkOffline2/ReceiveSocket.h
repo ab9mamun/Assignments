@@ -52,5 +52,6 @@ public:
 
 	string getIp(){return ip;}
 	unsigned short getPort(){return port;}
+	int getSockfd(){return sockfd;}
 };
 
