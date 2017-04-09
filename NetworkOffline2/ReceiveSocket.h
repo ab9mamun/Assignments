@@ -15,7 +15,7 @@ class ReceiveSocket{
     int sockfd;
     socklen_t addrlen;
 
-    char buffer[1024];
+    //char buffer[1024];
 
 
 
@@ -41,7 +41,11 @@ public:
 
 	Packet receivePacket(){
         struct sockaddr_in yourAddress;
+        char buffer[1024];
         int bytes_received = recvfrom(sockfd, buffer, 1024, 0, (struct sockaddr*) &yourAddress, &addrlen);
+
+        buffer[bytes_received] = 0;
+
         unsigned int u_address = yourAddress.sin_addr.s_addr;
         string sender = getStringIp(u_address);
 

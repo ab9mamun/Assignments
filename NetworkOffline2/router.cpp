@@ -100,7 +100,10 @@ public:
 
             if(packet.getSenderIp()==DRIVER_IP) {
                // cout<<"got message from driver"<<endl;
-                followInstruction(packet.getMessage());
+                followDriverInstruction(packet.getMessage());
+            }
+            else {
+                followRouterInstruction(packet.getSenderIp(), packet.getMessage());
             }
 
 
@@ -108,20 +111,54 @@ public:
 
     }
 
-    void followInstruction(string message);
+    void followDriverInstruction(string message);
     void updateRoutingTable(Packet packet);
     void sendMessage(string ip, string message);
     void sendRoutingTableToNeighbors();
     void printRoutingTable();
+    void followRouterInstruction(string sender, string message);
 
 };
 
 
-void Router::followInstruction(string message){
+void Router::followDriverInstruction(string message){
+
+
+    if(message[0]=='s'){
+        if(message[1]=='e' && message[2]=='n' && message[3]=='d'){
+            cout<<"Driver says send"<<endl;
+            ///todo
+        }
+        else if(message[1]=='h' && message[2]=='o' && message[3]=='w'){
+            cout<<"Driver says show"<<endl;
+            printRoutingTable();
+        }
+        else {cout<<"Invalid message from driver";}
+    }
+    else if(message[0]=='c'){
+        if(message[1]=='o' && message[2]=='s' && message[3]=='t'){
+            cout<<"Driver says cost"<<endl;
+           /// updateCostOfRouting
+        }
+        else if(message[1]=='l' && message[2]=='k'){
+            cout<<"Driver says clk"<<endl;
+
+            sendRoutingTableToNeighbors();
+        }
+        else {cout<<"Invalid message from driver";}
+    }
+    else {cout<<"Invalid message from driver";}
 
    // printRoutingTable();
-   sendMessage(allRouters[1], message);
+//   sendMessage(allRouters[1], message);
 }
+
+void Router::followRouterInstruction(string sender, string message){
+    if(message[0]=='r' && message[1]=='t'){
+
+    }
+}
+
 
 
 void Router::updateRoutingTable(Packet packet){
@@ -129,9 +166,10 @@ void Router::updateRoutingTable(Packet packet){
 }
 void Router::sendMessage(string ip, string message){  ///this function is giving segmentation fault.. need to solve this.
 
-  //  SendSocket* socket = sendSockets.find(ip)->second;
+    SendSocket* socket = sendSockets->get(ip);
+    if(socket==null) {cout<<"socket not found\n"; return;}
    // cout<<ip<<" "<<socket<<endl;
-   // socket->sendMessage(message);  ///actually this is where we are getting segmentation fault
+    socket->sendMessage(message);  ///actually this is where we are getting segmentation fault
 }
 
 void Router::printRoutingTable(){
@@ -145,14 +183,9 @@ void Router::printRoutingTable(){
 }
 
 
+void Router::sendRoutingTableToNeighbors(){
 
-
-
-
-
-
-
-
+}
 
 
 
@@ -176,9 +209,9 @@ int main(int argc, char** argv){
         string s = ss.str();
 
         allRouters.push_back(s);
-        if(i%3==0){
+       // if(i%3==0){
             neighborInfo.push_back(pair<string, int>(s, (i+7)%5));
-        }
+        //}
 	}
 
 	///now time to start the router, it will do rest of the works--------------------------
