@@ -96,11 +96,11 @@ public:
         while(true){
             Packet packet = receiveSocket->receivePacket();
 
-            cout<<packet.getSenderIp()<<" "<<packet.getMessage()<<endl;
+           // cout<<packet.getSenderIp()<<" "<<packet.getMessage()<<endl;
 
             if(packet.getSenderIp()==DRIVER_IP) {
                // cout<<"got message from driver"<<endl;
-                followDriverInstruction(packet.getMessage());
+                followDriverInstruction(packet);
             }
             else {
                 followRouterInstruction(packet.getSenderIp(), packet.getMessage());
@@ -111,7 +111,7 @@ public:
 
     }
 
-    void followDriverInstruction(string message);
+    void followDriverInstruction(Packet packet);
     void updateRoutingTable(Packet packet);
     void sendMessage(string ip, string message);
     void sendRoutingTableToNeighbors();
@@ -121,42 +121,44 @@ public:
 };
 
 
-void Router::followDriverInstruction(string message){
+void Router::followDriverInstruction(Packet packet){
 
+    string message = packet.getMessage();
+    vector<unsigned char> bytes = packet.getBytes();
+    //vector<string> params = split(message, ' ');
+    if(startsWith(message,"send")){
+        cout<<"Driver says send"<<endl;
+        string ip1 = extractIpFromBytes(bytes, 4);
+        string ip2 = extractIpFromBytes(bytes, 8);
+        unsigned short msgLength = (unsigned short) extractIntFromBytes(bytes, 12, 2);
+        string msg = extractStringFromBytes(bytes, 14, msgLength);
 
-    if(message[0]=='s'){
-        if(message[1]=='e' && message[2]=='n' && message[3]=='d'){
-            cout<<"Driver says send"<<endl;
-            ///todo
-        }
-        else if(message[1]=='h' && message[2]=='o' && message[3]=='w'){
-            cout<<"Driver says show"<<endl;
-            printRoutingTable();
-        }
-        else {cout<<"Invalid message from driver";}
+        cout<<ip1<<" "<<ip2<<" "<<msgLength<<" "<<msg<<endl;
+
     }
-    else if(message[0]=='c'){
-        if(message[1]=='o' && message[2]=='s' && message[3]=='t'){
-            cout<<"Driver says cost"<<endl;
-           /// updateCostOfRouting
-        }
-        else if(message[1]=='l' && message[2]=='k'){
-            cout<<"Driver says clk"<<endl;
-
-            sendRoutingTableToNeighbors();
-        }
-        else {cout<<"Invalid message from driver";}
+    else if(startsWith(message, "show")){
+        cout<<"Driver says show"<<endl;
+        cout<<extractIpFromBytes(bytes, 4)<<endl;
     }
-    else {cout<<"Invalid message from driver";}
+    else if(startsWith(message, "cost")){
+
+        cout<<"Driver says cost"<<endl;
+        string ip1 = extractIpFromBytes(bytes, 4);
+        string ip2 = extractIpFromBytes(bytes, 8);
+        int cost = extractIntFromBytes(bytes, 12);
+        cout<<ip1<<" "<<ip2<<" "<<cost<<endl;
+    }
+    else if(startsWith(message, "clk")){
+        cout<<"Driver says "<<message<<endl;
+
+    }
 
    // printRoutingTable();
 //   sendMessage(allRouters[1], message);
 }
 
 void Router::followRouterInstruction(string sender, string message){
-    if(message[0]=='r' && message[1]=='t'){
 
-    }
 }
 
 

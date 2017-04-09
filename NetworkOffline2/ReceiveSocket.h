@@ -17,15 +17,6 @@ class ReceiveSocket{
 
     //char buffer[1024];
 
-
-
-
-    string getStringIp(unsigned u_address){
-	stringstream ss;
-	ss<<(u_address&0xff)<<"."<<((u_address&0xff00)>>8)<<"."<<((u_address&0xff0000)>>16)<<"."<<((u_address&0xff000000)>>24);
-	return ss.str();
-}
-
 public:
 	ReceiveSocket(string ip, unsigned short port) {
         this->ip = ip;
@@ -49,7 +40,7 @@ public:
         unsigned int u_address = yourAddress.sin_addr.s_addr;
         string sender = getStringIp(u_address);
 
-        Packet pack(sender, buffer);
+        Packet pack(sender, buffer,bytes_received);
         return pack;
 	}
 
