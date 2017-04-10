@@ -32,12 +32,8 @@ public:
         int sent_bytes=sendto(sockfd, message.c_str(), message.length(), 0, (struct sockaddr*) &receiverAddress, sizeof(sockaddr_in));
 
     }
-    void sendBytes(vector<unsigned char> bytes){
-        char buffer[1024];
+    void sendBytes(char* buffer, int length){
 
-        for(int i=0; i<bytes.size(); i++){
-            buffer[i]= (char) bytes[i];
-        }
      //   cout<<buffer[0]<<buffer[1]<<endl;
         //cout<<bytes.size()<<endl;
         /*for(int i=2; i<bytes.size(); i+=4){
@@ -48,7 +44,7 @@ public:
             x.bytes[3] = buffer[i+3];
             cout<<x.number<<" ";
         }*/
-        int sent_bytes=sendto(sockfd, buffer, bytes.size(), 0, (struct sockaddr*) &receiverAddress, sizeof(sockaddr_in));
+        int sent_bytes=sendto(sockfd, buffer, length, 0, (struct sockaddr*) &receiverAddress, sizeof(sockaddr_in));
         //cout<<sent_bytes<<endl;
     }
 

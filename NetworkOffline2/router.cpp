@@ -225,11 +225,16 @@ void Router::sendRoutingTableToNeighbors(){
 
     bytes.insert(bytes.end(), tableData.begin(), tableData.end());
 
+    char buff[1024];
+    for(int i=0; i<bytes.size(); i++){
+        buff[i] = bytes[i];
+    }
+
    for(int i=0; i<neighbors.size();i++){
         SendSocket* sock = sendSockets->get(neighbors[i]);
 
         if(i==0 && sock!=null)
-            sock->sendBytes(bytes);
+            sock->sendBytes(buff, bytes.size());
     }
 
 }
