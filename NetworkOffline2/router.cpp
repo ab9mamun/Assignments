@@ -231,7 +231,7 @@ void Router::updateUsingNeighborsTable(string neighbor, vector<unsigned char> by
         int length = extractIntFromBytes(bytes, offset);
         offset+= 4;
        // cout<<length<<endl;
-        cout<<"Got routing table of "<<neighbor<<":\n";
+       // cout<<"Got routing table of "<<neighbor<<":\n";
         for(int i=0; i<length; i++){
             string destination = getStringIp(extractIntFromBytes(bytes, offset));
             int distance = extractIntFromBytes(bytes, offset+4);
@@ -320,7 +320,8 @@ int main(int argc, char** argv){
 		exit(1);
 	}
 
-	string myIp = argv[1];
+	string myIp="";
+	myIp += argv[1];
 
     ifstream topo(argv[2]);
 
@@ -333,18 +334,36 @@ int main(int argc, char** argv){
 	string ip1, ip2;
 	int distance;
 
-	while(topo){
-        topo>>ip1>>ip2>>distance;
+	 string line;
+
+    if (topo.is_open()) {
+        while ( getline (topo,line) ){
+
+          vector<string> v = split(line, ' ');
+            if(v.size()!=3){ cout<<"faulty file. "<<endl; exit(1);}
+
+          ip1 = v[0];
+          ip2 = v[1];
+          distance = atoi(v[2].c_str());
+
+
         if(ip1!=myIp) routerSet.insert(ip1);
         if(ip2!=myIp) routerSet.insert(ip2);
 
         if(ip1==myIp) neighbors.push_back(pair<string, int> (ip2, distance));
         else if(ip2==myIp) neighbors.push_back(pair<string, int> (ip1, distance));
-       // cout<<ip1<<" "<<ip2<<" "<<distance<<endl;
+
+        }
+        topo.close();
     }
-    topo.close();
+    else {cout << "Unable to open file\n"; exit(1);}
+
 
     allRouters.insert(allRouters.begin(), routerSet.begin(), routerSet.end());
+
+  //  for(int i=0; i<neighbors.size(); i++){
+       // cout<<neighbors[i].first<<" "<<neighbors[i].second<<endl;
+  //  }
 
 	///now time to start the router, it will do rest of the works--------------------------
 

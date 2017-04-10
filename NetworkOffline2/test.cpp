@@ -9,23 +9,34 @@ int main(){
     vector<pair<string, int> > neighbors;
     set<string> routerSet;
     vector<string> allRouters;
-    string myIp = "192.168.10.1";
+    string myIp="192.168.10.4";
 
     ifstream topo("topo.txt");
     string ip1, ip2;
     int distance;
+    string line;
+
+    if (topo.is_open()) {
+        while ( getline (topo,line) ){
+
+          vector<string> v = split(line, ' ');
+            if(v.size()!=3){ cout<<"faulty file. "<<endl; exit(1);}
+
+          ip1 = v[0];
+          ip2 = v[1];
+          distance = atoi(v[2].c_str());
 
 
-    while(topo){
-        topo>>ip1>>ip2>>distance;
         if(ip1!=myIp) routerSet.insert(ip1);
         if(ip2!=myIp) routerSet.insert(ip2);
 
         if(ip1==myIp) neighbors.push_back(pair<string, int> (ip2, distance));
         else if(ip2==myIp) neighbors.push_back(pair<string, int> (ip1, distance));
-       // cout<<ip1<<" "<<ip2<<" "<<distance<<endl;
+
+        }
+        topo.close();
     }
-    topo.close();
+    else {cout << "Unable to open file\n"; exit(1);}
 
     allRouters.insert(allRouters.begin(), routerSet.begin(), routerSet.end());
 
