@@ -111,8 +111,10 @@ public:
 
     }
 
+    bool dvrUpdate(string neighbor, string destination, int distance, string nextHop);
+
     void followDriverInstruction(Packet packet);
-    void updateRoutingTable(Packet packet);
+    void updateUsingNeighborsTable(string neighbor, vector<unsigned char> bytes, int whereToStart);
     void sendMessage(string ip, string message);
     void sendBytes(string ip, vector<unsigned char> bytes);
     void sendRoutingTableToNeighbors();
@@ -122,6 +124,38 @@ public:
 
 
 };
+
+
+
+
+
+
+bool Router::dvrUpdate(string neighbor, string destination, int distance, string nextHop){
+
+    RoutingInfo* info = routingTable->get(destination);
+    int myOldDistance = info->getDistance();
+    string myOldNextHop = info->getNextHop();
+
+
+    int myNewDistance = routingTable->get(neighbor)->getDistance() + distance;
+
+    if(myNewDistance>INF) myNewDistance = INF;
+
+    if(myOldNextHop == neighbor ///***********important::: forced update
+        || (myNewDistance < myOldDistance
+            && myIp != nextHop) ///***********important::: split horizon
+    ){
+
+     info->update(myNewDistance, neighbor);
+        return true;
+
+    }
+    return false;
+
+}
+
+
+
 
 
 void Router::followDriverInstruction(Packet packet){
@@ -141,10 +175,12 @@ void Router::followDriverInstruction(Packet packet){
         sendMessage(ip2, ss.str());
 
     }
+
     else if(startsWith(message, "show")){
         cout<<"Driver says show"<<endl;
-        cout<<extractIpFromBytes(bytes, 4)<<endl;
+        printRoutingTable();
     }
+
     else if(startsWith(message, "cost")){
 
         cout<<"Driver says cost"<<endl;
@@ -152,6 +188,8 @@ void Router::followDriverInstruction(Packet packet){
         string ip2 = extractIpFromBytes(bytes, 8);
         int cost = extractIntFromBytes(bytes, 12);
         cout<<ip1<<" "<<ip2<<" "<<cost<<endl;
+
+
     }
     else if(startsWith(message, "clk")){
         cout<<"Driver says "<<message<<endl;
@@ -168,21 +206,7 @@ void Router::followRouterInstruction(Packet packet){
 
 
     if(startsWith(message, "rt")){
-        vector<unsigned char> bytes = packet.getBytes();
-        int offset = 2;
-
-        int length = extractIntFromBytes(bytes, offset);
-        offset+= 4;
-        cout<<length<<endl;
-        cout<<"routing table of "<<sender<<":\n";
-        for(int i=0; i<length; i++){
-            string destination = getStringIp(extractIntFromBytes(bytes, offset));
-            int distance = extractIntFromBytes(bytes, offset+4);
-            string nextHop = getStringIp(extractIntFromBytes(bytes, offset+8));
-
-            offset+=12;
-            cout<<destination<<" :: "<<distance<<" :: "<<nextHop<<endl;
-        }
+        updateUsingNeighborsTable(sender, packet.getBytes(), 2);
     }
 
     else if(startsWith(message, "send")){
@@ -193,9 +217,25 @@ void Router::followRouterInstruction(Packet packet){
 
 
 
-void Router::updateRoutingTable(Packet packet){
+void Router::updateUsingNeighborsTable(string neighbor, vector<unsigned char> bytes, int whereToStart){
 
+    int offset = whereToStart;
+
+        int length = extractIntFromBytes(bytes, offset);
+        offset+= 4;
+       // cout<<length<<endl;
+      //  cout<<"routing table of "<<neighbor<<":\n";
+        for(int i=0; i<length; i++){
+            string destination = getStringIp(extractIntFromBytes(bytes, offset));
+            int distance = extractIntFromBytes(bytes, offset+4);
+            string nextHop = getStringIp(extractIntFromBytes(bytes, offset+8));
+
+            offset+=12;
+           // cout<<destination<<" :: "<<distance<<" :: "<<nextHop<<endl;
+           dvrUpdate(neighbor, destination, distance, nextHop);
+        }
 }
+
 void Router::sendMessage(string ip, string message){  ///this function is giving segmentation fault.. need to solve this.
 
     SendSocket* socket = sendSockets->get(ip);

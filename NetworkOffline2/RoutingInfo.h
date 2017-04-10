@@ -1,5 +1,5 @@
 #include <bits/stdc++.h>
-#define INF 50
+#define INF 500
 
 using namespace std;
 
