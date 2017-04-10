@@ -76,7 +76,7 @@ public:
             string ip = neighborInfo[i].first;
             SendSocket* sock = new SendSocket(sockfd, ip, myPort);
 
-            cout<<ip<<" "<<sock<<endl;
+           // cout<<ip<<" "<<sock<<endl;
 
             neighbors.push_back(ip);
             sendSockets->put(ip, sock);
@@ -103,7 +103,7 @@ public:
                 followDriverInstruction(packet);
             }
             else {
-                followRouterInstruction(packet.getSenderIp(), packet.getMessage());
+                followRouterInstruction(packet);
             }
 
 
@@ -114,9 +114,12 @@ public:
     void followDriverInstruction(Packet packet);
     void updateRoutingTable(Packet packet);
     void sendMessage(string ip, string message);
+    void sendBytes(string ip, vector<unsigned char> bytes);
     void sendRoutingTableToNeighbors();
     void printRoutingTable();
-    void followRouterInstruction(string sender, string message);
+    void followRouterInstruction(Packet packet);
+    vector<unsigned char> extractBytesFromTable();
+
 
 };
 
@@ -150,14 +153,14 @@ void Router::followDriverInstruction(Packet packet){
     }
     else if(startsWith(message, "clk")){
         cout<<"Driver says "<<message<<endl;
-
+        //sendRoutingTableToNeighbors();
     }
 
    // printRoutingTable();
 //   sendMessage(allRouters[1], message);
 }
 
-void Router::followRouterInstruction(string sender, string message){
+void Router::followRouterInstruction(Packet packet){
 
 }
 
@@ -176,7 +179,7 @@ void Router::sendMessage(string ip, string message){  ///this function is giving
 
 void Router::printRoutingTable(){
     cout<<"======================================"<<endl;
-    cout<<"Routing table of "<<myIp<<": "<<endl;
+    cout<<"Routing table of "<<myIp<<":\nDestination :: Distance :: NextHop\n-----------------------------"<<endl;
     for(int i=0; i<allRouters.size(); i++){
         cout<<routingTable->get(allRouters[i])->toString()<<endl;
     }
@@ -186,7 +189,43 @@ void Router::printRoutingTable(){
 
 
 void Router::sendRoutingTableToNeighbors(){
+    string opcode = "rt";
 
+    vector<unsigned char> bytes, tableData;
+
+    pushBackStringToBytes(bytes, opcode);
+    tableData = extractBytesFromTable();
+
+    bytes.insert(bytes.end(), tableData.begin(), tableData.end());
+
+    for(int i=0; i<neighbors.size();i++){
+        SendSocket* sock = sendSockets->get(neighbors[i]);
+
+        if(sock!=null)
+            sock->sendBytes(bytes);
+    }
+}
+
+vector<unsigned char> Router::extractBytesFromTable(){
+    vector<unsigned char> bytes;
+    int tableLength = allRouters.size();
+
+    pushBackIntToBytes(bytes, tableLength);
+
+
+    for(int i=0; i<tableLength; i++){
+
+        string destinationIp = allRouters[i];
+        RoutingInfo* info = routingTable->get(destinationIp);
+
+        int distance = info->getDistance();
+        string nextHopIp = info->getNextHop();
+
+        pushBackIntToBytes(bytes, getUnsignedIp(destinationIp));  ///the 4 bytes is occupied by table Length---so
+        pushBackIntToBytes(bytes, distance);
+        pushBackIntToBytes(bytes, getUnsignedIp(nextHopIp));
+    }
+    return bytes;
 }
 
 

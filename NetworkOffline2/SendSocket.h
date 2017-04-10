@@ -29,9 +29,15 @@ public:
 
     void sendMessage(string message){
 
-        cout<<"i'm here bitch "<<receiverIp<<endl;
         int sent_bytes=sendto(sockfd, message.c_str(), 1024, 0, (struct sockaddr*) &receiverAddress, sizeof(sockaddr_in));
 
+    }
+    void sendBytes(vector<unsigned char> bytes){
+        char buffer[1024];
+        for(int i=0; i<bytes.size(); i++){
+            buffer[i]=bytes[i];
+        }
+        int sent_bytes=sendto(sockfd, buffer, 1024, 0, (struct sockaddr*) &receiverAddress, sizeof(sockaddr_in));
     }
 
 

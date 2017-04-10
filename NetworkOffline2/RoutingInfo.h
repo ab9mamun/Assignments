@@ -26,7 +26,7 @@ public:
 
     string toString(){
         stringstream ss;
-        ss<<destination<<":"<<distance<<":"<<nextHop;
+        ss<<destination<<" :: "<<distance<<" :: "<<nextHop;
         return ss.str();
     }
 

@@ -15,7 +15,7 @@ class StringHashTable
 
 	///--------private methods----------------------
 	int hashcode(string key){
-        cout<<"\""<<key<<"\""<<endl;
+      //  cout<<"\""<<key<<"\""<<endl;
 	    int seed = 131;
         unsigned long hash = 0;
         for(int i = 0; i < key.length(); i++){
