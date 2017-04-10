@@ -29,9 +29,13 @@ using namespace std;
 
 
 class Router{
+
+    int clk;
+
     ReceiveSocket* receiveSocket;
     StringHashTable<SendSocket>* sendSockets;
     StringHashTable<RoutingInfo>* routingTable;
+    StringHashTable<NeighborInfo>* neighborTable;
 
     string myIp;
     unsigned short myPort;
@@ -46,7 +50,7 @@ class Router{
 
 public:
 
-    Router(string myIp,unsigned short myPort, string driverIp, vector<string> allRouters, vector<pair<string, int> > neighborInfo){
+    Router(string myIp,unsigned short myPort, string driverIp, vector<string> allRouters, vector<pair<string, int> > neighborData){
 
         this->myIp = myIp;
         this->myPort = myPort;
@@ -68,12 +72,13 @@ public:
 
         ///----------------create sockets for neighbors----------------------------
         sendSockets = new StringHashTable<SendSocket>(17);
+        neighborTable = new StringHashTable<NeighborInfo>(17);  ///this will be needed for dvr and link up down----
 
         receiveSocket = new ReceiveSocket(myIp, myPort);
         sockfd = receiveSocket->getSockfd();
 
-        for(int i=0; i<neighborInfo.size(); i++){
-            string ip = neighborInfo[i].first;
+        for(int i=0; i<neighborData.size(); i++){
+            string ip = neighborData[i].first;
             SendSocket* sock = new SendSocket(sockfd, ip, myPort);
 
            // cout<<ip<<" "<<sock<<endl;
@@ -81,7 +86,9 @@ public:
             neighbors.push_back(ip);
             sendSockets->put(ip, sock);
 
-            int distance = neighborInfo[i].second;
+            int distance = neighborData[i].second;
+            NeighborInfo* ni = new NeighborInfo(ip, distance, 0);
+            neighborTable->put(ip, ni);
             routingTable->get(ip)->update(distance, ip);  ///update in routing table for the neighbor...
         }
 
@@ -92,6 +99,7 @@ public:
 
     void start(){
 
+       clk = 0;
 
         while(true){
             Packet packet = receiveSocket->receivePacket();
@@ -111,7 +119,7 @@ public:
 
     }
 
-    bool dvrUpdate(string neighbor, string destination, int distance, string nextHop);
+    void dvrUpdate(string neighbor, string destination, int distance, string nextHop);
 
     void followDriverInstruction(Packet packet);
     void updateUsingNeighborsTable(string neighbor, vector<unsigned char> bytes, int whereToStart);
@@ -121,6 +129,15 @@ public:
     void printRoutingTable();
     void followRouterInstruction(Packet packet);
     vector<unsigned char> extractBytesFromTable();
+    void dvrNeighborUpdate(string neighbor, int newCost);
+
+    void detectLinkReactivate(string neighbor);
+    void detectLinkDeactivate(string neighbor);
+
+    void neighborCostUpdate(string neighbor, int newCost);
+    void sendPacket(string destination, string packetName, string message);
+
+    ~Router();
 
 
 };
@@ -130,9 +147,9 @@ public:
 
 
 
-bool Router::dvrUpdate(string neighbor, string destination, int distance, string nextHop){
+void Router::dvrUpdate(string neighbor, string destination, int distance, string nextHop){
 
-    if(destination==myIp) return false; ///life savior line---------forgetting this line cost 3hours ---- :-(
+    if(destination==myIp) return; ///life savior line---------forgetting this line cost 3hours ---- :-(
 
   //  cout<<neighbor<<" "<<destination<<" "<<distance<<" "<<nextHop<<endl;
    // return true;
@@ -144,7 +161,7 @@ bool Router::dvrUpdate(string neighbor, string destination, int distance, string
     string myOldNextHop = info->getNextHop();
 
    // return true;
-    int myNewDistance = routingTable->get(neighbor)->getDistance() + distance;
+    int myNewDistance = neighborTable->get(neighbor)->getCost() + distance;  ///d = cost(me, neighbor) + dist(neighbor, destination)
 
     if(myNewDistance>INF) myNewDistance = INF;
 
@@ -154,15 +171,84 @@ bool Router::dvrUpdate(string neighbor, string destination, int distance, string
     ){
 
      info->update(myNewDistance, neighbor);
-        return true;
+
 
     }
-    return false;
+
 
 }
 
 
 
+void Router::dvrNeighborUpdate(string neighbor, int newCost){
+
+    RoutingInfo* info = routingTable->get(neighbor);
+    int distance = info->getDistance();
+    string nextHop = info->getNextHop();
+
+    if(nextHop==neighbor || newCost<distance){  ///forced update is must, but split horizon is not needed here-----------
+        info->update(newCost, neighbor);
+
+    }
+}
+
+void Router::neighborCostUpdate(string neighbor, int newCost){  ///returns true if routing path/distance is updated..
+
+    NeighborInfo* ni = neighborTable->get(neighbor);
+    if(ni==null){cout<<"can't update cost. the other router is not my neighbor\n"; return; }
+    ni->updateCost(newCost);
+
+    if(ni->isDown()==false)
+    dvrNeighborUpdate(neighbor, newCost);
+
+
+}
+
+
+
+void Router::detectLinkDeactivate(string neighbor){
+
+    NeighborInfo* ni = neighborTable->get(neighbor);
+    if(ni==null){cout<<"bug at link deactivate"<<endl; return;}
+
+    if(ni->isDown()) return; ///done from before;;;
+
+    int lastClk = ni->getLastClock();
+    if(clk-3 > lastClk){
+        ni->markDown();
+        dvrNeighborUpdate(neighbor, INF);
+    }
+
+
+}
+
+void Router::detectLinkReactivate(string neighbor){
+
+    NeighborInfo* ni = neighborTable->get(neighbor);
+    if(ni==0){cout<<"bug at link reactivate"<<endl; return;}
+    if(ni->isDown()){
+        ni->markUp();
+        dvrNeighborUpdate(neighbor, ni->getCost());
+    }
+
+}
+
+void Router::sendPacket(string destination, string packetName, string message){
+    if(destination==myIp){
+        cout<<packetName<<" packet reached destination.\n";
+    }
+    else {
+        RoutingInfo* info = routingTable->get(destination);
+        if(info==0){cout<<"bug found at sendPacket\n"; return;}
+        string nextHop = info->getNextHop();
+        if(nextHop=="-"){
+            cout<<"Couldn't send "<<packetName<<" packet. No path known for "<<destination<<endl;
+            return;
+        }
+        sendMessage(nextHop, message);
+        cout<<packetName<<" packet forwarded to "<<nextHop<<endl;
+    }
+}
 
 
 void Router::followDriverInstruction(Packet packet){
@@ -171,36 +257,53 @@ void Router::followDriverInstruction(Packet packet){
     vector<unsigned char> bytes = packet.getBytes();
     //vector<string> params = split(message, ' ');
     if(startsWith(message,"send")){
-        cout<<"Driver says send"<<endl;
+        //cout<<"Driver says send"<<endl;
         string ip1 = extractIpFromBytes(bytes, 4);
         string ip2 = extractIpFromBytes(bytes, 8);
         unsigned short msgLength = (unsigned short) extractIntFromBytes(bytes, 12, 2);
         string msg = extractStringFromBytes(bytes, 14, msgLength);
 
         stringstream ss;
-        ss<<"send "<<" "<<ip2<<" "<<msgLength<<" "<<msg<<endl;
-        sendMessage(ip2, ss.str());
+        ss<<"frwd#"<<ip2<<"#"<<msgLength<<"#"<<msg;
+
+        sendPacket(ip2, msg, ss.str());
 
     }
 
     else if(startsWith(message, "show")){
-        cout<<"Driver says show"<<endl;
+     //   cout<<"Driver says show"<<endl;
         printRoutingTable();
     }
 
     else if(startsWith(message, "cost")){
 
-        cout<<"Driver says cost"<<endl;
+      //  cout<<"Driver says cost"<<endl;
         string ip1 = extractIpFromBytes(bytes, 4);
         string ip2 = extractIpFromBytes(bytes, 8);
-        int cost = extractIntFromBytes(bytes, 12);
-        cout<<ip1<<" "<<ip2<<" "<<cost<<endl;
+        int cost = (int) extractIntFromBytes(bytes, 12, 2);
+
+        if(ip1==myIp)
+            neighborCostUpdate(ip2, cost);
+        else if(ip2==myIp)
+            neighborCostUpdate(ip1, cost);
+
+      //  cout<<ip1<<" "<<ip2<<" "<<cost<<endl;
 
 
     }
     else if(startsWith(message, "clk")){
-        cout<<"Driver says "<<message<<endl;
+        vector<string> v = split(message, ' ');
+        int clk = atoi(v[1].c_str());
+        this->clk = clk;
+
+       // cout<<"Driver says clk "<<clk<<endl;
         sendRoutingTableToNeighbors();
+
+        for(int i=0; i<neighbors.size(); i++){
+          //  cout<<neighbors[i]<<endl;
+            detectLinkDeactivate(neighbors[i]);
+
+        }
     }
 
    // printRoutingTable();
@@ -211,13 +314,33 @@ void Router::followRouterInstruction(Packet packet){
     string message = packet.getMessage();
     string sender = packet.getSenderIp();
 
+    if(routingTable->get(sender)==null){//cout<<"ignoring message from unknown source.."<<endl;
+        return;
+    }
+    detectLinkReactivate(sender);
 
     if(startsWith(message, "rt")){
         updateUsingNeighborsTable(sender, packet.getBytes(), 2);
     }
 
-    else if(startsWith(message, "send")){
-        cout<<sender<<" says send"<<endl;
+    else if(startsWith(message, "frwd")){
+
+        vector<string> v = split(message, '#');
+
+        if(v.size()<4){cout<<"bug found at frwd from router\n"; return;}
+
+        string ip = v[1];
+        unsigned short msgLength = (unsigned short) atoi(v[2].c_str());
+        string msg = "";
+
+        for(int i=3; i<v.size(); i++){
+            msg+= v[i];
+        }
+
+        stringstream ss;
+        ss<<"frwd#"<<ip<<"#"<<msgLength<<"#"<<msg;
+
+        sendPacket(ip, msg, ss.str());
     }
 
 }
@@ -240,7 +363,7 @@ void Router::updateUsingNeighborsTable(string neighbor, vector<unsigned char> by
             offset+=12;
 
            // cout<<destination<<" :: "<<distance<<" :: "<<nextHop<<endl;
-           bool s = dvrUpdate(neighbor, destination, distance, nextHop);
+          dvrUpdate(neighbor, destination, distance, nextHop);
         }
 }
 
@@ -310,6 +433,24 @@ vector<unsigned char> Router::extractBytesFromTable(){
 }
 
 
+
+
+
+
+Router:: ~Router(){
+    if(routingTable){
+      delete routingTable; ///RoutingInfo* will be deleted inside ~StringHashTable(), so, we dont need to worry about it
+    }
+    if(sendSockets){
+        delete sendSockets; ///same for this one
+    }
+    if(receiveSocket){
+        delete receiveSocket;
+    }
+    if(neighborTable){
+        delete neighborTable;
+    }
+}
 
 
 

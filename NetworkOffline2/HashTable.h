@@ -53,10 +53,11 @@ public:
 		if(table==null) return;
 
 		for(int i=0; i<size; i++){
-			vector<pair<string, Y*> > temp = table[i];
+			vector<pair<string, Y*>* >* temp = table[i];
 
 			for(int i=0; i<temp->size(); i++){
 
+				delete (*temp)[i]->second;
 				delete (*temp)[i];
 			}
 			delete[] temp;
