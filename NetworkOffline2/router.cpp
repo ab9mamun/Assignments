@@ -132,11 +132,18 @@ public:
 
 bool Router::dvrUpdate(string neighbor, string destination, int distance, string nextHop){
 
+    if(destination==myIp) return false; ///life savior line---------forgetting this line cost 3hours ---- :-(
+
+  //  cout<<neighbor<<" "<<destination<<" "<<distance<<" "<<nextHop<<endl;
+   // return true;
     RoutingInfo* info = routingTable->get(destination);
+    if(info==0) {cout<<"Bug found at dvrUpdate, RoutingInfo* is null"<<endl;}// return true;}
+   // cout<<info->toString()<<endl;
+   // return true;
     int myOldDistance = info->getDistance();
     string myOldNextHop = info->getNextHop();
 
-
+   // return true;
     int myNewDistance = routingTable->get(neighbor)->getDistance() + distance;
 
     if(myNewDistance>INF) myNewDistance = INF;
@@ -224,15 +231,16 @@ void Router::updateUsingNeighborsTable(string neighbor, vector<unsigned char> by
         int length = extractIntFromBytes(bytes, offset);
         offset+= 4;
        // cout<<length<<endl;
-      //  cout<<"routing table of "<<neighbor<<":\n";
+        cout<<"Got routing table of "<<neighbor<<":\n";
         for(int i=0; i<length; i++){
             string destination = getStringIp(extractIntFromBytes(bytes, offset));
             int distance = extractIntFromBytes(bytes, offset+4);
             string nextHop = getStringIp(extractIntFromBytes(bytes, offset+8));
 
             offset+=12;
-            //cout<<destination<<" :: "<<distance<<" :: "<<nextHop<<endl;
-           //dvrUpdate(neighbor, destination, distance, nextHop);
+
+           // cout<<destination<<" :: "<<distance<<" :: "<<nextHop<<endl;
+           bool s = dvrUpdate(neighbor, destination, distance, nextHop);
         }
 }
 
