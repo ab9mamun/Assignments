@@ -136,6 +136,7 @@ public:
 
     void neighborCostUpdate(string neighbor, int newCost);
     void sendPacket(string destination, string packetName, string message);
+    void disconnectWhereNextHop(string neighbor);
 
     ~Router();
 
@@ -204,6 +205,16 @@ void Router::neighborCostUpdate(string neighbor, int newCost){  ///returns true 
 
 }
 
+void Router::disconnectWhereNextHop(string neighbor){
+    for(int i=0; i<allRouters.size(); i++){
+        string ip = allRouters[i];
+        RoutingInfo* info = routingTable->get(ip);
+        if(info->getNextHop()==neighbor){
+            info->update(INF, "-");
+        }
+
+    }
+}
 
 
 void Router::detectLinkDeactivate(string neighbor){
@@ -216,7 +227,8 @@ void Router::detectLinkDeactivate(string neighbor){
     int lastClk = ni->getLastClock();
     if(clk-3 > lastClk){
         ni->markDown();
-        dvrNeighborUpdate(neighbor, INF);
+        //dvrNeighborUpdate(neighbor, INF); --this line is no more needed
+        disconnectWhereNextHop(neighbor);
     }
 
 
@@ -226,6 +238,7 @@ void Router::detectLinkReactivate(string neighbor){
 
     NeighborInfo* ni = neighborTable->get(neighbor);
     if(ni==0){cout<<"bug at link reactivate"<<endl; return;}
+    ni->updateLastClock(clk);
     if(ni->isDown()){
         ni->markUp();
         dvrNeighborUpdate(neighbor, ni->getCost());
