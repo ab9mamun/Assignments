@@ -136,6 +136,8 @@ bool startsWith(string buff, string sub){
 
 
 string getStringIp(unsigned u_address){
+    if(u_address ==0) return "-"; ///when no nextHop, we are considering this will be assigned at the place of ip
+
 	stringstream ss;
 	IP ip;
 	ip.number = u_address;
@@ -151,8 +153,10 @@ string getStringIp(unsigned u_address){
 
 unsigned int getUnsignedIp(string ip){
 
+    if(ip=="-") return 0;  ///when no nextHop, we are considering this will be assigned at the place of ip
+
     vector<string> v = split(ip, '.');
-    if(v.size()!=4) {cout<<"Bug at getUnsignedIp, "; return 0;}
+    if(v.size()!=4) {cout<<"Bug at getUnsignedIp, ip is: "<<ip<<endl; return 0;}
 
     IP newIp;
     for(int i=0; i<4; i++){

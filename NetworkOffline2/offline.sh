@@ -1,2 +1,2 @@
-g++ -o router router.cpp
+g++ -D_REENTRANT -o router router.cpp -lpthread
 

@@ -231,8 +231,8 @@ void Router::updateUsingNeighborsTable(string neighbor, vector<unsigned char> by
             string nextHop = getStringIp(extractIntFromBytes(bytes, offset+8));
 
             offset+=12;
-           // cout<<destination<<" :: "<<distance<<" :: "<<nextHop<<endl;
-           dvrUpdate(neighbor, destination, distance, nextHop);
+            //cout<<destination<<" :: "<<distance<<" :: "<<nextHop<<endl;
+           //dvrUpdate(neighbor, destination, distance, nextHop);
         }
 }
 
@@ -273,7 +273,7 @@ void Router::sendRoutingTableToNeighbors(){
    for(int i=0; i<neighbors.size();i++){
         SendSocket* sock = sendSockets->get(neighbors[i]);
 
-        if(i==0 && sock!=null)
+        if(sock!=null)
             sock->sendBytes(buff, bytes.size());
     }
 
@@ -312,25 +312,35 @@ int main(int argc, char** argv){
 		exit(1);
 	}
 
+	string myIp = argv[1];
+
+    ifstream topo(argv[2]);
 
 	vector<string> allRouters;
-	vector< pair<string, int> > neighborInfo;
+	vector< pair<string, int> > neighbors;
 
-	///populating with some fake data-------------------------
-	for(int i=0; i<10; i++){
-        stringstream ss;
-        ss<<"192.168.10."<<(i+2);
-        string s = ss.str();
+	set<string> routerSet; ///temporary placeHolder
 
-        allRouters.push_back(s);
-       // if(i%3==0){
-            neighborInfo.push_back(pair<string, int>(s, (i+7)%5));
-        //}
-	}
+	///populating with some real data-------------------------
+	string ip1, ip2;
+	int distance;
+
+	while(topo){
+        topo>>ip1>>ip2>>distance;
+        if(ip1!=myIp) routerSet.insert(ip1);
+        if(ip2!=myIp) routerSet.insert(ip2);
+
+        if(ip1==myIp) neighbors.push_back(pair<string, int> (ip2, distance));
+        else if(ip2==myIp) neighbors.push_back(pair<string, int> (ip1, distance));
+       // cout<<ip1<<" "<<ip2<<" "<<distance<<endl;
+    }
+    topo.close();
+
+    allRouters.insert(allRouters.begin(), routerSet.begin(), routerSet.end());
 
 	///now time to start the router, it will do rest of the works--------------------------
 
-	Router* router = new Router(argv[1], DEFAULT_PORT, DRIVER_IP,allRouters,neighborInfo);
+	Router* router = new Router(myIp, DEFAULT_PORT, DRIVER_IP,allRouters,neighbors);
 
 	router->start();
 
