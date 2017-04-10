@@ -172,7 +172,7 @@ void pushBackIntToBytes(vector<unsigned char>& v, int x){
 
 void pushBackStringToBytes(vector<unsigned char>& v,string s){
     for(int i=0; i<s.length(); i++){
-        v.push_back(s[i]);
+        v.push_back( (unsigned char) s[i]);
     }
 }
 

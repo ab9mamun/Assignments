@@ -136,7 +136,9 @@ void Router::followDriverInstruction(Packet packet){
         unsigned short msgLength = (unsigned short) extractIntFromBytes(bytes, 12, 2);
         string msg = extractStringFromBytes(bytes, 14, msgLength);
 
-        cout<<ip1<<" "<<ip2<<" "<<msgLength<<" "<<msg<<endl;
+        stringstream ss;
+        ss<<"send "<<" "<<ip2<<" "<<msgLength<<" "<<msg<<endl;
+        sendMessage(ip2, ss.str());
 
     }
     else if(startsWith(message, "show")){
@@ -153,7 +155,7 @@ void Router::followDriverInstruction(Packet packet){
     }
     else if(startsWith(message, "clk")){
         cout<<"Driver says "<<message<<endl;
-        //sendRoutingTableToNeighbors();
+        sendRoutingTableToNeighbors();
     }
 
    // printRoutingTable();
@@ -161,6 +163,31 @@ void Router::followDriverInstruction(Packet packet){
 }
 
 void Router::followRouterInstruction(Packet packet){
+    string message = packet.getMessage();
+    string sender = packet.getSenderIp();
+
+
+    if(startsWith(message, "rt")){
+        vector<unsigned char> bytes = packet.getBytes();
+        int offset = 2;
+
+        int length = extractIntFromBytes(bytes, offset);
+        offset+= 4;
+        cout<<length<<endl;
+        cout<<"routing table of "<<sender<<":\n";
+        for(int i=0; i<length; i++){
+            string destination = getStringIp(extractIntFromBytes(bytes, offset));
+            int distance = extractIntFromBytes(bytes, offset+4);
+            string nextHop = getStringIp(extractIntFromBytes(bytes, offset+8));
+
+            offset+=12;
+            cout<<destination<<" :: "<<distance<<" :: "<<nextHop<<endl;
+        }
+    }
+
+    else if(startsWith(message, "send")){
+        cout<<sender<<" says send"<<endl;
+    }
 
 }
 
@@ -198,12 +225,13 @@ void Router::sendRoutingTableToNeighbors(){
 
     bytes.insert(bytes.end(), tableData.begin(), tableData.end());
 
-    for(int i=0; i<neighbors.size();i++){
+   for(int i=0; i<neighbors.size();i++){
         SendSocket* sock = sendSockets->get(neighbors[i]);
 
-        if(sock!=null)
+        if(i==0 && sock!=null)
             sock->sendBytes(bytes);
     }
+
 }
 
 vector<unsigned char> Router::extractBytesFromTable(){
