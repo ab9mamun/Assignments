@@ -165,7 +165,8 @@ threadtest.o: ../threads/threadtest.cc /usr/include/stdc-predef.h \
  /usr/include/xlocale.h ../threads/thread.h ../threads/scheduler.h \
  ../threads/list.h ../machine/interrupt.h ../threads/list.h \
  ../machine/stats.h ../machine/timer.h ../threads/utility.h \
- ../threads/Producer.h ../threads/Consumer.h ../threads/synch.h
+ ../threads/Producer.h ../threads/Container.h ../threads/synch.h \
+ ../threads/Consumer.h
 interrupt.o: ../machine/interrupt.cc /usr/include/stdc-predef.h \
  ../threads/copyright.h ../machine/interrupt.h ../threads/list.h \
  ../threads/copyright.h ../threads/utility.h ../threads/bool.h \
@@ -292,7 +293,7 @@ Producer.o: ../threads/Producer.cc /usr/include/stdc-predef.h \
  /usr/include/xlocale.h ../threads/system.h ../threads/scheduler.h \
  ../threads/list.h ../machine/interrupt.h ../threads/list.h \
  ../machine/stats.h ../machine/timer.h ../threads/utility.h \
- /usr/include/c++/5/string \
+ ../threads/Container.h ../threads/synch.h /usr/include/c++/5/string \
  /usr/include/i386-linux-gnu/c++/5/bits/c++config.h \
  /usr/include/i386-linux-gnu/c++/5/bits/os_defines.h \
  /usr/include/i386-linux-gnu/c++/5/bits/cpu_defines.h \
@@ -376,8 +377,9 @@ Consumer.o: ../threads/Consumer.cc /usr/include/stdc-predef.h \
  /usr/include/xlocale.h ../threads/system.h ../threads/scheduler.h \
  ../threads/list.h ../machine/interrupt.h ../threads/list.h \
  ../machine/stats.h ../machine/timer.h ../threads/utility.h \
- /usr/include/c++/5/sstream /usr/include/c++/5/istream \
- /usr/include/c++/5/ios /usr/include/c++/5/iosfwd \
+ ../threads/Container.h ../threads/synch.h /usr/include/c++/5/sstream \
+ /usr/include/c++/5/istream /usr/include/c++/5/ios \
+ /usr/include/c++/5/iosfwd \
  /usr/include/i386-linux-gnu/c++/5/bits/c++config.h \
  /usr/include/i386-linux-gnu/c++/5/bits/os_defines.h \
  /usr/include/i386-linux-gnu/c++/5/bits/cpu_defines.h \

@@ -16,9 +16,14 @@
 #include "Consumer.h"
 #include "synch.h"
 
+
 #define TOTAL 10
+#define CONTAINER_SIZE 10
 // testnum is set in main.cc
 int testnum = 1;
+
+
+Container* container;
 
 //----------------------------------------------------------------------
 // SimpleThread
@@ -70,7 +75,7 @@ ThreadTest1()
 
 
 void runProducer(int id){
-		Producer* prod = new Producer(id);
+		Producer* prod = new Producer(id, container);
 	    int time, item;
 	    while(true) {
 	    	///wait for an arbitrary time
@@ -78,7 +83,7 @@ void runProducer(int id){
 	    	for(int i=0; i<time; i++){
 
 	    	};
-	    	item = 20+1;
+	    	item = id;
 	    	prod->produce(item);
 	    	printf("Producer %d produced %d\n", id, item);
 	        currentThread->Yield();
@@ -87,7 +92,7 @@ void runProducer(int id){
 
 
 void runConsumer(int id){
-		Consumer* cons = new Consumer(id);
+		Consumer* cons = new Consumer(id, container);
 	    int time, item;
 	    while(true) {
 	    	///wait for an arbitrary time
@@ -97,7 +102,6 @@ void runConsumer(int id){
 	    	};
 
 	    	item = cons->consume();
-	    	item = 20+1;
 
 	    	printf("Consumer %d consumed %d\n", id, item);
 	        currentThread->Yield();
@@ -122,6 +126,8 @@ void runConsumer(int id){
 void
 ThreadTest()
 {
+
+	container = new Container(CONTAINER_SIZE);
 
 	for(int i=0; i<TOTAL; i++){
 		Thread* t = new Thread("Producer thread");

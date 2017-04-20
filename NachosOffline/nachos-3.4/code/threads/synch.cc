@@ -129,13 +129,13 @@ void Lock::Release() {
 
 	IntStatus oldLevel = interrupt->SetLevel(IntOff);	// disable interrupts
 
-			// wake up a thread
+
 
 		isHeldBySome = false;
 		currentHolder = NULL;
 
 		if(!queue->IsEmpty()){
-			Thread* thread =(Thread*) queue->Remove();
+			Thread* thread =(Thread*) queue->Remove(); 		// wake up a thread
 			scheduler->ReadyToRun(thread);
 		}
 

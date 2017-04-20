@@ -8,15 +8,15 @@
 using namespace std;
 
 
-Consumer::Consumer(int id){
+Consumer::Consumer(int id, Container* container){
 	this->id = id;
+	this->container = container;
 }
 
 
 
 int Consumer::consume(){
-	//container.put(item);
-	return 20+1;
+	return container->get();
 
 
 }

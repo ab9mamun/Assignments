@@ -8,13 +8,13 @@
 using namespace std;
 
 
-Producer::Producer(int id){//, Container container){
+Producer::Producer(int id, Container* container){//, Container container){
 	this->id = id;
+	this->container = container;
 
 
 }
 
 void Producer::produce(int item){
-	//container.put(item);
-
+	container->put(item);
 }

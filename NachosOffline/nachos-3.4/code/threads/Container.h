@@ -1,8 +1,12 @@
+#ifndef CONTAINER_H
+#define CONTAINER_H
+
+
 #include "copyright.h"
 #include "system.h"
 #include "synch.h"
 
-#define SIZE 10
+#define DEFAULT_SIZE 10
 
 
 class Container{
@@ -12,13 +16,19 @@ class Container{
 	int length;
 	int front;
 	int rear;
-	int size= SIZE;
-	int items[SIZE];
+	int size;
+	int* items;
 
 
 public:
 	Container();
+	Container(int size);
+
 	void put(int item);
 	int get();
 	~Container();
 };
+
+
+
+#endif //CONTAINER_H

@@ -2,12 +2,14 @@
 #include "copyright.h"
 #include "system.h"
 
+#include "Container.h"
+
 class Consumer{
 		int id;
+		Container* container;
 	public:
-		Consumer(int id);
-			void start();
-			void run(int notUsed);
-			int consume();
-			~Consumer();
+		Consumer(int id, Container* container);
+
+		int consume();
+		~Consumer();
 };

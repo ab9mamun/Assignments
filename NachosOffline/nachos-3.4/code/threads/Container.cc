@@ -7,9 +7,23 @@ Container::Container(){
 	prodCondition = new Condition("Producer condition");
 	consCondition = new Condition("Consumer condition");
 
+	size = DEFAULT_SIZE;
 	length = 0;
 	front = 0;
 	rear = 0;
+	items = new int[size];
+}
+
+Container::Container(int size){
+	lock = new Lock("Container lock");
+	prodCondition = new Condition("Producer condition");
+	consCondition = new Condition("Consumer condition");
+
+	this->size = size;
+	length = 0;
+	front = 0;
+	rear = 0;
+	items = new int[size];
 }
 
 void Container::put(int item){
@@ -45,4 +59,21 @@ int Container::get(){
 
 	return item;
 
+}
+
+
+
+
+
+
+
+
+
+
+
+Container::~Container(){
+	delete[] items;
+	delete lock;
+	delete consCondition;
+	delete prodCondition;
 }
