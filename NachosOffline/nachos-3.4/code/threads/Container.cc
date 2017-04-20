@@ -14,24 +14,35 @@ Container::Container(){
 
 void Container::put(int item){
 
-	if(length==size){
-		return;
+	lock->Acquire();
+	while(length==size){
+		prodCondition->Wait(lock);
 	}
-	else {
-		items[rear] = item;
-		rear = (rear+1)%size;
-		length++;
-	}
+	items[rear] = item;
+	rear = (rear+1)%size;
+	length++;
+
+	if(length==1) consCondition->Signal(lock);
+
+	lock->Release();
 }
 
 int Container::get(){
-	if(length==0){
-		return -1;
+
+	lock->Acquire();
+
+	while(length==0){
+		consCondition->Wait(lock);
 	}
-	else {
-		int item = items[front];
-		front = (front+1)%size;
-		length--;
-		return item;
-	}
+
+	int item = items[front];
+	front = (front+1)%size;
+	length--;
+
+	if(length==size-1) prodCondition->Signal(lock);
+
+	lock->Release();
+
+	return item;
+
 }
