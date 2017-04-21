@@ -16,6 +16,9 @@
 #include "Consumer.h"
 #include "synch.h"
 
+#include <cmath>
+#include <ctime>
+
 
 #define TOTAL 10
 #define CONTAINER_SIZE 10
@@ -33,6 +36,9 @@ Container* container;
 //	"which" is simply a number identifying the thread, for debugging
 //	purposes.
 //----------------------------------------------------------------------
+
+
+
 
 void
 SimpleThread(int which)
@@ -79,13 +85,12 @@ void runProducer(int id){
 	    int time, item;
 	    while(true) {
 	    	///wait for an arbitrary time
-	    	time = (1+5)*100000000;
+	    	time = (10)*100000000;
 	    	for(int i=0; i<time; i++){
-
-	    	};
+	    		///---Waiting before producing another item----------
+	    	}
 	    	item = id;
 	    	prod->produce(item);
-	    	printf("Producer %d produced %d\n", id, item);
 	        currentThread->Yield();
 	    }
 }
@@ -96,14 +101,17 @@ void runConsumer(int id){
 	    int time, item;
 	    while(true) {
 	    	///wait for an arbitrary time
-	    	time = (1+5)*100000000;
+	    	time = (15)*10000000;
 	    	for(int i=0; i<time; i++){
+	    		///----Waiting
 
-	    	};
+
+
+
+	    	}
 
 	    	item = cons->consume();
 
-	    	printf("Consumer %d consumed %d\n", id, item);
 	        currentThread->Yield();
 	    }
 }
@@ -126,9 +134,10 @@ void runConsumer(int id){
 void
 ThreadTest()
 {
+	//srand(time(NULL));
 
 	container = new Container(CONTAINER_SIZE);
-
+	container->print();
 	for(int i=0; i<TOTAL; i++){
 		Thread* t = new Thread("Producer thread");
 		t->Fork(runProducer, i+1);

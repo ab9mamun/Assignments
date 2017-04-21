@@ -105,6 +105,7 @@ Lock::Lock(char* debugName) {
 	name = debugName;
 	isHeldBySome = false;
 	queue = new List;
+	currentHolder = NULL;
 }
 Lock::~Lock() {
 	delete queue;

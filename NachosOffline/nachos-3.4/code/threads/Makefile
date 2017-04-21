@@ -166,7 +166,23 @@ threadtest.o: ../threads/threadtest.cc /usr/include/stdc-predef.h \
  ../threads/list.h ../machine/interrupt.h ../threads/list.h \
  ../machine/stats.h ../machine/timer.h ../threads/utility.h \
  ../threads/Producer.h ../threads/Container.h ../threads/synch.h \
- ../threads/Consumer.h
+ ../threads/Consumer.h /usr/include/c++/5/cmath \
+ /usr/include/i386-linux-gnu/c++/5/bits/c++config.h \
+ /usr/include/i386-linux-gnu/c++/5/bits/os_defines.h \
+ /usr/include/i386-linux-gnu/c++/5/bits/cpu_defines.h \
+ /usr/include/c++/5/bits/cpp_type_traits.h \
+ /usr/include/c++/5/ext/type_traits.h /usr/include/math.h \
+ /usr/include/i386-linux-gnu/bits/math-vector.h \
+ /usr/include/i386-linux-gnu/bits/libm-simd-decl-stubs.h \
+ /usr/include/i386-linux-gnu/bits/huge_val.h \
+ /usr/include/i386-linux-gnu/bits/huge_valf.h \
+ /usr/include/i386-linux-gnu/bits/huge_vall.h \
+ /usr/include/i386-linux-gnu/bits/inf.h \
+ /usr/include/i386-linux-gnu/bits/nan.h \
+ /usr/include/i386-linux-gnu/bits/mathdef.h \
+ /usr/include/i386-linux-gnu/bits/mathcalls.h /usr/include/c++/5/ctime \
+ /usr/include/time.h /usr/include/i386-linux-gnu/bits/time.h \
+ /usr/include/i386-linux-gnu/bits/timex.h
 interrupt.o: ../machine/interrupt.cc /usr/include/stdc-predef.h \
  ../threads/copyright.h ../machine/interrupt.h ../threads/list.h \
  ../threads/copyright.h ../threads/utility.h ../threads/bool.h \

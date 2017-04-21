@@ -12,6 +12,8 @@ Container::Container(){
 	front = 0;
 	rear = 0;
 	items = new int[size];
+
+	printf("Container created. Size: %d\n", size);
 }
 
 Container::Container(int size){
@@ -24,24 +26,36 @@ Container::Container(int size){
 	front = 0;
 	rear = 0;
 	items = new int[size];
+	printf("Container created. Size: %d\n", size);
 }
 
-void Container::put(int item){
+void Container::put(int prodId, int item){
 
 	lock->Acquire();
 	while(length==size){
 		prodCondition->Wait(lock);
 	}
+
+	///now produce----------------
+	for(int i=0; i<(15)*10000000; i++){
+			///----------PRODUCING------------------------------
+	}
+
 	items[rear] = item;
 	rear = (rear+1)%size;
 	length++;
+
+///	printf("Consumer %d consumed Food %d\n", prodId, item); ///what the hell was that????
+
+	printf("Producer %d produced Food %d\n", prodId, item);
+	print();
 
 	if(length==1) consCondition->Signal(lock);
 
 	lock->Release();
 }
 
-int Container::get(){
+int Container::get(int consId){
 
 	lock->Acquire();
 
@@ -49,9 +63,17 @@ int Container::get(){
 		consCondition->Wait(lock);
 	}
 
+	///now consume item---------
+	for(int i=0; i<(7)*10000000; i++){
+		///--------------------CONSUMING-------------------------------------
+	}
+
 	int item = items[front];
 	front = (front+1)%size;
 	length--;
+
+	printf("Consumer %d consumed Food %d\n", consId, item);
+	print();
 
 	if(length==size-1) prodCondition->Signal(lock);
 
@@ -63,7 +85,13 @@ int Container::get(){
 
 
 
-
+void Container::print(){
+	printf("Container: ");
+	for(int i=0; i<length; i++){
+		printf("%d ", items[(front+i)%size]);
+	}
+	printf("\n\n");
+}
 
 
 
