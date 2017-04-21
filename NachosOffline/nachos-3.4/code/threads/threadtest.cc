@@ -18,6 +18,9 @@
 
 #include <cmath>
 #include <ctime>
+#include <sstream>
+
+using namespace std;
 
 
 #define TOTAL 10
@@ -82,10 +85,10 @@ ThreadTest1()
 
 void runProducer(int id){
 		Producer* prod = new Producer(id, container);
-	    int time, item;
+	    int time = 0, item;
 	    while(true) {
 	    	///wait for an arbitrary time
-	    	time = (10)*100000000;
+	    	time = (20)*10000000;
 	    	for(int i=0; i<time; i++){
 	    		///---Waiting before producing another item----------
 	    	}
@@ -98,15 +101,12 @@ void runProducer(int id){
 
 void runConsumer(int id){
 		Consumer* cons = new Consumer(id, container);
-	    int time, item;
+	    int time = 0, item;
 	    while(true) {
 	    	///wait for an arbitrary time
-	    	time = (15)*10000000;
+	    	time = (30)*1000000;
 	    	for(int i=0; i<time; i++){
 	    		///----Waiting
-
-
-
 
 	    	}
 
@@ -119,7 +119,13 @@ void runConsumer(int id){
 
 
 
+void keepLooping(int x){
 
+	while(true){
+		currentThread->Yield();
+	}
+
+}
 
 
 
@@ -139,14 +145,21 @@ ThreadTest()
 	container = new Container(CONTAINER_SIZE);
 	container->print();
 	for(int i=0; i<TOTAL; i++){
-		Thread* t = new Thread("Producer thread");
+		stringstream sp, sc;
+		sp<<"Producer "<<(i+1);
+
+		Thread* t = new Thread((char*) sp.str().c_str());
 		t->Fork(runProducer, i+1);
 
-		Thread* t2 = new Thread("Consumer thread");
+
+
+		sc<<"Consumer "<<(i+1);
+
+		Thread* t2 = new Thread((char*) sc.str().c_str());
 		t2->Fork(runConsumer, i+1);
 	}
 
-	runConsumer(TOTAL+1);
+	keepLooping(0);
 
    // switch (testnum) {
    // case 1:

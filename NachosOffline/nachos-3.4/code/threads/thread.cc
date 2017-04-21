@@ -34,7 +34,9 @@
 
 Thread::Thread(char* threadName)
 {
-    name = threadName;
+	name = new char[strlen(threadName)+1];
+    strcpy(name,threadName);
+
     stackTop = NULL;
     stack = NULL;
     status = JUST_CREATED;
@@ -58,6 +60,8 @@ Thread::Thread(char* threadName)
 Thread::~Thread()
 {
     DEBUG('t', "Deleting thread \"%s\"\n", name);
+
+    delete[] name;
 
     ASSERT(this != currentThread);
     if (stack != NULL)

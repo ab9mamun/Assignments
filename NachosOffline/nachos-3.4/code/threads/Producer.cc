@@ -16,5 +16,5 @@ Producer::Producer(int id, Container* container){//, Container container){
 }
 
 void Producer::produce(int item){
-	container->put(id, item);
+	container->put(item);
 }

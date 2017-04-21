@@ -16,7 +16,7 @@ Consumer::Consumer(int id, Container* container){
 
 
 int Consumer::consume(){
-	return container->get(id);
+	return container->get();
 
 
 }

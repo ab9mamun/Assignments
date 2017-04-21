@@ -29,11 +29,13 @@ Container::Container(int size){
 	printf("Container created. Size: %d\n", size);
 }
 
-void Container::put(int prodId, int item){
+void Container::put(int item){
 
 	lock->Acquire();
 	while(length==size){
+	//	printf("Producer %d is going to sleep\n", prodId);
 		prodCondition->Wait(lock);
+		//printf("Producer %d woke up\n", prodId);
 	}
 
 	///now produce----------------
@@ -47,20 +49,22 @@ void Container::put(int prodId, int item){
 
 ///	printf("Consumer %d consumed Food %d\n", prodId, item); ///what the hell was that????
 
-	printf("Producer %d produced Food %d\n", prodId, item);
+	printf("\n%s produced Food %d\n", currentThread->getName(), item);
 	print();
 
-	if(length==1) consCondition->Signal(lock);
+	if(length==1) consCondition->Broadcast(lock);
 
 	lock->Release();
 }
 
-int Container::get(int consId){
+int Container::get(){
 
 	lock->Acquire();
 
 	while(length==0){
+		//printf("Consumer %d is going to sleep\n", consId);
 		consCondition->Wait(lock);
+		//printf("Consumer %d woke up\n", consId);
 	}
 
 	///now consume item---------
@@ -72,10 +76,10 @@ int Container::get(int consId){
 	front = (front+1)%size;
 	length--;
 
-	printf("Consumer %d consumed Food %d\n", consId, item);
+	printf("\n%s consumed Food %d\n", currentThread->getName(), item);
 	print();
 
-	if(length==size-1) prodCondition->Signal(lock);
+	if(length==size-1) prodCondition->Broadcast(lock);
 
 	lock->Release();
 
@@ -90,6 +94,8 @@ void Container::print(){
 	for(int i=0; i<length; i++){
 		printf("%d ", items[(front+i)%size]);
 	}
+	if(length==size) printf("<<FULL>>");
+	else if(length==0) printf("<<EMPTY>>");
 	printf("\n\n");
 }
 

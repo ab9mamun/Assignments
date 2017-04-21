@@ -102,12 +102,15 @@ Semaphore::V()
 // the test case in the network assignment won't work!
 Lock::Lock(char* debugName) {
 
-	name = debugName;
+	name = new char[strlen(debugName)+1];
+	strcpy(name,debugName);
+
 	isHeldBySome = false;
 	queue = new List;
 	currentHolder = NULL;
 }
 Lock::~Lock() {
+	delete[] name;
 	delete queue;
 }
 
@@ -154,11 +157,14 @@ void Lock::Release() {
 }
 
 Condition::Condition(char* debugName) {
-	name = debugName;
+
+	name = new char[strlen(debugName)+1];
+	strcpy(name,debugName);
 	queue = new List;
 
 }
 Condition::~Condition() {
+	delete[] name;
 	delete queue;
 }
 
@@ -167,9 +173,12 @@ void Condition::Wait(Lock* conditionLock) {
 	 IntStatus oldLevel = interrupt->SetLevel(IntOff);	// disable interrupts
 	 conditionLock->Release();
 
-	  		// semaphore not available
+	 printf("%s is going to sleep\n", currentThread->getName());
+
 	queue->Append((void *)currentThread);	// so go to sleep
 	currentThread->Sleep();
+
+	//printf("%s woke up. Now trying for lock.. \n", currentThread->getName());
 
 	conditionLock->Acquire();
 	(void) interrupt->SetLevel(oldLevel);	// re-enable interrupts
@@ -183,6 +192,7 @@ void Condition::Signal(Lock* conditionLock) {
 		if(!queue->IsEmpty()){
 			Thread* thread  = (Thread*) queue->Remove();	// wake up a thread
 			scheduler->ReadyToRun(thread);
+			printf("%s is now ready to run..\n", thread->getName());
 		}
 
 	(void) interrupt->SetLevel(oldLevel);	// re-enable interrupts
@@ -194,6 +204,7 @@ void Condition::Broadcast(Lock* conditionLock) {
 			while(!queue->IsEmpty()){
 				Thread* thread  = (Thread*) queue->Remove();	// wake up all threads
 				scheduler->ReadyToRun(thread);
+				printf("%s is now ready to run..\n", thread->getName());
 			}
 
 			(void) interrupt->SetLevel(oldLevel);	// re-enable interrupts

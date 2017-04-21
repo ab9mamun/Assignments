@@ -24,8 +24,8 @@ public:
 	Container();
 	Container(int size);
 
-	void put(int prodId, int item);
-	int get(int consId);
+	void put(int item);
+	int get();
 	void print();
 
 	~Container();
