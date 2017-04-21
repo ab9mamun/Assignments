@@ -134,7 +134,7 @@ ThreadTest()
 		t->Fork(runProducer, i+1);
 
 		Thread* t2 = new Thread("Consumer thread");
-		t2->Fork(runConsumer, TOTAL-i);
+		t2->Fork(runConsumer, i+1);
 	}
 
 	runConsumer(TOTAL+1);

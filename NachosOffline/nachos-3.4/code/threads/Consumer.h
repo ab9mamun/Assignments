@@ -1,3 +1,6 @@
+#ifndef CONSUMER_H
+#define CONSUMER_H
+
 #include "thread.h"
 #include "copyright.h"
 #include "system.h"
@@ -13,3 +16,5 @@ class Consumer{
 		int consume();
 		~Consumer();
 };
+
+#endif //CONSUMER_H

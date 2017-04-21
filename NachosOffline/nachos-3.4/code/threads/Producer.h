@@ -1,3 +1,6 @@
+#ifndef PRODUCER_H
+#define PRODUCER_H
+
 #include "thread.h"
 #include "copyright.h"
 #include "system.h"
@@ -13,3 +16,5 @@ public:
 	~Producer();
 
 };
+
+#endif //PRODUCER_H
