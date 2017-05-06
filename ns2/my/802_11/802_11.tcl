@@ -10,6 +10,7 @@ set cbr_rate 11.0Mb
 set num_node [lindex $argv 0]
 set num_random_flow [lindex $argv 1]
 set cbr_pckt_per_sec [lindex $argv 2]
+set node_speed [lindex $argv 3]
 
 set cbr_interval [expr 1.0/$cbr_pckt_per_sec]
 
@@ -115,7 +116,7 @@ $ns_ node-config -adhocRouting $val(rp) -llType $val(ll) \
 puts "start node creation"
 for {set i 0} {$i < $num_node} {incr i} {
 	set node_($i) [$ns_ node]
-#	$node_($i) random-motion 0
+	$node_($i) random-motion $node_speed
 }
 
 #FULL CHNG
