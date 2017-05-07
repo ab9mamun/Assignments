@@ -10,13 +10,33 @@ set cbr_rate 11.0Mb
 set num_node [lindex $argv 0]
 set num_random_flow [lindex $argv 1]
 set cbr_pckt_per_sec [lindex $argv 2]
+set coverage_multiplier [lindex $argv 3]
 
 set cbr_interval [expr 1.0/$cbr_pckt_per_sec]
 
-set x_dim 150 ; #[lindex $argv 1]
-set y_dim 150 ; #[lindex $argv 1]
+set x_dim [expr $coverage_multiplier*15.0] ; #[lindex $argv 1]
+set y_dim [expr $coverage_multiplier*15.0] ; #[lindex $argv 1]
+
+set dist(5m)  7.69113e-06
+set dist(9m)  2.37381e-06
+set dist(10m) 1.92278e-06
+set dist(11m) 1.58908e-06
+set dist(12m) 1.33527e-06
+set dist(13m) 1.13774e-06
+set dist(14m) 9.81011e-07
+set dist(15m) 8.54570e-07
+set dist(16m) 7.51087e-07
+set dist(20m) 4.80696e-07
+set dist(25m) 3.07645e-07
+set dist(30m) 2.13643e-07
+set dist(35m) 1.56962e-07
+set dist(40m) 1.20174e-07
+Phy/WirelessPhy set CSThresh_ $dist(15m)
+Phy/WirelessPhy set RXThresh_ $dist(15m)
+Phy/WirelessPhy set TXThresh_ $dist(15m)
+
 set time_duration 5 ; #[lindex $argv 5] ;#50
-set start_time 10 ;#100
+set start_time 5 ;#100
 set parallel_start_gap 0.0
 set cross_start_gap 0.0
 
@@ -38,7 +58,7 @@ set val(transitiontime_11) 2.36			;#LEAP (802.11g)
 #set val(transitionpower_11) 200e-3		;#Stargate (802.11b)	??????????????????????????????/
 #set val(transitiontime_11) 3			;#Stargate (802.11b)
 
-Mac/802_11 set dataRate_ 11Mb
+Mac/802_15_4 set dataRate_ 11Mb
 
 set extra_time 10 ;#10
 set tcp_src Agent/UDP
@@ -53,18 +73,18 @@ set tcp_sink Agent/Null
 set val(chan) Channel/WirelessChannel ;# channel type
 set val(prop) Propagation/TwoRayGround ;# radio-propagation model
 #set val(prop) Propagation/FreeSpace ;# radio-propagation model
-set val(netif) Phy/WirelessPhy ;# network interface type
-set val(mac) Mac/802_11 ;# MAC type
+set val(netif) Phy/WirelessPhy/802_15_4 ;# network interface type
+set val(mac) Mac/802_15_4 ;# MAC type
 #set val(mac) Mac/802_11;# MAC type
 set val(ifq) Queue/DropTail/PriQueue ;# interface queue type
 set val(ll) LL ;# link layer type
 set val(ant) Antenna/OmniAntenna ;# antenna model
 set val(ifqlen) 50 ;# max packet in ifq
-set val(rp) DSDV ; #[lindex $argv 4] ;# routing protocol
+set val(rp) AODV ; #[lindex $argv 4] ;# routing protocol
 
-Mac/802_11 set syncFlag_ 1
+Mac/802_15_4 set syncFlag_ 1
 
-Mac/802_11 set dutyCycle_ cbr_interval
+Mac/802_15_4 set dutyCycle_ cbr_interval
 
 set nm nam_802_15_4.nam
 set tr trace_802_15_4.tr
@@ -125,7 +145,7 @@ while {$i < $num_node } {
 
 
 	set x_pos [expr int($x_dim*rand())] ;#random settings
-	set y_pos [expr int($y_dim*rand())] ;#random settings
+	set y_pos [expr 1+int($y_dim*rand())] ;#random settings
 
 	$node_($i) set X_ $x_pos;
 	$node_($i) set Y_ $y_pos;

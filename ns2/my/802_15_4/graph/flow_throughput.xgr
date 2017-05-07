@@ -1,0 +1,9 @@
+YUnitText: Throughput(kbps)
+XUnitText: Number of Flows
+""
+0 0.0
+10 50.816
+20 30.087
+30 17.312
+40 36.224
+50 18.245

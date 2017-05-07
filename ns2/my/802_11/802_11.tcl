@@ -16,8 +16,8 @@ set cbr_interval [expr 1.0/$cbr_pckt_per_sec]
 
 set x_dim 150 ; #[lindex $argv 1]
 set y_dim 150 ; #[lindex $argv 1]
-set time_duration 5 ; #[lindex $argv 5] ;#50
-set start_time 10 ;#100
+set time_duration 5; #[lindex $argv 5] ;#50
+set start_time 5 ;#100
 set parallel_start_gap 0.0
 set cross_start_gap 0.0
 
@@ -116,7 +116,7 @@ $ns_ node-config -adhocRouting $val(rp) -llType $val(ll) \
 puts "start node creation"
 for {set i 0} {$i < $num_node} {incr i} {
 	set node_($i) [$ns_ node]
-	$node_($i) random-motion $node_speed
+	$node_($i) random-motion 0
 }
 
 #FULL CHNG
@@ -125,12 +125,13 @@ set i 0;
 while {$i < $num_node } {
 
 
-	set x_pos [expr int($x_dim*rand())] ;#random settings
-	set y_pos [expr int($y_dim*rand())] ;#random settings
+	set x_pos [expr 1+int(($x_dim-2)*rand())] ;#random settings
+	set y_pos [expr 1+int(($y_dim-2)*rand())] ;#random settings
 
 	$node_($i) set X_ $x_pos;
 	$node_($i) set Y_ $y_pos;
-	$node_($i) set Z_ 0.0
+	$node_($i) set Z_ 1
+
 
 	puts -nonewline $topofile "$i x: [$node_($i) set X_] y: [$node_($i) set Y_] \n"
 
@@ -141,6 +142,14 @@ puts "RANDOM topology"
 
 puts "node creation complete"
 
+#--------------movement------------------------------------------
+for {set i 0} {$i < $num_node} {incr i} { ;
+	set movement_start_time [expr int($start_time + $time_duration*rand())]
+	set dest_x [expr 1+ int(($x_dim-2)*rand())]
+	set dest_y [expr 1+ int(($y_dim-2)*rand())]
+	$ns_ at $movement_start_time "$node_($i) setdest $dest_x $dest_y $node_speed"
+}
+#---------------------------movement end--------------------------------------
 #CHNG
 for {set i 0} {$i < $num_random_flow} {incr i} { ;#sink
 #    set udp_($i) [new Agent/UDP]

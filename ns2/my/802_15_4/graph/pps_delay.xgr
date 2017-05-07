@@ -1,0 +1,9 @@
+YUnitText: Delay(s)
+XUnitText: Number of Packets per second
+""
+0 0.0
+100 0.042
+200 0.229
+300 0.275
+400 0.244
+500 0.260

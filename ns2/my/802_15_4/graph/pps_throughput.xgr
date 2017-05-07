@@ -1,0 +1,9 @@
+YUnitText: Throughput(kbps)
+XUnitText: Number of Packets per second
+""
+0 0.0
+100 50.816
+200 86.512
+300 22.134
+400 92.938
+500 78.338
