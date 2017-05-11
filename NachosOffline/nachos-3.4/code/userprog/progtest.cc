@@ -28,6 +28,8 @@ MemoryManager* MMU;
 Lock* MMU_lock;
 ProcessTable* processTable;
 Lock* processTable_lock;
+Lock* exec_lock;
+Lock* exit_lock;
 
 void
 StartProcess(char *filename)
@@ -38,9 +40,8 @@ StartProcess(char *filename)
     MMU_lock = new Lock("Another MMU_lock");
     processTable = new ProcessTable(MaxProcessNumber);
     processTable_lock = new Lock("Another processTable_lock");
-
-
-
+    exec_lock = new Lock("Exec lock");
+    exit_lock = new Lock("Exit lock");
 
 
 
@@ -50,6 +51,8 @@ StartProcess(char *filename)
     }
     space = new AddrSpace(executable);    
     currentThread->space = space;
+    int processId = processTable->Alloc((void*) currentThread);
+    currentThread->processId = processId;
 
     delete executable;			// close file
 
