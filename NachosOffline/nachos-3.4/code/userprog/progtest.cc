@@ -8,23 +8,41 @@
 // All rights reserved.  See copyright.h for copyright notice and limitation 
 // of liability and disclaimer of warranty provisions.
 
+
 #include "copyright.h"
 #include "system.h"
 #include "console.h"
 #include "addrspace.h"
 #include "synch.h"
+#include "MemoryManager.h"
+#include "ProcessTable.h"
+
+#define MaxProcessNumber 64
 
 //----------------------------------------------------------------------
 // StartProcess
 // 	Run a user program.  Open the executable, load it into
 //	memory, and jump to it.
 //----------------------------------------------------------------------
+MemoryManager* MMU;
+Lock* MMU_lock;
+ProcessTable* processTable;
+Lock* processTable_lock;
 
 void
 StartProcess(char *filename)
 {
     OpenFile *executable = fileSystem->Open(filename);
     AddrSpace *space;
+    MMU = new MemoryManager(NumPhysPages);
+    MMU_lock = new Lock("Another MMU_lock");
+    processTable = new ProcessTable(MaxProcessNumber);
+    processTable_lock = new Lock("Another processTable_lock");
+
+
+
+
+
 
     if (executable == NULL) {
 	printf("Unable to open file %s\n", filename);

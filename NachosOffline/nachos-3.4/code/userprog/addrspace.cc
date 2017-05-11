@@ -19,9 +19,17 @@
 #include "system.h"
 #include "addrspace.h"
 #include "noff.h"
+#include "synch.h"
+#include "MemoryManager.h"
+
+
 #ifdef HOST_SPARC
 #include <strings.h>
 #endif
+
+
+extern MemoryManager* MMU;
+extern Lock* MMU_lock;
 
 //----------------------------------------------------------------------
 // SwapHeader
@@ -29,6 +37,7 @@
 //	object file header, in case the file was generated on a little
 //	endian machine, and we're now running on a big endian machine.
 //----------------------------------------------------------------------
+
 
 static void 
 SwapHeader (NoffHeader *noffH)
@@ -62,6 +71,7 @@ SwapHeader (NoffHeader *noffH)
 
 AddrSpace::AddrSpace(OpenFile *executable)
 {
+
     NoffHeader noffH;
     unsigned int i, size;
 
@@ -88,22 +98,63 @@ AddrSpace::AddrSpace(OpenFile *executable)
 // first, set up the translation 
     pageTable = new TranslationEntry[numPages];
     for (i = 0; i < numPages; i++) {
-	pageTable[i].virtualPage = i;	// for now, virtual page # = phys page #
-	pageTable[i].physicalPage = i;
-	pageTable[i].valid = TRUE;
-	pageTable[i].use = FALSE;
-	pageTable[i].dirty = FALSE;
-	pageTable[i].readOnly = FALSE;  // if the code segment was entirely on 
+		pageTable[i].virtualPage = i;	// for now, virtual page # = phys page #
+		pageTable[i].physicalPage = MMU->AllocPage();
+
+		if(pageTable[i].physicalPage<0){
+			///free the allocated pages-------------------------
+			for(int currentVirtualPage = 0; currentVirtualPage<i; currentVirtualPage++){
+				MMU->FreePage(pageTable[currentVirtualPage].physicalPage);
+			}
+			ASSERT(FALSE);
+		}
+
+		pageTable[i].valid = TRUE;
+		pageTable[i].use = FALSE;
+		pageTable[i].dirty = FALSE;
+		pageTable[i].readOnly = FALSE;  // if the code segment was entirely on
 					// a separate page, we could set its 
 					// pages to be read-only
     }
     
 // zero out the entire address space, to zero the unitialized data segment 
 // and the stack segment
-    bzero(machine->mainMemory, size);
+    //bzero(machine->mainMemory, size);
+
+    /*
+     * we cannot clear the entire memory, rather, we will clear the memory allocated to this process=============
+     *
+     *
+     */
+    MMU_lock->Acquire();
+    for(int i=0; i<numPages; i++){
+    	int locationInMemory = PageSize*pageTable[i].physicalPage;
+    	bzero(machine->mainMemory+locationInMemory, PageSize);
+
+    }
 
 // then, copy in the code and data segments into memory
-    if (noffH.code.size > 0) {
+    int numPagesCS= divRoundUp(noffH.code.size, PageSize);
+    int numPagesDS= divRoundUp(noffH.initData.size, PageSize);
+
+    int codeBase = noffH.code.inFileAddr;
+    int CS = 0;
+
+    for(int i=0; i<numPagesCS; i++){
+    	int where = PageSize*pageTable[CS+i].physicalPage;
+    	executable->ReadAt(machine->mainMemory+where, PageSize, codeBase+ i*PageSize);
+    }
+
+    int dataBase = noffH.initData.inFileAddr;
+    int DS = CS+numPagesCS;
+    for(int i=0; i<numPagesDS; i++){
+        	int where = PageSize*pageTable[DS+i].physicalPage;
+        	executable->ReadAt(machine->mainMemory+where, PageSize, dataBase+ i*PageSize);
+     }
+
+    MMU_lock->Release();
+
+   /* if (noffH.code.size > 0) {
         DEBUG('a', "Initializing code segment, at 0x%x, size %d\n", 
 			noffH.code.virtualAddr, noffH.code.size);
         executable->ReadAt(&(machine->mainMemory[noffH.code.virtualAddr]),
@@ -115,6 +166,7 @@ AddrSpace::AddrSpace(OpenFile *executable)
         executable->ReadAt(&(machine->mainMemory[noffH.initData.virtualAddr]),
 			noffH.initData.size, noffH.initData.inFileAddr);
     }
+    */
 
 }
 

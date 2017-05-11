@@ -73,7 +73,7 @@ THREAD_C =../threads/main.cc\
 THREAD_S = ../threads/switch.s
 
 THREAD_O =main.o list.o scheduler.o synch.o synchlist.o system.o thread.o \
-	utility.o threadtest.o interrupt.o stats.o sysdep.o timer.o Producer.o Consumer.o Container.o
+	utility.o threadtest.o interrupt.o stats.o sysdep.o timer.o Producer.o Consumer.o Container.o \
 
 USERPROG_H = ../userprog/addrspace.h\
 	../userprog/bitmap.h\
@@ -82,7 +82,10 @@ USERPROG_H = ../userprog/addrspace.h\
 	../machine/console.h\
 	../machine/machine.h\
 	../machine/mipssim.h\
-	../machine/translate.h
+	../machine/translate.h\
+	../userprog/MemoryManager.h\
+	../userprog/ProcessTable.h\
+	../userprog/HashTable.h
 
 USERPROG_C = ../userprog/addrspace.cc\
 	../userprog/bitmap.cc\
@@ -91,10 +94,13 @@ USERPROG_C = ../userprog/addrspace.cc\
 	../machine/console.cc\
 	../machine/machine.cc\
 	../machine/mipssim.cc\
-	../machine/translate.cc
+	../machine/translate.cc\
+	../userprog/MemoryManager.cc\
+	../userprog/ProcessTable.cc\
+	../userprog/HashTable.cc
 
 USERPROG_O = addrspace.o bitmap.o exception.o progtest.o console.o machine.o \
-	mipssim.o translate.o
+	mipssim.o translate.o MemoryManager.o ProcessTable.o HashTable.o
 
 VM_H = 
 VM_C = 
