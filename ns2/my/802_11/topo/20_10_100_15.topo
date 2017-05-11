@@ -1,3 +1,35 @@
+<<<<<<< HEAD
+0 x: 1 y: 10 
+1 x: 17 y: 4 
+2 x: 8 y: 6 
+3 x: 10 y: 1 
+4 x: 2 y: 6 
+5 x: 11 y: 10 
+6 x: 2 y: 11 
+7 x: 17 y: 1 
+8 x: 9 y: 11 
+9 x: 2 y: 10 
+10 x: 16 y: 18 
+11 x: 4 y: 2 
+12 x: 4 y: 6 
+13 x: 13 y: 7 
+14 x: 9 y: 9 
+15 x: 2 y: 9 
+16 x: 2 y: 5 
+17 x: 8 y: 11 
+18 x: 8 y: 3 
+19 x: 14 y: 1 
+RANDOM:  Src: 9 Dest: 12
+RANDOM:  Src: 14 Dest: 3
+RANDOM:  Src: 15 Dest: 17
+RANDOM:  Src: 3 Dest: 15
+RANDOM:  Src: 7 Dest: 8
+RANDOM:  Src: 8 Dest: 18
+RANDOM:  Src: 9 Dest: 6
+RANDOM:  Src: 9 Dest: 6
+RANDOM:  Src: 4 Dest: 8
+RANDOM:  Src: 11 Dest: 12
+=======
 0 x: 36 y: 4 
 1 x: 49 y: 119 
 2 x: 50 y: 138 
@@ -28,3 +60,4 @@ RANDOM:  Src: 12 Dest: 6
 RANDOM:  Src: 2 Dest: 9
 RANDOM:  Src: 7 Dest: 4
 RANDOM:  Src: 6 Dest: 7
+>>>>>>> 46aaf96a792c5510634282acbdc46325f11efb36

@@ -1,7 +1,7 @@
 puts "Parameters: [lindex $argv 0] [lindex $argv 1] [lindex $argv 2] [lindex $argv 3]\n"
 set out "[lindex $argv 0]_[lindex $argv 1]_[lindex $argv 2]_[lindex $argv 3]"
 ################################################################802.11 in Grid topology with cross folw
-set cbr_size 64 ; #[lindex $argv 2]; #4,8,16,32,64
+set cbr_size 16 ; #[lindex $argv 2]; #4,8,16,32,64
 set cbr_rate 11.0Mb
 
  ;# ?????? 1 for 1 packets per second and 0.1 for 10 packets per second
@@ -14,9 +14,15 @@ set node_speed [lindex $argv 3]
 
 set cbr_interval [expr 1.0/$cbr_pckt_per_sec]
 
+<<<<<<< HEAD
+set x_dim 20 ; #[lindex $argv 1]
+set y_dim 20 ; #[lindex $argv 1]
+set time_duration 10 ; #[lindex $argv 5] ;#50
+=======
 set x_dim 150 ; #[lindex $argv 1]
 set y_dim 150 ; #[lindex $argv 1]
 set time_duration 5; #[lindex $argv 5] ;#50
+>>>>>>> 46aaf96a792c5510634282acbdc46325f11efb36
 set start_time 5 ;#100
 set parallel_start_gap 0.0
 set cross_start_gap 0.0
@@ -131,6 +137,7 @@ while {$i < $num_node } {
 	$node_($i) set X_ $x_pos;
 	$node_($i) set Y_ $y_pos;
 	$node_($i) set Z_ 1
+
 
 
 	puts -nonewline $topofile "$i x: [$node_($i) set X_] y: [$node_($i) set Y_] \n"

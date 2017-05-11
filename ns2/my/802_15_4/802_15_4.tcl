@@ -1,8 +1,8 @@
 puts "Parameters: [lindex $argv 0] [lindex $argv 1] [lindex $argv 2] [lindex $argv 3]\n"
 set out "[lindex $argv 0]_[lindex $argv 1]_[lindex $argv 2]_[lindex $argv 3]"
 ################################################################802.11 in Grid topology with cross folw
-set cbr_size 64 ; #[lindex $argv 2]; #4,8,16,32,64
-set cbr_rate 11.0Mb
+set cbr_size 8 ; #[lindex $argv 2]; #4,8,16,32,64
+set cbr_rate 11Mb
 
  ;# ?????? 1 for 1 packets per second and 0.1 for 10 packets per second
 #set cbr_interval 0.00005 ; #[expr 1/[lindex $argv 2]] ;# ?????? 1 for 1 packets per second and 0.1 for 10 packets per second
@@ -35,7 +35,11 @@ Phy/WirelessPhy set CSThresh_ $dist(15m)
 Phy/WirelessPhy set RXThresh_ $dist(15m)
 Phy/WirelessPhy set TXThresh_ $dist(15m)
 
+<<<<<<< HEAD
+set time_duration 30 ; #[lindex $argv 5] ;#50
+=======
 set time_duration 5 ; #[lindex $argv 5] ;#50
+>>>>>>> 46aaf96a792c5510634282acbdc46325f11efb36
 set start_time 5 ;#100
 set parallel_start_gap 0.0
 set cross_start_gap 0.0
@@ -144,8 +148,13 @@ set i 0;
 while {$i < $num_node } {
 
 
+<<<<<<< HEAD
+	set x_pos [expr 1+int(($x_dim-2)*0.1*rand())] ;#random settings
+	set y_pos [expr 1+int(($y_dim-2)*0.1*rand())] ;#random settings
+=======
 	set x_pos [expr int($x_dim*rand())] ;#random settings
 	set y_pos [expr 1+int($y_dim*rand())] ;#random settings
+>>>>>>> 46aaf96a792c5510634282acbdc46325f11efb36
 
 	$node_($i) set X_ $x_pos;
 	$node_($i) set Y_ $y_pos;

@@ -4,7 +4,11 @@ packets_per_second=(100 200 300 400 500)
 speed=(5 10 15 20 25)
 
 iteration=5
+<<<<<<< HEAD
+outputGraph="graphs_802_11.ps"
+=======
 outputGraph="graphs.ps"
+>>>>>>> 46aaf96a792c5510634282acbdc46325f11efb36
 
 
 #graph files initialization
