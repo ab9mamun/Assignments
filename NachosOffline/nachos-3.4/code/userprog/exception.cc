@@ -55,6 +55,29 @@ extern SynchConsole* myconsole;
 //	are in machine.h.
 //----------------------------------------------------------------------
 
+void ExitProcess(){
+	syscallLock->Acquire();
+
+	int returnVal = machine->ReadRegister(4);
+	printf("Exiting with return val: %d\n", returnVal);
+
+	int pts = machine->pageTableSize;
+	TranslationEntry* pageTable = machine->pageTable;
+	//	printf("freeing memory\n");
+	for(int i=0; i<pts; i++){
+	   MMU->FreePage(pageTable[i].physicalPage);
+	}
+	//printf("memory freed\n");
+	//printf("processTable: %d\n", processTable);
+	//printf("currentThread: %d processId: %d\n", currentThread, currentThread->processId);
+	processTable->Release(currentThread->processId);
+	//	printf("released from process table\n");
+	 bool empt = processTable->empty();
+	 syscallLock->Release();
+	 if(empt) interrupt->Halt();
+	 else currentThread->Finish();
+}
+
 void forkProcess(int notUsed)
 {
 currentThread->space->InitRegisters();
@@ -146,27 +169,7 @@ ExceptionHandler(ExceptionType which)
     	}
 
     	else if(type==SC_Exit){
-    		syscallLock->Acquire();
-
-    		int returnVal = machine->ReadRegister(4);
-    		printf("Exiting with return val: %d\n", returnVal);
-
-    		int pts = machine->pageTableSize;
-    		TranslationEntry* pageTable = machine->pageTable;
-    	//	printf("freeing memory\n");
-    		for(int i=0; i<pts; i++){
-
-    			MMU->FreePage(pageTable[i].physicalPage);
-    		}
-    		//printf("memory freed\n");
-    		//printf("processTable: %d\n", processTable);
-    		//printf("currentThread: %d processId: %d\n", currentThread, currentThread->processId);
-    		processTable->Release(currentThread->processId);
-    	//	printf("released from process table\n");
-    		bool empt = processTable->empty();
-    		syscallLock->Release();
-    		if(empt) interrupt->Halt();
-    		else currentThread->Finish();
+    		ExitProcess();
     	}
 
 
@@ -233,12 +236,40 @@ ExceptionHandler(ExceptionType which)
     	}
 
     	else {
-    		printf("Unexpected user mode exception %d %d\n", which, type);
-    		ASSERT(FALSE);
-    	    }
+    		printf("Not supported system call exception %d %d\n", which, type);
+    		//ASSERT(FALSE);
+    	 }
+    }
+    else if(which==PageFaultException) {
+    	printf("Page Fault Exception.. killing the process\n");
+    	ExitProcess();
+    }
+    else if(which==ReadOnlyException) {
+        printf("ReadOnlyException.. killing the process\n");
+       	ExitProcess();
+    }
+    else if(which==BusErrorException) {
+    	printf("BusErrorException.. killing the process\n");
+        ExitProcess();
+     }
+    else if(which==AddressErrorException) {
+       printf("AddressErrorException.. killing the process\n");
+       ExitProcess();
+    }
+    else if(which==OverflowException) {
+       printf("OverflowException.. killing the process\n");
+       ExitProcess();
+     }
+    else if(which==NumExceptionTypes) {
+       printf("NumExceptionTypes.. killing the process\n");
+       ExitProcess();
+    }
+    else if(which==IllegalInstrException) {
+       printf("IllegalInstrException.. killing the process\n");
+       ExitProcess();
     }
     else {
-	printf("Unexpected user mode exception %d %d\n", which, type);
-	ASSERT(FALSE);
+    	printf("Unrecognized exception %d %d ..killing the process\n", which, type);
+    	ExitProcess();
     }
 }

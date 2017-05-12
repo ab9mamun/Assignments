@@ -628,7 +628,8 @@ exception.o: ../userprog/exception.cc /usr/include/stdc-predef.h \
  ../threads/list.h ../machine/stats.h ../machine/timer.h \
  ../userprog/syscall.h ../userprog/ProcessTable.h ../userprog/bitmap.h \
  ../filesys/openfile.h ../threads/synch.h ../userprog/HashTable.h \
- ../userprog/MemoryManager.h
+ ../userprog/MemoryManager.h ../userprog/SynchConsole.h \
+ ../machine/console.h
 progtest.o: ../userprog/progtest.cc /usr/include/stdc-predef.h \
  ../threads/copyright.h ../threads/system.h ../threads/copyright.h \
  ../threads/utility.h ../threads/bool.h ../machine/sysdep.h \
@@ -650,7 +651,8 @@ progtest.o: ../userprog/progtest.cc /usr/include/stdc-predef.h \
  ../threads/list.h ../machine/stats.h ../machine/timer.h \
  ../machine/console.h ../userprog/addrspace.h ../threads/synch.h \
  ../userprog/MemoryManager.h ../userprog/bitmap.h ../filesys/openfile.h \
- ../userprog/ProcessTable.h ../userprog/HashTable.h
+ ../userprog/ProcessTable.h ../userprog/HashTable.h \
+ ../userprog/SynchConsole.h
 console.o: ../machine/console.cc /usr/include/stdc-predef.h \
  ../threads/copyright.h ../machine/console.h ../threads/utility.h \
  ../threads/copyright.h ../threads/bool.h ../machine/sysdep.h \
@@ -800,7 +802,8 @@ SynchConsole.o: ../userprog/SynchConsole.cc /usr/include/stdc-predef.h \
  ../threads/utility.h ../machine/translate.h ../machine/disk.h \
  ../userprog/addrspace.h ../filesys/filesys.h ../filesys/openfile.h \
  ../threads/scheduler.h ../threads/list.h ../machine/interrupt.h \
- ../threads/list.h ../machine/stats.h ../machine/timer.h
+ ../threads/list.h ../machine/stats.h ../machine/timer.h \
+ ../threads/synch.h ../machine/console.h
 # DEPENDENCIES MUST END AT END OF FILE
 # IF YOU PUT STUFF HERE IT WILL GO AWAY
 # see make depend above
