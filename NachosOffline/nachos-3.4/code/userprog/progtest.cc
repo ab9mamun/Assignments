@@ -16,6 +16,7 @@
 #include "synch.h"
 #include "MemoryManager.h"
 #include "ProcessTable.h"
+#include "SynchConsole.h"
 
 #define MaxProcessNumber 64
 
@@ -28,8 +29,15 @@ MemoryManager* MMU;
 Lock* MMU_lock;
 ProcessTable* processTable;
 Lock* processTable_lock;
-Lock* exec_lock;
-Lock* exit_lock;
+Lock* syscallLock;
+SynchConsole* myconsole;
+
+ Semaphore *readAvail;
+ Semaphore *writeDone;
+ Console *console;
+ void ReadAvail(int arg) { readAvail->V(); }
+ void WriteDone(int arg) { writeDone->V(); }
+
 
 void
 StartProcess(char *filename)
@@ -40,14 +48,18 @@ StartProcess(char *filename)
     MMU_lock = new Lock("Another MMU_lock");
     processTable = new ProcessTable(MaxProcessNumber);
     processTable_lock = new Lock("Another processTable_lock");
-    exec_lock = new Lock("Exec lock");
-    exit_lock = new Lock("Exit lock");
+    syscallLock = new Lock("Syscall lock");
 
+
+    console = new Console(NULL, NULL, ReadAvail, WriteDone, 0);
+    myconsole = new SynchConsole();
+    readAvail = new Semaphore("read avail", 0);
+    writeDone = new Semaphore("write done", 0);
 
 
     if (executable == NULL) {
 	printf("Unable to open file %s\n", filename);
-	return;
+	interrupt->Halt();
     }
     space = new AddrSpace(executable);    
     currentThread->space = space;
@@ -68,17 +80,14 @@ StartProcess(char *filename)
 // Data structures needed for the console test.  Threads making
 // I/O requests wait on a Semaphore to delay until the I/O completes.
 
-static Console *console;
-static Semaphore *readAvail;
-static Semaphore *writeDone;
+
 
 //----------------------------------------------------------------------
 // ConsoleInterruptHandlers
 // 	Wake up the thread that requested the I/O.
 //----------------------------------------------------------------------
 
-static void ReadAvail(int arg) { readAvail->V(); }
-static void WriteDone(int arg) { writeDone->V(); }
+
 
 //----------------------------------------------------------------------
 // ConsoleTest

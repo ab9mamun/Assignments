@@ -15,8 +15,11 @@
 int
 main()
 {
+char buff[10];
     Exec("../test/sort");
-	/*Halt();*/
-    /* not reached */
-	Exit(-11);
+	
+	Read(buff, 5, ConsoleInput);
+	Write(buff, 5, ConsoleOutput);
+	Exit(11);
+
 }
