@@ -1,4 +1,5 @@
 #include "HashTable.h"
+#include <stdio.h>
 
 Node::Node(int key, void* item){
 	this->key = key;
@@ -86,14 +87,20 @@ void* HashTable::get(int key) {
 }
 
 bool HashTable::remove(int key){
+	//printf("inside remove key: %d\n", key);
 	int index = hashcode(key);
+	//printf("inside remove index: %d\n", index);
 			Node*temp = table[index];
+		//	printf("inside remove temp: %d %d\n", temp, temp->getKey());
 			if(!temp){
 				return false;
 			}
 			if(temp->getKey()==key){
-				table[index] = 0;
+				table[index] = temp->getNext();
+				//printf("inside remove table[%d]: %d\n", index, temp->getNext());
 				delete temp;
+				//printf("inside remove temp deleted\n");
+				return true;  ///this was missing, that's why a core dump was occuring----------
 			}
 			Node* prev = temp;
 			temp = temp->getNext();

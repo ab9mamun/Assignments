@@ -86,7 +86,7 @@ ExceptionHandler(ExceptionType which)
     	else if(type==SC_Exec){
 
     		exec_lock->Acquire();	// acquire lock
-    		printf("inside sc_exec\n");
+    	//	printf("inside sc_exec\n");
 
     		int fileNameAddress = machine->ReadRegister(4); //only 1 argument, so a0 (register 4) will get the argument
     		char* fileName = new char[150];
@@ -99,7 +99,7 @@ ExceptionHandler(ExceptionType which)
 				i++;
     		}
     		fileName[i]=(char) 0;
-    		printf("inside sc_exec\n");
+    	//	printf("inside sc_exec\n");
     		printf("Attempting to execute %s\n", fileName);
     		OpenFile* executable = fileSystem->Open(fileName);
     		if(executable==0){
@@ -122,16 +122,16 @@ ExceptionHandler(ExceptionType which)
 
     		delete fileName;
     		delete executable;
-    		printf("inside sc_exec\n");
+    		//printf("inside sc_exec\n");
 
     		exec_lock->Release();	// release lock
     		newThread->Fork(forkProcess, 0);
     		/* routine task – do at last -- generally manipulate PCReg,
     		PrevPCReg, NextPCReg so that they point to proper place*/
     		incrementPC();
-    		printf("inside sc_exec\n");
+    		//printf("inside sc_exec\n");
 
-    		printf("exiting sc_exec\n");
+    		//printf("exiting sc_exec\n");
     	}
 
     	else if(type==SC_Exit){
@@ -142,13 +142,20 @@ ExceptionHandler(ExceptionType which)
 
     		int pts = machine->pageTableSize;
     		TranslationEntry* pageTable = machine->pageTable;
+    	//	printf("freeing memory\n");
     		for(int i=0; i<pts; i++){
+
     			MMU->FreePage(pageTable[i].physicalPage);
     		}
+    		//printf("memory freed\n");
+    		//printf("processTable: %d\n", processTable);
+    		//printf("currentThread: %d processId: %d\n", currentThread, currentThread->processId);
     		processTable->Release(currentThread->processId);
+    	//	printf("released from process table\n");
+    		bool empt = processTable->empty();
     		exit_lock->Release();
-    		if(processTable->empty()) interrupt->Halt();
-    		currentThread->Finish();
+    		if(empt) interrupt->Halt();
+    		else currentThread->Finish();
     	}
     }
     else {

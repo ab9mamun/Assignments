@@ -41,17 +41,25 @@ void * ProcessTable::Get(int index) {
 
 /* Free the table slot at index. */
 void ProcessTable::Release(int index) {
+	//printf("inside release process with index %d\n", index);
 	lock->Acquire();
+//	printf("inside release process with index %d\n", index);
 	if(length>0){
+	//	printf("inside release process with index %d\n", index);
 		map->Clear(index);
+		//printf("inside release process with index %d\n", index);
 		table->remove(index);
+		//printf("inside release process with index %d\n", index);
 		length--;
 	}
 	lock->Release();
 }
 
 bool ProcessTable::empty(){
-	return length==0;
+	lock->Acquire();
+	bool result =  (length==0);
+	lock->Release();
+	return result;
 }
 
 ProcessTable::~ProcessTable() {

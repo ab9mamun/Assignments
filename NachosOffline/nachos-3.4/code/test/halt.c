@@ -16,6 +16,7 @@ int
 main()
 {
     Exec("../test/sort");
-	//Halt();
+	/*Halt();*/
     /* not reached */
+	Exit(-11);
 }
