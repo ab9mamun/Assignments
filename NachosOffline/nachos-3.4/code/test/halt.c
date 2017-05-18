@@ -16,9 +16,16 @@ int
 main()
 {
 char buff[10];
+	int i;
     Exec("../test/sort");
 	
 	Read(buff, 5, ConsoleInput);
+
+	for ( i=0; i<5; i++){
+		if(buff[i]>='a' && buff[i]<='z'){
+			buff[i] = buff[i]+'A'-'a';
+		}
+	}
 	Write(buff, 5, ConsoleOutput);
 	Exit(11);
 
