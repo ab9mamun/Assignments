@@ -88,8 +88,10 @@ void ExecProcess(){
 	    		int i=0;
 	    		while(true){
 	    			if(!machine->ReadMem(fileNameAddress,1,&temp))  {
-	    				syscallLock->Release();
-	    				return;
+	    				if(!machine->ReadMem(fileNameAddress,1,&temp))  {
+	    					syscallLock->Release();
+	    					return;
+	    				}
 	    			}
 					fileName[i]=(char) temp;
 					fileNameAddress++;
@@ -269,7 +271,7 @@ ExceptionHandler(ExceptionType which)
     	 }
     }
     else if(which==PageFaultException) {
-    //	printf("Page Fault Exception.. killing the process\n");
+    	//printf("Page Fault Exception.. killing the process\n");
     	HandlePageFault();
 //    	ExitProcess();
     }
