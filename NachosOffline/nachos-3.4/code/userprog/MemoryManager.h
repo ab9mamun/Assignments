@@ -27,7 +27,18 @@ void FreePage(int physPageNum);
 /* True if the physical page is allocated, false otherwise. */
 bool PageIsAllocated(int physPageNum);
 
+///added for 3rd assignment----
+int Alloc(int processNo, TranslationEntry& entry);
+int AllocByForce(//int processNo, TranslationEntry* entry
+		);
+
+int* processMap;
+TranslationEntry* entries;
+int numPages;
+
 ~MemoryManager();
+
+
 
 
 };

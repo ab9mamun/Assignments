@@ -3,8 +3,11 @@
    You will create one by calling the constructor with NumPhysPages as
    the parameter.  All physical pages start as free, unallocated pages. */
 MemoryManager::MemoryManager(int numPages){
+	this->numPages = numPages;
 	lock = new Lock("MemManagerLock");
 	map = new BitMap(numPages);
+	entries = new TranslationEntry[numPages];
+	processMap = new int[numPages];
 }
 
 /* Allocate a free page, returning its physical page number or -1
@@ -30,6 +33,26 @@ bool MemoryManager::PageIsAllocated(int physPageNum){
 	bool result = map->Test(physPageNum);
 	lock->Release();
 	return result;
+}
+
+int MemoryManager::Alloc(int processNo, TranslationEntry & entry){
+	lock->Acquire();
+	int pageNum = map->Find();
+	if(pageNum>=0){
+		processMap[pageNum] = processNo;
+		entries[pageNum] = entry;
+	}
+	lock->Release();
+	return pageNum;
+}
+
+int MemoryManager::AllocByForce(//int processNo, TranslationEntry* entry
+		){
+	lock->Acquire();
+	int pageNum = Random()%numPages;
+
+	lock->Release();
+	return pageNum;
 }
 
 MemoryManager::~MemoryManager(){
