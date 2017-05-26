@@ -121,7 +121,7 @@ void ExecProcess(){
 	    		newThread->processId = processId;
 
 	    		delete fileName;
-	    		delete executable;
+//	    		delete executable;
 	    		//printf("inside sc_exec\n");
 
 	    		syscallLock->Release();	// release lock
@@ -143,7 +143,8 @@ void ExitProcess(){
 	TranslationEntry* pageTable = machine->pageTable;
 	//	printf("freeing memory\n");
 	for(int i=0; i<pts; i++){
-	   MMU->FreePage(pageTable[i].physicalPage);
+		if(pageTable[i].valid)
+			MMU->FreePage(pageTable[i].physicalPage);
 	}
 	//printf("memory freed\n");
 	//printf("processTable: %d\n", processTable);
@@ -220,13 +221,17 @@ void HandleWrite(){
 
 
 
-
-
-
 ///----------------------------------handling other exceptions those are not syscall--------------
 void HandlePageFault(){
-	int virtualPageNo = machine->ReadRegister(39);
-	printf("Page fault culprit: %d\n", virtualPageNo);
+	int addr = machine->ReadRegister(39);
+	int virtualPageNo = addr/PageSize;
+	//printf("Page fault culprit: %d\n", virtualPageNo);
+	int physicalPage = MMU->AllocPage();
+	if(physicalPage<0){
+		//free a page--------
+	}
+	currentThread->space->loadIntoFreePage(addr, physicalPage);
+
 }
 
 
@@ -264,9 +269,9 @@ ExceptionHandler(ExceptionType which)
     	 }
     }
     else if(which==PageFaultException) {
-    	printf("Page Fault Exception.. killing the process\n");
+    //	printf("Page Fault Exception.. killing the process\n");
     	HandlePageFault();
-    	ExitProcess();
+//    	ExitProcess();
     }
     else if(which==ReadOnlyException) {
         printf("ReadOnlyException.. killing the process\n");

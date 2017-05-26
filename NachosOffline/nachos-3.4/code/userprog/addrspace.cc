@@ -39,6 +39,7 @@ extern Lock* MMU_lock;
 //----------------------------------------------------------------------
 
 
+
 static void 
 SwapHeader (NoffHeader *noffH)
 {
@@ -81,6 +82,8 @@ AddrSpace::AddrSpace(OpenFile *executable)
     	SwapHeader(&noffH);
     ASSERT(noffH.noffMagic == NOFFMAGIC);
 
+    this->noffH = noffH;
+    this->executable = executable;
 // how big is address space?
     size = noffH.code.size + noffH.initData.size + noffH.uninitData.size 
 			+ UserStackSize;	// we need to increase the size
@@ -169,6 +172,93 @@ AddrSpace::AddrSpace(OpenFile *executable)
     */
 
 }
+int AddrSpace::loadIntoFreePage(int addr, int physicalPage){
+
+	int vpn = addr/PageSize;
+	pageTable[vpn].physicalPage = physicalPage;
+	pageTable[vpn].valid = TRUE;
+
+	///offsets are in bytes here-------------
+
+	int codeOffsetToStart,codeLeft, codeSizeToRead;
+	int codeBase = noffH.code.inFileAddr;
+	int dataOffsetToStart, dataLeft, dataSizeToRead;
+	int dataBase = noffH.initData.inFileAddr;
+	int uninitOffsetToStart, uninitLeft, uninitSizeToRead;
+	int where;
+
+	addr = addr/PageSize*PageSize;
+
+	if(addr>=noffH.code.virtualAddr && addr < noffH.code.virtualAddr+noffH.code.size){
+		///it means the starting was in code segment ---------
+
+		codeOffsetToStart = (addr - noffH.code.virtualAddr)/PageSize*PageSize;
+		codeLeft = noffH.code.size - codeOffsetToStart;
+		codeSizeToRead = min(codeLeft, PageSize);
+		where = PageSize*physicalPage;
+		executable->ReadAt(machine->mainMemory+where, codeSizeToRead, codeBase+codeOffsetToStart);
+
+		///code read finished------------
+		if(codeSizeToRead<PageSize){  ///still something to read
+
+				dataOffsetToStart = 0;
+				dataLeft = noffH.initData.size - dataOffsetToStart;
+
+				dataSizeToRead = min(dataLeft, PageSize-codeSizeToRead);
+				where = PageSize*physicalPage+codeSizeToRead;
+				executable->ReadAt(machine->mainMemory+where, dataSizeToRead, dataBase+dataOffsetToStart);
+
+				///data read finished ------------
+				if(codeSizeToRead + dataSizeToRead< PageSize) {
+					where = PageSize*physicalPage + codeSizeToRead + dataSizeToRead;
+					bzero(machine->mainMemory+where, PageSize - (codeSizeToRead+dataSizeToRead));
+					///uninit read finished--------
+				}
+		}
+
+
+	}
+	else if(addr>=noffH.initData.virtualAddr && addr < noffH.initData.virtualAddr+noffH.initData.size){
+		dataOffsetToStart = (addr - noffH.initData.virtualAddr)/PageSize*PageSize;
+		dataLeft = noffH.initData.size - dataOffsetToStart;
+		dataSizeToRead = min(dataLeft, PageSize);
+		where = PageSize*physicalPage;
+
+		executable->ReadAt(machine->mainMemory+where, dataSizeToRead, dataBase+dataOffsetToStart);
+
+		if(dataSizeToRead< PageSize){
+				where = PageSize*physicalPage + dataSizeToRead;
+				bzero(machine->mainMemory+where, PageSize-dataSizeToRead);
+				///uninit read finished--------
+		}
+
+
+	}
+
+	else {
+		where = PageSize*physicalPage;
+		bzero(machine->mainMemory+where, PageSize);
+		///uninit read finished--------
+	}
+
+
+
+
+	//}
+
+	//int dataBase = noffH.initData.inFileAddr;
+	//int DS = CS+numPagesCS;
+	//for(int i=0; i<numPagesDS; i++){
+		//int where = PageSize*pageTable[DS+i].physicalPage;
+		//  	executable->ReadAt(machine->mainMemory+where, PageSize, dataBase+ i*PageSize);
+	//}
+	//int unititBase = noffH.uninitData.inFileAddr;
+
+
+
+	//printf("page loaded\n");
+	return 0;
+}
 
 //----------------------------------------------------------------------
 // AddrSpace::~AddrSpace
@@ -178,6 +268,7 @@ AddrSpace::AddrSpace(OpenFile *executable)
 AddrSpace::~AddrSpace()
 {
    delete pageTable;
+   delete executable;
 }
 
 //----------------------------------------------------------------------
