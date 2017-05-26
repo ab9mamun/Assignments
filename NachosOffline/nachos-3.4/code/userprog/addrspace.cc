@@ -88,7 +88,7 @@ AddrSpace::AddrSpace(OpenFile *executable)
     numPages = divRoundUp(size, PageSize);
     size = numPages * PageSize;
 
-    ASSERT(numPages <= NumPhysPages);		// check we're not trying
+//    ASSERT(numPages <= NumPhysPages);		// check we're not trying
 						// to run anything too big --
 						// at least until we have
 						// virtual memory
@@ -99,17 +99,17 @@ AddrSpace::AddrSpace(OpenFile *executable)
     pageTable = new TranslationEntry[numPages];
     for (i = 0; i < numPages; i++) {
 		pageTable[i].virtualPage = i;	// for now, virtual page # = phys page #
-		pageTable[i].physicalPage = MMU->AllocPage();
+		pageTable[i].physicalPage = -1; //MMU->AllocPage();
 
 		if(pageTable[i].physicalPage<0){
 			///free the allocated pages-------------------------
 			for(int currentVirtualPage = 0; currentVirtualPage<i; currentVirtualPage++){
-				MMU->FreePage(pageTable[currentVirtualPage].physicalPage);
+	//			MMU->FreePage(pageTable[currentVirtualPage].physicalPage);
 			}
-			ASSERT(FALSE);
+		//	ASSERT(FALSE);
 		}
 
-		pageTable[i].valid = TRUE;
+		pageTable[i].valid = FALSE;
 		pageTable[i].use = FALSE;
 		pageTable[i].dirty = FALSE;
 		pageTable[i].readOnly = FALSE;  // if the code segment was entirely on
@@ -129,7 +129,7 @@ AddrSpace::AddrSpace(OpenFile *executable)
     MMU_lock->Acquire();
     for(int i=0; i<numPages; i++){
     	int locationInMemory = PageSize*pageTable[i].physicalPage;
-    	bzero(machine->mainMemory+locationInMemory, PageSize);
+   // 	bzero(machine->mainMemory+locationInMemory, PageSize);
 
     }
 
@@ -142,14 +142,14 @@ AddrSpace::AddrSpace(OpenFile *executable)
 
     for(int i=0; i<numPagesCS; i++){
     	int where = PageSize*pageTable[CS+i].physicalPage;
-    	executable->ReadAt(machine->mainMemory+where, PageSize, codeBase+ i*PageSize);
+    //	executable->ReadAt(machine->mainMemory+where, PageSize, codeBase+ i*PageSize);
     }
 
     int dataBase = noffH.initData.inFileAddr;
     int DS = CS+numPagesCS;
     for(int i=0; i<numPagesDS; i++){
         	int where = PageSize*pageTable[DS+i].physicalPage;
-        	executable->ReadAt(machine->mainMemory+where, PageSize, dataBase+ i*PageSize);
+      //  	executable->ReadAt(machine->mainMemory+where, PageSize, dataBase+ i*PageSize);
      }
 
     MMU_lock->Release();

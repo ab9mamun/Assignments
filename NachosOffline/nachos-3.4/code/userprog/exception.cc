@@ -55,6 +55,84 @@ extern SynchConsole* myconsole;
 //	are in machine.h.
 //----------------------------------------------------------------------
 
+void forkProcess(int notUsed)
+{
+	currentThread->space->InitRegisters();
+	currentThread->space->RestoreState();
+// load page table register
+	machine->Run(); // jump to the user progam
+	ASSERT(FALSE); // machine->Run never returns;
+}
+
+void incrementPC(){
+	IntStatus oldLevel = interrupt->SetLevel(IntOff);	// disable interrupts
+	int pc;
+	pc=machine->ReadRegister(PCReg);
+	machine->WriteRegister(PrevPCReg,pc);
+	pc=machine->ReadRegister(NextPCReg);
+	machine->WriteRegister(PCReg,pc);
+	pc += 4;
+	machine->WriteRegister(NextPCReg,pc);
+
+	(void) interrupt->SetLevel(oldLevel);	// re-enable interrupts
+
+}
+
+void ExecProcess(){
+	syscallLock->Acquire();	// acquire lock
+	    	//	printf("inside sc_exec\n");
+
+	    		int fileNameAddress = machine->ReadRegister(4); //only 1 argument, so a0 (register 4) will get the argument
+	    		char* fileName = new char[150];
+	    		int temp;
+	    		int i=0;
+	    		while(true){
+	    			if(!machine->ReadMem(fileNameAddress,1,&temp))  {
+	    				syscallLock->Release();
+	    				return;
+	    			}
+					fileName[i]=(char) temp;
+					fileNameAddress++;
+					i++;
+					if(!temp) break;
+	    		}
+	    		fileName[i] = (char) 0;
+	    	//	printf("inside sc_exec\n");
+	    		printf("Attempting to execute %s\n", fileName);
+	    		OpenFile* executable = fileSystem->Open(fileName);
+	    		if(executable==0){
+	    			printf("can't openFile %s\n", fileName);
+	    			syscallLock->Release();
+	    			return;
+	    		}
+	    		printf("inside sc_exec\n");
+	    		AddrSpace* space = new AddrSpace(executable);
+	    		Thread* newThread = new Thread("Forked processs");
+	    		int processId = processTable->Alloc((void*) newThread);
+	    		if(processId<0){
+	    			printf("not enough space for new process\n");
+	    		}
+	    		else {
+	    			printf("new process id: %d\n", processId);
+	    		}
+	    		machine->WriteRegister(2, processId);
+
+	    		newThread->space = space;
+	    		newThread->processId = processId;
+
+	    		delete fileName;
+	    		delete executable;
+	    		//printf("inside sc_exec\n");
+
+	    		syscallLock->Release();	// release lock
+	    		newThread->Fork(forkProcess, 0);
+	    		/* routine task – do at last -- generally manipulate PCReg,
+	    		PrevPCReg, NextPCReg so that they point to proper place*/
+	    		incrementPC();
+	    		//printf("inside sc_exec\n");
+
+	    		//printf("exiting sc_exec\n");
+}
 void ExitProcess(){
 	syscallLock->Acquire();
 
@@ -77,29 +155,81 @@ void ExitProcess(){
 	 if(empt) interrupt->Halt();
 	 else currentThread->Finish();
 }
+void HandleRead(){
+	syscallLock->Acquire();
+	int bufferAddress = machine->ReadRegister(4); //3 arguments, so registers 4, 5, 6 will get the arguments
+	int size = machine->ReadRegister(5);
+	int id = machine->ReadRegister(6);
 
-void forkProcess(int notUsed)
-{
-currentThread->space->InitRegisters();
-currentThread->space->RestoreState();
-// load page table register
-machine->Run(); // jump to the user progam
-ASSERT(FALSE); // machine->Run never returns;
+	char* myBuffer = new char[size+5];
+	int temp;
+	int i=0;
+	int char_read = myconsole->Read(myBuffer, size, id);
+	//printf("My ReadBuffer: %s\n", myBuffer);
+
+	while(i<=char_read){
+	    if(!machine-> WriteMem(bufferAddress, 1, (int) myBuffer[i])){
+	    	syscallLock->Release();
+	    	return;
+	    }
+	    bufferAddress++;
+	    i++;
+	    if(!myBuffer[i]) break;
+	}
+	delete myBuffer;
+	machine->WriteRegister(2, char_read);
+	syscallLock->Release();
+	//printf("here i am inside read\n");
+	incrementPC();
+
+}
+void HandleWrite(){
+	syscallLock->Acquire();
+
+	    	//	printf("here i am inside write\n");
+	    		int bufferAddress = machine->ReadRegister(4); //3 arguments, so registers 4, 5, 6 will get the arguments
+	    		int size = machine->ReadRegister(5);
+	    		int id = machine->ReadRegister(6);
+
+	      		char* myBuffer = new char[size+5];
+	    		int temp;
+	    		int i=0;
+
+
+	    		while(i<size){
+	    			if(!machine->ReadMem(bufferAddress,1,  &temp)){
+	    				syscallLock->Release();
+	    		    	return;
+	    		    }
+	    			myBuffer[i] = (char) temp;
+	    			bufferAddress++;
+	    		    i++;
+	    		    if(!temp) break;
+	    		 }
+	    		myBuffer[i] = (char) 0;
+	    		//printf("My WriteBuffer: %s\n", myBuffer);
+
+	    		int char_written = myconsole->Write(myBuffer, size, id);
+
+	    		 delete myBuffer;
+	    		 machine->WriteRegister(2, char_written);
+	    		 syscallLock->Release();
+	    		 incrementPC();
+
 }
 
-void incrementPC(){
-	IntStatus oldLevel = interrupt->SetLevel(IntOff);	// disable interrupts
-	int pc;
-	pc=machine->ReadRegister(PCReg);
-	machine->WriteRegister(PrevPCReg,pc);
-	pc=machine->ReadRegister(NextPCReg);
-	machine->WriteRegister(PCReg,pc);
-	pc += 4;
-	machine->WriteRegister(NextPCReg,pc);
 
-	(void) interrupt->SetLevel(oldLevel);	// re-enable interrupts
 
+
+
+
+///----------------------------------handling other exceptions those are not syscall--------------
+void HandlePageFault(){
+	int virtualPageNo = machine->ReadRegister(39);
+	printf("Page fault culprit: %d\n", virtualPageNo);
 }
+
+
 
 void
 ExceptionHandler(ExceptionType which)
@@ -113,59 +243,7 @@ ExceptionHandler(ExceptionType which)
     	}
     	else if(type==SC_Exec){
 
-    		syscallLock->Acquire();	// acquire lock
-    	//	printf("inside sc_exec\n");
-
-    		int fileNameAddress = machine->ReadRegister(4); //only 1 argument, so a0 (register 4) will get the argument
-    		char* fileName = new char[150];
-    		int temp;
-    		int i=0;
-    		while(true){
-    			if(!machine->ReadMem(fileNameAddress,1,&temp))  {
-    				syscallLock->Release();
-    				return;
-    			}
-				fileName[i]=(char) temp;
-				fileNameAddress++;
-				i++;
-				if(!temp) break;
-    		}
-    		fileName[i] = (char) 0;
-    	//	printf("inside sc_exec\n");
-    		printf("Attempting to execute %s\n", fileName);
-    		OpenFile* executable = fileSystem->Open(fileName);
-    		if(executable==0){
-    			printf("can't openFile %s\n", fileName);
-    			syscallLock->Release();
-    			return;
-    		}
-    		printf("inside sc_exec\n");
-    		AddrSpace* space = new AddrSpace(executable);
-    		Thread* newThread = new Thread("Forked processs");
-    		int processId = processTable->Alloc((void*) newThread);
-    		if(processId<0){
-    			printf("not enough space for new process\n");
-    		}
-    		else {
-    			printf("new process id: %d\n", processId);
-    		}
-    		machine->WriteRegister(2, processId);
-
-    		newThread->space = space;
-    		newThread->processId = processId;
-
-    		delete fileName;
-    		delete executable;
-    		//printf("inside sc_exec\n");
-
-    		syscallLock->Release();	// release lock
-    		newThread->Fork(forkProcess, 0);
-    		/* routine task – do at last -- generally manipulate PCReg,
-    		PrevPCReg, NextPCReg so that they point to proper place*/
-    		incrementPC();
-    		//printf("inside sc_exec\n");
-
-    		//printf("exiting sc_exec\n");
+    		ExecProcess();
     	}
 
     	else if(type==SC_Exit){
@@ -174,65 +252,10 @@ ExceptionHandler(ExceptionType which)
 
 
     	else if(type==SC_Read){
-    		syscallLock->Acquire();
-    		int bufferAddress = machine->ReadRegister(4); //3 arguments, so registers 4, 5, 6 will get the arguments
-    		int size = machine->ReadRegister(5);
-    		int id = machine->ReadRegister(6);
-
-    		char* myBuffer = new char[size+5];
-    		int temp;
-    		int i=0;
-    		int char_read = myconsole->Read(myBuffer, size, id);
-    		//printf("My ReadBuffer: %s\n", myBuffer);
-
-    		while(i<=char_read){
-    		    if(!machine-> WriteMem(bufferAddress, 1, (int) myBuffer[i])){
-    		    	syscallLock->Release();
-    		    	return;
-    		    }
-    		    bufferAddress++;
-    		    i++;
-    		    if(!myBuffer[i]) break;
-    		}
-    		delete myBuffer;
-    		machine->WriteRegister(2, char_read);
-    		syscallLock->Release();
-    		//printf("here i am inside read\n");
-    		incrementPC();
-
+    		HandleRead();
     	}
     	else if(type==SC_Write){
-    		syscallLock->Acquire();
-
-    	//	printf("here i am inside write\n");
-    		int bufferAddress = machine->ReadRegister(4); //3 arguments, so registers 4, 5, 6 will get the arguments
-    		int size = machine->ReadRegister(5);
-    		int id = machine->ReadRegister(6);
-
-      		char* myBuffer = new char[size+5];
-    		int temp;
-    		int i=0;
-
-
-    		while(i<size){
-    			if(!machine->ReadMem(bufferAddress,1,  &temp)){
-    				syscallLock->Release();
-    		    	return;
-    		    }
-    			myBuffer[i] = (char) temp;
-    			bufferAddress++;
-    		    i++;
-    		    if(!temp) break;
-    		 }
-    		myBuffer[i] = (char) 0;
-    		//printf("My WriteBuffer: %s\n", myBuffer);
-
-    		int char_written = myconsole->Write(myBuffer, size, id);
-
-    		 delete myBuffer;
-    		 machine->WriteRegister(2, char_written);
-    		 syscallLock->Release();
-    		 incrementPC();
+    		HandleWrite();
     	}
 
     	else {
@@ -242,6 +265,7 @@ ExceptionHandler(ExceptionType which)
     }
     else if(which==PageFaultException) {
     	printf("Page Fault Exception.. killing the process\n");
+    	HandlePageFault();
     	ExitProcess();
     }
     else if(which==ReadOnlyException) {
