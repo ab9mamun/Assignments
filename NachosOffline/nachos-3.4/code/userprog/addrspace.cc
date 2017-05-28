@@ -138,6 +138,7 @@ int AddrSpace::loadIntoFreePage(int addr, int physicalPage){
 	int dataOffsetToStart, dataLeft, dataSizeToRead;
 	int dataBase = noffH.initData.inFileAddr;
 	int uninitOffsetToStart, uninitLeft, uninitSizeToRead;
+	int uninitBase = noffH.uninitData.inFileAddr;
 	int where;
 
 	addr = addr/PageSize*PageSize;
@@ -166,6 +167,13 @@ int AddrSpace::loadIntoFreePage(int addr, int physicalPage){
 				if(codeSizeToRead + dataSizeToRead< PageSize) {
 					where = PageSize*physicalPage + codeSizeToRead + dataSizeToRead;
 					bzero(machine->mainMemory+where, PageSize - (codeSizeToRead+dataSizeToRead));
+
+					/*uninitOffsetToStart = 0;
+					uninitLeft = noffH.uninitData.size - uninitOffsetToStart;
+					uninitSizeToRead = min(uninitLeft, PageSize);
+					where = PageSize*physicalPage;
+
+					executable->ReadAt(machine->mainMemory+where,uninitSizeToRead, uninitBase+uninitOffsetToStart); */
 					///uninit read finished--------
 				}
 		}
@@ -183,6 +191,13 @@ int AddrSpace::loadIntoFreePage(int addr, int physicalPage){
 		if(dataSizeToRead< PageSize){
 				where = PageSize*physicalPage + dataSizeToRead;
 				bzero(machine->mainMemory+where, PageSize-dataSizeToRead);
+
+				/*uninitOffsetToStart = 0;
+									uninitLeft = noffH.uninitData.size - uninitOffsetToStart;
+									uninitSizeToRead = min(uninitLeft, PageSize);
+									where = PageSize*physicalPage;
+
+									executable->ReadAt(machine->mainMemory+where,uninitSizeToRead, uninitBase+uninitOffsetToStart); */
 				///uninit read finished--------
 		}
 
@@ -192,6 +207,13 @@ int AddrSpace::loadIntoFreePage(int addr, int physicalPage){
 	else if(addr>=noffH.uninitData.virtualAddr && addr < noffH.uninitData.virtualAddr+noffH.uninitData.size){
 		where = PageSize*physicalPage;
 		bzero(machine->mainMemory+where, PageSize);
+
+		/*uninitOffsetToStart = 0;
+							uninitLeft = noffH.uninitData.size - uninitOffsetToStart;
+							uninitSizeToRead = min(uninitLeft, PageSize);
+							where = PageSize*physicalPage;
+
+							executable->ReadAt(machine->mainMemory+where,uninitSizeToRead, uninitBase+uninitOffsetToStart); */
 		///uninit read finished--------
 	}
 	else {
@@ -203,22 +225,6 @@ int AddrSpace::loadIntoFreePage(int addr, int physicalPage){
 		bzero(machine->mainMemory+where, PageSize);
 	}
 
-
-
-
-	//}
-
-	//int dataBase = noffH.initData.inFileAddr;
-	//int DS = CS+numPagesCS;
-	//for(int i=0; i<numPagesDS; i++){
-		//int where = PageSize*pageTable[DS+i].physicalPage;
-		//  	executable->ReadAt(machine->mainMemory+where, PageSize, dataBase+ i*PageSize);
-	//}
-	//int unititBase = noffH.uninitData.inFileAddr;
-
-
-
-	//printf("page loaded\n");
 	return 0;
 }
 void AddrSpace::saveIntoSwapSpace(int vpn){
