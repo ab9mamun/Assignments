@@ -2,8 +2,9 @@
 /* Create a manager to track the allocation of numPages of physical memory.
    You will create one by calling the constructor with NumPhysPages as
    the parameter.  All physical pages start as free, unallocated pages. */
-MemoryManager::MemoryManager(int numPages){
+MemoryManager::MemoryManager(int numPages, int numSwapPages){
 	this->numPages = numPages;
+	this->numSwapPages = numSwapPages;
 	lock = new Lock("MemManagerLock");
 	map = new BitMap(numPages);
 	entries = new TranslationEntry[numPages];

@@ -20,6 +20,7 @@
 
 #define MaxProcessNumber 64
 
+
 //----------------------------------------------------------------------
 // StartProcess
 // 	Run a user program.  Open the executable, load it into
@@ -44,7 +45,7 @@ StartProcess(char *filename)
 {
     OpenFile *executable = fileSystem->Open(filename);
     AddrSpace *space;
-    MMU = new MemoryManager(NumPhysPages);
+    MMU = new MemoryManager(NumPhysPages, NumSwapPages);
     MMU_lock = new Lock("Another MMU_lock");
     processTable = new ProcessTable(MaxProcessNumber);
     processTable_lock = new Lock("Another processTable_lock");

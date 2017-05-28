@@ -3,6 +3,7 @@
 
 #include "bitmap.h"
 #include "synch.h"
+#include "SwapPage.h"
 
 
 
@@ -13,9 +14,11 @@ class MemoryManager{
    the parameter.  All physical pages start as free, unallocated pages. */
 	Lock* lock;
 	BitMap* map;
+	BitMap* swapMap;
+	SwapPage** swapSpace;
 public:
 
-MemoryManager(int numPages);
+MemoryManager(int numPages, int numSwapPages);
 
 /* Allocate a free page, returning its physical page number or -1
    if there are no free pages available. */
@@ -35,6 +38,7 @@ int AllocByForce(//int processNo, TranslationEntry* entry
 int* processMap;
 TranslationEntry* entries;
 int numPages;
+int numSwapPages;
 
 ~MemoryManager();
 
