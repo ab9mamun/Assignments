@@ -227,7 +227,7 @@ void HandleWrite(){
 void HandlePageFault(){
 	int addr = machine->ReadRegister(39);
 	int virtualPageNo = addr/PageSize;
-	//printf("Page fault culprit: %d\n", virtualPageNo);
+	printf("Page fault process: %d page: %d\n",currentThread->processId,  virtualPageNo);
 	int physicalPage = MMU->Alloc(currentThread->processId, virtualPageNo); /// we are sending the pointer to the page-- that will be required to mark the page invalid
 	if(physicalPage<0){
 		//free a page--------
@@ -274,7 +274,7 @@ ExceptionHandler(ExceptionType which)
     	 }
     }
     else if(which==PageFaultException) {
-    	printf("Page Fault Exception.. killing the process\n");
+    //	printf("Page Fault Exception.. killing the process\n");
     	HandlePageFault();
 //    	ExitProcess();
     }

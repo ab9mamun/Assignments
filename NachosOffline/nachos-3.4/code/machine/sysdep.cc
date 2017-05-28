@@ -223,7 +223,7 @@ void
 Lseek(int fd, int offset, int whence)
 {
     int retVal = lseek(fd, offset, whence);
-   // ASSERT(retVal >= 0); --mamun changed this line,, --this was causing assertion failed
+    ASSERT(retVal >= 0);// --mamun changed this line,, --this was causing assertion failed
 }
 
 //----------------------------------------------------------------------

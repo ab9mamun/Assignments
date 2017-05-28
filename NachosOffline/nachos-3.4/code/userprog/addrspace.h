@@ -34,6 +34,10 @@ class AddrSpace {
     void RestoreState();		// info on a context switch 
     int loadIntoFreePage(int addr, int physicalPage);
 
+    void saveIntoSwapSpace(int vpn);
+    void loadFromSwapSpace(int vpn);
+    bool doesSwapPageExist(int vpn);
+
     OpenFile* executable;
     NoffHeader noffH;
     int* swapPageMap;

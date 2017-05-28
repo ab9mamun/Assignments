@@ -19,18 +19,28 @@ SwapPage::~SwapPage(){
 }
 
 int SwapPage::writeByte(int position, char data){
-	if(position<0 || position > PageSize) {printf("bug at SwapPage::writeByte() "); return -1; }
+	if(position<0 || position > PageSize) {printf("bug at SwapPage::writeByte() \n"); return -1; }
 	bytes[position] = data;
 	return position;
 }
 
 
 int SwapPage::writePage(int physicalPage){
-	if(physicalPage<0 || physicalPage>NumPhysPages){printf("bug at SwapPage::writePage() "); return -1;}
+	if(physicalPage<0 || physicalPage>NumPhysPages){printf("bug at SwapPage::writePage() \n"); return -1;}
 
 	int where = physicalPage*PageSize;
 	for(int i=0; i<PageSize; i++){
 		bytes[i] =  machine->mainMemory[where+i];
+	}
+	return physicalPage;
+}
+
+int SwapPage::readPage(int physicalPage){
+	if(physicalPage<0 || physicalPage>NumPhysPages){printf("bug at SwapPage::readPage() \n"); return -1;}
+
+	int where = physicalPage*PageSize;
+	for(int i=0; i<PageSize; i++){
+		machine->mainMemory[where+i] = bytes[i];
 	}
 	return physicalPage;
 }

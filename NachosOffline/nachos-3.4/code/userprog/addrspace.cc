@@ -105,14 +105,7 @@ AddrSpace::AddrSpace(OpenFile *executable)
     for (i = 0; i < numPages; i++) {
 		pageTable[i].virtualPage = i;	// for now, virtual page # = phys page #
 		pageTable[i].physicalPage = -1; //MMU->AllocPage();
-
-		if(pageTable[i].physicalPage<0){
-			///free the allocated pages-------------------------
-			for(int currentVirtualPage = 0; currentVirtualPage<i; currentVirtualPage++){
-	//			MMU->FreePage(pageTable[currentVirtualPage].physicalPage);
-			}
-		//	ASSERT(FALSE);
-		}
+		swapPageMap[i] = -1;
 
 		pageTable[i].valid = FALSE;
 		pageTable[i].use = FALSE;
@@ -121,57 +114,8 @@ AddrSpace::AddrSpace(OpenFile *executable)
 					// a separate page, we could set its 
 					// pages to be read-only
     }
-    
-// zero out the entire address space, to zero the unitialized data segment 
-// and the stack segment
-    //bzero(machine->mainMemory, size);
 
-    /*
-     * we cannot clear the entire memory, rather, we will clear the memory allocated to this process=============
-     *
-     *
-     */
-    MMU_lock->Acquire();
-    for(int i=0; i<numPages; i++){
-    	int locationInMemory = PageSize*pageTable[i].physicalPage;
-   // 	bzero(machine->mainMemory+locationInMemory, PageSize);
 
-    }
-
-// then, copy in the code and data segments into memory
-    int numPagesCS= divRoundUp(noffH.code.size, PageSize);
-    int numPagesDS= divRoundUp(noffH.initData.size, PageSize);
-
-    int codeBase = noffH.code.inFileAddr;
-    int CS = 0;
-
-    for(int i=0; i<numPagesCS; i++){
-    	int where = PageSize*pageTable[CS+i].physicalPage;
-    //	executable->ReadAt(machine->mainMemory+where, PageSize, codeBase+ i*PageSize);
-    }
-
-    int dataBase = noffH.initData.inFileAddr;
-    int DS = CS+numPagesCS;
-    for(int i=0; i<numPagesDS; i++){
-        	int where = PageSize*pageTable[DS+i].physicalPage;
-      //  	executable->ReadAt(machine->mainMemory+where, PageSize, dataBase+ i*PageSize);
-     }
-
-    MMU_lock->Release();
-
-   /* if (noffH.code.size > 0) {
-        DEBUG('a', "Initializing code segment, at 0x%x, size %d\n", 
-			noffH.code.virtualAddr, noffH.code.size);
-        executable->ReadAt(&(machine->mainMemory[noffH.code.virtualAddr]),
-			noffH.code.size, noffH.code.inFileAddr);
-    }
-    if (noffH.initData.size > 0) {
-        DEBUG('a', "Initializing data segment, at 0x%x, size %d\n", 
-			noffH.initData.virtualAddr, noffH.initData.size);
-        executable->ReadAt(&(machine->mainMemory[noffH.initData.virtualAddr]),
-			noffH.initData.size, noffH.initData.inFileAddr);
-    }
-    */
 
 }
 int AddrSpace::loadIntoFreePage(int addr, int physicalPage){
@@ -179,6 +123,13 @@ int AddrSpace::loadIntoFreePage(int addr, int physicalPage){
 	int vpn = addr/PageSize;
 	pageTable[vpn].physicalPage = physicalPage;
 	pageTable[vpn].valid = TRUE;
+
+	if(doesSwapPageExist(vpn)){
+		printf("Page got in swap space\n\n");
+		loadFromSwapSpace(vpn);
+		return 1;
+	}
+	printf("Page loading from executable\n\n");
 
 	///offsets are in bytes here-------------
 
@@ -194,7 +145,8 @@ int AddrSpace::loadIntoFreePage(int addr, int physicalPage){
 	if(addr>=noffH.code.virtualAddr && addr < noffH.code.virtualAddr+noffH.code.size){
 		///it means the starting was in code segment ---------
 
-		codeOffsetToStart = (addr - noffH.code.virtualAddr)/PageSize*PageSize;
+		//codeOffsetToStart = (addr - noffH.code.virtualAddr)/PageSize*PageSize;
+		codeOffsetToStart = (addr - noffH.code.virtualAddr); //probable bugfix
 		codeLeft = noffH.code.size - codeOffsetToStart;
 		codeSizeToRead = min(codeLeft, PageSize);
 		where = PageSize*physicalPage;
@@ -221,7 +173,7 @@ int AddrSpace::loadIntoFreePage(int addr, int physicalPage){
 
 	}
 	else if(addr>=noffH.initData.virtualAddr && addr < noffH.initData.virtualAddr+noffH.initData.size){
-		dataOffsetToStart = (addr - noffH.initData.virtualAddr)/PageSize*PageSize;
+		dataOffsetToStart = (addr - noffH.initData.virtualAddr);
 		dataLeft = noffH.initData.size - dataOffsetToStart;
 		dataSizeToRead = min(dataLeft, PageSize);
 		where = PageSize*physicalPage;
@@ -237,10 +189,18 @@ int AddrSpace::loadIntoFreePage(int addr, int physicalPage){
 
 	}
 
-	else {
+	else if(addr>=noffH.uninitData.virtualAddr && addr < noffH.uninitData.virtualAddr+noffH.uninitData.size){
 		where = PageSize*physicalPage;
 		bzero(machine->mainMemory+where, PageSize);
 		///uninit read finished--------
+	}
+	else {
+		printf("invalid address %d\n", addr);
+		printf("page table size: %d virtualPageNo: %d\n", numPages, vpn);
+		printf("uninit ends at: %d\n", noffH.uninitData.virtualAddr + noffH.uninitData.size);
+		printf("verdict: address in USER_STACK_SIZE\n");
+		where = PageSize*physicalPage;
+		bzero(machine->mainMemory+where, PageSize);
 	}
 
 
@@ -260,6 +220,15 @@ int AddrSpace::loadIntoFreePage(int addr, int physicalPage){
 
 	//printf("page loaded\n");
 	return 0;
+}
+void AddrSpace::saveIntoSwapSpace(int vpn){
+	MMU->saveIntoSwapSpace(this, vpn);
+}
+void AddrSpace::loadFromSwapSpace(int vpn){
+	MMU->loadFromSwapSpace(this, vpn);
+}
+bool AddrSpace::doesSwapPageExist(int vpn){
+	return swapPageMap[vpn]!=-1;
 }
 
 //----------------------------------------------------------------------

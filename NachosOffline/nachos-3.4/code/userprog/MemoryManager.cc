@@ -63,10 +63,11 @@ int MemoryManager::AllocByForce(int processNo, int vpn
 	int pageNum = Random()%numPages; ///Random-------------replacement
 
 	int oldProcess = processMap[pageNum];
-	int oldVpn = processMap[pageNum];
+	int oldVpn = vpnMap[pageNum];
 	Thread* oldThread = (Thread*) processTable->Get(oldProcess);
 	if(oldThread){
-		printf("Swapping out a page of Thread: %s\n",oldThread->getName());
+		printf("Swapping out a page of process: %d page: %d\nReplacing with a page of process: %d page: %d\n",
+				oldProcess, oldVpn, processNo, vpn);
 		saveIntoSwapSpacePrivate(oldThread->space, oldVpn);
 	}
 
@@ -93,6 +94,25 @@ MemoryManager::~MemoryManager(){
 
 }
 
+int MemoryManager::loadFromSwapSpacePrivate(AddrSpace* space, int vpn){
+	TranslationEntry* pageTable = space->pageTable;
+	int swapPageNo = space->swapPageMap[vpn];
+	ASSERT(swapPageNo>=0);
+	SwapPage* swapPage = swapSpace[swapPageNo];
+	swapPage->readPage(pageTable[vpn].physicalPage);
+	return swapPageNo;
+
+}
+
+int MemoryManager::loadFromSwapSpace(AddrSpace* space, int vpn){
+	lock->Acquire();
+	int swapPageNo = loadFromSwapSpacePrivate(space,vpn);
+
+	lock->Release();
+	return swapPageNo;
+
+}
+
 
 int MemoryManager::saveIntoSwapSpacePrivate(AddrSpace* space, int vpn){
 	TranslationEntry* pageTable = space->pageTable;
@@ -100,11 +120,13 @@ int MemoryManager::saveIntoSwapSpacePrivate(AddrSpace* space, int vpn){
 	if(swapPageNo<0){
 		swapPageNo = swapMap->Find();
 		space->pageTable[vpn].dirty = TRUE;
+		space->swapPageMap[vpn] = swapPageNo;
 	}
 	ASSERT(swapPageNo>=0);
-	if(space->pageTable[vpn].dirty){
+	if(pageTable[vpn].dirty){
 		SwapPage* swapPage= swapSpace[swapPageNo];
 		swapPage->writePage(pageTable[vpn].physicalPage);
+		pageTable[vpn].dirty = FALSE;
 	}
 	return swapPageNo;
 }

@@ -17,6 +17,7 @@ class MemoryManager{
 	BitMap* swapMap;
 	SwapPage** swapSpace;
 	int saveIntoSwapSpacePrivate(AddrSpace* space, int vpn);
+	int loadFromSwapSpacePrivate(AddrSpace* space, int vpn);
 public:
 
 MemoryManager(int numPages, int numSwapPages);
@@ -41,6 +42,7 @@ int* vpnMap;
 int numPages;
 int numSwapPages;
 int saveIntoSwapSpace(AddrSpace* space, int vpn);
+int loadFromSwapSpace(AddrSpace* space, int vpn);
 
 ~MemoryManager();
 

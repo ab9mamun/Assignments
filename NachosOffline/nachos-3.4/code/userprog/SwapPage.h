@@ -21,7 +21,7 @@ public:
 	~SwapPage();
 	int writeByte(int position, char data);
 	int writePage(int physicalPage);
-
+	int readPage(int physicalPage);
 
 };
 
