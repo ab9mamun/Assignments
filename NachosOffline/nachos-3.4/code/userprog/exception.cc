@@ -228,10 +228,10 @@ void HandlePageFault(){
 	int addr = machine->ReadRegister(39);
 	int virtualPageNo = addr/PageSize;
 	//printf("Page fault culprit: %d\n", virtualPageNo);
-	int physicalPage = MMU->Alloc(currentThread->processId, machine->pageTable[virtualPageNo]); /// we are sending the pointer to the page-- that will be required to mark the page invalid
+	int physicalPage = MMU->Alloc(currentThread->processId, virtualPageNo); /// we are sending the pointer to the page-- that will be required to mark the page invalid
 	if(physicalPage<0){
 		//free a page--------
-		physicalPage = MMU->AllocByForce(//currentThread->processId, &machine->pageTable[virtualPageNo]
+		physicalPage = MMU->AllocByForce(currentThread->processId, virtualPageNo
 		);
 
 	}

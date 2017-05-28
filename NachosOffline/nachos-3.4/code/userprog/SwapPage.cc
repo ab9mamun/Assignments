@@ -10,8 +10,7 @@
 //SwapPage::
 
 SwapPage::SwapPage(){
-	bytes = new unsigned char[PageSize];
-	valid = TRUE;
+	bytes = new char[PageSize];
 }
 
 SwapPage::~SwapPage(){
@@ -21,17 +20,19 @@ SwapPage::~SwapPage(){
 
 int SwapPage::writeByte(int position, char data){
 	if(position<0 || position > PageSize) {printf("bug at SwapPage::writeByte() "); return -1; }
-	bytes[position] = (unsigned char) data;
+	bytes[position] = data;
 	return position;
 }
 
-void SwapPage::assignPage(int processId, int vpn){
-	valid = TRUE;
-	this->processId = processId;
-	this->vpn = vpn;
+
+int SwapPage::writePage(int physicalPage){
+	if(physicalPage<0 || physicalPage>NumPhysPages){printf("bug at SwapPage::writePage() "); return -1;}
+
+	int where = physicalPage*PageSize;
+	for(int i=0; i<PageSize; i++){
+		bytes[i] =  machine->mainMemory[where+i];
+	}
+	return physicalPage;
 }
 
-void SwapPage::invalidate(){
-	valid = FALSE;
-}
 

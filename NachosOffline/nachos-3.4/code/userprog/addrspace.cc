@@ -100,6 +100,8 @@ AddrSpace::AddrSpace(OpenFile *executable)
 					numPages, size);
 // first, set up the translation 
     pageTable = new TranslationEntry[numPages];
+    swapPageMap = new int[numPages];
+
     for (i = 0; i < numPages; i++) {
 		pageTable[i].virtualPage = i;	// for now, virtual page # = phys page #
 		pageTable[i].physicalPage = -1; //MMU->AllocPage();
@@ -269,6 +271,7 @@ AddrSpace::~AddrSpace()
 {
    delete pageTable;
    delete executable;
+   delete[] swapPageMap;
 }
 
 //----------------------------------------------------------------------

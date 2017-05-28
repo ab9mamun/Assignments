@@ -36,8 +36,8 @@ class AddrSpace {
 
     OpenFile* executable;
     NoffHeader noffH;
+    int* swapPageMap;
 
-  private:
     TranslationEntry *pageTable;	// Assume linear page table translation
 					// for now!
     unsigned int numPages;		// Number of pages in the virtual 

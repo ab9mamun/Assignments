@@ -14,19 +14,13 @@
 class SwapPage{
 
 private:
-	bool valid;
-	int processId;
-	int vpn;
-	unsigned char* bytes;
+	char* bytes;
 
 public:
 	SwapPage();
 	~SwapPage();
 	int writeByte(int position, char data);
-
-	void assignPage(int processId, int vpn);
-	void invalidate();
-
+	int writePage(int physicalPage);
 
 
 };

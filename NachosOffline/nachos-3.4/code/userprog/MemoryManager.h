@@ -16,6 +16,7 @@ class MemoryManager{
 	BitMap* map;
 	BitMap* swapMap;
 	SwapPage** swapSpace;
+	int saveIntoSwapSpacePrivate(AddrSpace* space, int vpn);
 public:
 
 MemoryManager(int numPages, int numSwapPages);
@@ -31,14 +32,15 @@ void FreePage(int physPageNum);
 bool PageIsAllocated(int physPageNum);
 
 ///added for 3rd assignment----
-int Alloc(int processNo, TranslationEntry& entry);
-int AllocByForce(//int processNo, TranslationEntry* entry
+int Alloc(int processNo, int vpn);
+int AllocByForce(int processNo, int vpn
 		);
 
 int* processMap;
-TranslationEntry* entries;
+int* vpnMap;
 int numPages;
 int numSwapPages;
+int saveIntoSwapSpace(AddrSpace* space, int vpn);
 
 ~MemoryManager();
 
