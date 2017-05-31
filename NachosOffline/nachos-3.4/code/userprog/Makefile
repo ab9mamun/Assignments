@@ -758,7 +758,8 @@ MemoryManager.o: ../userprog/MemoryManager.cc /usr/include/stdc-predef.h \
  ../filesys/filesys.h ../filesys/openfile.h ../bin/noff.h \
  ../threads/list.h ../userprog/SwapPage.h ../threads/system.h \
  ../threads/scheduler.h ../machine/interrupt.h ../threads/list.h \
- ../machine/stats.h ../machine/timer.h
+ ../machine/stats.h ../machine/timer.h ../userprog/ProcessTable.h \
+ ../userprog/HashTable.h
 ProcessTable.o: ../userprog/ProcessTable.cc /usr/include/stdc-predef.h \
  ../userprog/ProcessTable.h ../threads/copyright.h ../threads/system.h \
  ../threads/copyright.h ../threads/utility.h ../threads/bool.h \

@@ -29,7 +29,7 @@ int MemoryManager::AllocPage(){
 	lock->Acquire();
 	int pageNum = map->Find();
 	if(pageNum>=0){
-		printf("Allocating physical page number: %d\n", pageNum);
+	//	printf("Allocating physical page number: %d\n", pageNum);
 	}
 	lock->Release();
 	return pageNum;
@@ -55,7 +55,7 @@ int MemoryManager::Alloc(int processNo, int vpn){
 	lock->Acquire();
 	int pageNum = map->Find();
 	if(pageNum>=0){
-		printf("Allocating physical page number: %d\n", pageNum);
+		printf("Allocating physicalPage number: %d\n", pageNum);
 		processMap[pageNum] = processNo;
 		vpnMap[pageNum] = vpn;
 	}
@@ -87,13 +87,13 @@ int MemoryManager::AllocByForce(int processNo, int vpn
 	/////////------------------------------------------------
 
 
-	printf("Allocating physical page number: %d\n", pageNum);
+	printf("Allocating physicalPage number: %d\n", pageNum);
 
 	int oldProcess = processMap[pageNum];
 	int oldVpn = vpnMap[pageNum];
 	Thread* oldThread = (Thread*) processTable->Get(oldProcess);
 	if(oldThread){
-		printf("Swapping out a page of process: %d page: %d\nReplacing with a page of process: %d page: %d\n",
+		printf("Swapping out a page of process: %d page: %d\nReplacing with  process: %d virtualPage: %d\n",
 				oldProcess, oldVpn, processNo, vpn);
 		saveIntoSwapSpacePrivate(oldThread->space, oldVpn);
 	}
@@ -144,6 +144,7 @@ int MemoryManager::loadFromSwapSpace(AddrSpace* space, int vpn){
 int MemoryManager::saveIntoSwapSpacePrivate(AddrSpace* space, int vpn){
 	TranslationEntry* pageTable = space->pageTable;
 	int swapPageNo = space->swapPageMap[vpn];
+	pageTable[vpn].valid = FALSE;
 	if(swapPageNo<0){
 		swapPageNo = swapMap->Find();
 		space->pageTable[vpn].dirty = TRUE;

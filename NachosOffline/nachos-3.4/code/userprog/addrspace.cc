@@ -162,14 +162,14 @@ int AddrSpace::loadIntoFreePage(int addr, int physicalPage){
 	int UDS_size = noffH.uninitData.size;
 	int SS = UDS+UDS_size;
 	int SS_size = UserStackSize;
-	printf("Virtual addr: %d\n", mainAddr);
-	printf("Page table size: %d VirtualPageNo: %d\n", numPages, vpn);
-	printf("Segments:\nCS: %d to %d\nDS: %d to %d\nUDS: %d to %d\nSS: %d to %d\n", CS, CS+CS_size, DS, DS+DS_size, UDS, UDS+UDS_size, SS, SS+SS_size);
-	printf("InFile:\nCS: %d -- DS: %d -- UDS: %d\n", codeBase, dataBase, uninitBase);
+//	printf("Virtual addr: %d\n", mainAddr);
+//	printf("Page table size: %d VirtualPageNo: %d\n", numPages, vpn);
+//	printf("Segments:\nCS: %d to %d\nDS: %d to %d\nUDS: %d to %d\nSS: %d to %d\n", CS, CS+CS_size, DS, DS+DS_size, UDS, UDS+UDS_size, SS, SS+SS_size);
+//	printf("InFile:\nCS: %d -- DS: %d -- UDS: %d\n", codeBase, dataBase, uninitBase);
 
 	if( CS_size>0 && addr>=CS && addr < CS+CS_size){
 		///it means the starting was in code segment ---------
-		printf("Verdict: address in Code Segment\n");
+		//printf("Verdict: address in Code Segment\n");
 
 		//codeOffsetToStart = (addr - CS)/PageSize*PageSize;
 		codeOffsetToStart = (addr - CS); //probable bugfix
@@ -207,7 +207,7 @@ int AddrSpace::loadIntoFreePage(int addr, int physicalPage){
 
 	}
 	else if(DS_size>0 && addr>=DS && addr < DS+DS_size){
-		printf("Verdict: address in InitData Segment\n");
+	//	printf("Verdict: address in InitData Segment\n");
 		dataOffsetToStart = (addr - DS);
 		dataLeft = DS_size - dataOffsetToStart;
 		dataSizeToRead = min(dataLeft, PageSize);
@@ -232,7 +232,7 @@ int AddrSpace::loadIntoFreePage(int addr, int physicalPage){
 	}
 
 	else if(UDS_size>0 && addr>=UDS && addr < UDS+UDS_size){
-		printf("Verdict: address in UninitData Segment\n");
+		//printf("Verdict: address in UninitData Segment\n");
 		where = PageSize*physicalPage;
 		bzero(machine->mainMemory+where, PageSize);
 
@@ -245,7 +245,7 @@ int AddrSpace::loadIntoFreePage(int addr, int physicalPage){
 	}
 	else {
 
-		printf("Verdict: address in Stack Segment\n");
+		//printf("Verdict: address in Stack Segment\n");
 		where = PageSize*physicalPage;
 		bzero(machine->mainMemory+where, PageSize);
 	}
