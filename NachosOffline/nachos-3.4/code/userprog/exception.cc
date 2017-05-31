@@ -171,13 +171,16 @@ void HandleRead(){
 	int temp;
 	int i=0;
 
+	printf("\nCONSOLE READING (Please enter something).....\n");
 	int char_read = myconsole->Read(myBuffer, size, id);
-	//printf("My ReadBuffer: %s\n", myBuffer);
 
 	while(i<=char_read){
 	    if(!machine-> WriteMem(bufferAddress, 1, (int) myBuffer[i])){
-	    	syscallLock->Release();
-	    	return;
+	    	if(!machine-> WriteMem(bufferAddress, 1, (int) myBuffer[i]))  {
+	    		   		syscallLock->Release();
+	    		    	return;
+	    	}
+
 	    }
 	    bufferAddress++;
 	    i++;
@@ -185,6 +188,7 @@ void HandleRead(){
 	}
 	delete myBuffer;
 	machine->WriteRegister(2, char_read);
+	printf("ConsoleRead Done-------------------------------------\n");
 	syscallLock->Release();
 	//printf("here i am inside read\n");
 	incrementPC();
@@ -205,8 +209,10 @@ void HandleWrite(){
 
 	    		while(i<size){
 	    			if(!machine->ReadMem(bufferAddress,1,  &temp)){
-	    				syscallLock->Release();
-	    		    	return;
+	    				if(!machine->ReadMem(bufferAddress,1,  &temp)){
+	    					syscallLock->Release();
+	    		    		return;
+	    				}
 	    		    }
 	    			myBuffer[i] = (char) temp;
 	    			bufferAddress++;

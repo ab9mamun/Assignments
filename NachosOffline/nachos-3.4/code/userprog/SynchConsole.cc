@@ -24,7 +24,7 @@ SynchConsole::~SynchConsole(){
 
 int SynchConsole::Read(char* input, int size, int id){
 	lock->Acquire();
-	printf("\nCONSOLE READING (Please enter something).....\n");
+
 	int char_read = 0;
 	while(char_read<size){
 		readAvail->P();
