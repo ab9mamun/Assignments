@@ -127,6 +127,7 @@ int MemoryManager::loadFromSwapSpacePrivate(AddrSpace* space, int vpn){
 	ASSERT(swapPageNo>=0);
 	SwapPage* swapPage = swapSpace[swapPageNo];
 	swapPage->readPage(pageTable[vpn].physicalPage);
+	stats->numPageIns++;
 	return swapPageNo;
 
 }
@@ -154,6 +155,7 @@ int MemoryManager::saveIntoSwapSpacePrivate(AddrSpace* space, int vpn){
 	if(pageTable[vpn].dirty){
 		SwapPage* swapPage= swapSpace[swapPageNo];
 		swapPage->writePage(pageTable[vpn].physicalPage);
+		stats->numPageOuts++;
 	}
 	return swapPageNo;
 }

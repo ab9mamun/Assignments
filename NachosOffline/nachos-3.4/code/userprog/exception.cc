@@ -248,6 +248,10 @@ void HandlePageFault(){
 
 	}
 	currentThread->space->loadIntoFreePage(addr, physicalPage);
+
+
+
+	stats->numPageFaults++;
 	(void) interrupt->SetLevel(oldLevel);	// re-enable interrupts
 
 }

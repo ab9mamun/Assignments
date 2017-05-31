@@ -36,6 +36,12 @@ class Statistics {
     int numPacketsSent;		// number of packets sent over the network
     int numPacketsRecvd;	// number of packets received over the network
 
+    ///------------------mamun added these lines----------------------------------
+
+    int numPageIns;
+    int numPageOuts;
+    ////----------------------------------------------------------------------
+
     Statistics(); 		// initialize everything to zero
 
     void Print();		// print collected statistics

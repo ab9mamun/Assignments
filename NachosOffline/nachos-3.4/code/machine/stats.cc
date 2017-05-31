@@ -22,6 +22,12 @@ Statistics::Statistics()
     numDiskReads = numDiskWrites = 0;
     numConsoleCharsRead = numConsoleCharsWritten = 0;
     numPageFaults = numPacketsSent = numPacketsRecvd = 0;
+
+    ///------------------mamun added these lines----------------------------------
+
+   numPageIns =0;
+   numPageOuts =0;
+    ////----------------------------------------------------------------------
 }
 
 //----------------------------------------------------------------------
@@ -38,7 +44,8 @@ Statistics::Print()
     printf("Disk I/O: reads %d, writes %d\n", numDiskReads, numDiskWrites);
     printf("Console I/O: reads %d, writes %d\n", numConsoleCharsRead, 
 	numConsoleCharsWritten);
-    printf("Paging: faults %d\n", numPageFaults);
+    printf("Paging: faults %d, pageIns %d, pageOuts %d\n", numPageFaults, numPageIns, numPageOuts);   ///mamun edited this line
     printf("Network I/O: packets received %d, sent %d\n", numPacketsRecvd, 
 	numPacketsSent);
+
 }
