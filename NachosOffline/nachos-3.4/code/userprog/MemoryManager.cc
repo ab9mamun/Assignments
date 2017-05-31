@@ -1,18 +1,20 @@
 #include "MemoryManager.h"
-/* Create a manager to track the allocation of numPages of physical memory.
+/* Create a manager to track the allocation of numPhysPages of physical memory.
    You will create one by calling the constructor with NumPhysPages as
    the parameter.  All physical pages start as free, unallocated pages. */
 
 #include "ProcessTable.h"
 extern ProcessTable* processTable;
+extern int currentClock;
+extern int* physPageLastClock;
 
-MemoryManager::MemoryManager(int numPages, int numSwapPages){
-	this->numPages = numPages;
+MemoryManager::MemoryManager(int numPhysPages, int numSwapPages){
+	this->numPhysPages = numPhysPages;
 	this->numSwapPages = numSwapPages;
 	lock = new Lock("MemManagerLock");
-	map = new BitMap(numPages);
-	vpnMap = new int[numPages];
-	processMap = new int[numPages];
+	map = new BitMap(numPhysPages);
+	vpnMap = new int[numPhysPages];
+	processMap = new int[numPhysPages];
 	swapSpace = new SwapPage*[numSwapPages];
 	for(int i=0; i<numSwapPages; i++){
 		swapSpace[i] = new SwapPage();
@@ -26,6 +28,9 @@ MemoryManager::MemoryManager(int numPages, int numSwapPages){
 int MemoryManager::AllocPage(){
 	lock->Acquire();
 	int pageNum = map->Find();
+	if(pageNum>=0){
+		printf("Allocating physical page number: %d\n", pageNum);
+	}
 	lock->Release();
 	return pageNum;
 }
@@ -50,6 +55,7 @@ int MemoryManager::Alloc(int processNo, int vpn){
 	lock->Acquire();
 	int pageNum = map->Find();
 	if(pageNum>=0){
+		printf("Allocating physical page number: %d\n", pageNum);
 		processMap[pageNum] = processNo;
 		vpnMap[pageNum] = vpn;
 	}
@@ -60,7 +66,28 @@ int MemoryManager::Alloc(int processNo, int vpn){
 int MemoryManager::AllocByForce(int processNo, int vpn
 		){
 	lock->Acquire();
-	int pageNum = Random()%numPages; ///Random-------------replacement
+	int pageNum;
+	/////////Random=========================
+	pageNum = Random()% numPhysPages ; ///Random-------------replacement
+
+	///////////////===========================================
+
+
+
+	///===================LRU-----------------------
+	pageNum = 0;
+	int min = physPageLastClock[0];
+
+	for(int i=1; i<numPhysPages; i++){
+		if(physPageLastClock[i]<min){
+			min = physPageLastClock[i];
+			pageNum = i;
+		}
+	}
+	/////////------------------------------------------------
+
+
+	printf("Allocating physical page number: %d\n", pageNum);
 
 	int oldProcess = processMap[pageNum];
 	int oldVpn = vpnMap[pageNum];
@@ -126,7 +153,6 @@ int MemoryManager::saveIntoSwapSpacePrivate(AddrSpace* space, int vpn){
 	if(pageTable[vpn].dirty){
 		SwapPage* swapPage= swapSpace[swapPageNo];
 		swapPage->writePage(pageTable[vpn].physicalPage);
-		pageTable[vpn].dirty = FALSE;
 	}
 	return swapPageNo;
 }

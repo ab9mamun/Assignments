@@ -139,7 +139,9 @@ void ExitProcess(){
 	syscallLock->Acquire();
 
 	int returnVal = machine->ReadRegister(4);
-	printf("Exiting with return val: %d\n", returnVal);
+	printf("--------------------------------------------\n");
+	printf("Process %d: Exiting with return val: %d\n",currentThread->processId, returnVal);
+	printf("--------------------------------------------\n");
 
 	int pts = machine->pageTableSize;
 	TranslationEntry* pageTable = machine->pageTable;
@@ -159,6 +161,7 @@ void ExitProcess(){
 	 else currentThread->Finish();
 }
 void HandleRead(){
+
 	syscallLock->Acquire();
 	int bufferAddress = machine->ReadRegister(4); //3 arguments, so registers 4, 5, 6 will get the arguments
 	int size = machine->ReadRegister(5);
@@ -167,6 +170,7 @@ void HandleRead(){
 	char* myBuffer = new char[size+5];
 	int temp;
 	int i=0;
+
 	int char_read = myconsole->Read(myBuffer, size, id);
 	//printf("My ReadBuffer: %s\n", myBuffer);
 
@@ -225,6 +229,8 @@ void HandleWrite(){
 
 ///----------------------------------handling other exceptions those are not syscall--------------
 void HandlePageFault(){
+	IntStatus oldLevel = interrupt->SetLevel(IntOff);	// disable interrupts
+
 	int addr = machine->ReadRegister(39);
 	int virtualPageNo = addr/PageSize;
 	printf("Page fault process: %d page: %d\n",currentThread->processId,  virtualPageNo);
@@ -236,6 +242,7 @@ void HandlePageFault(){
 
 	}
 	currentThread->space->loadIntoFreePage(addr, physicalPage);
+	(void) interrupt->SetLevel(oldLevel);	// re-enable interrupts
 
 }
 

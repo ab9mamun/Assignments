@@ -30,6 +30,8 @@
 
 extern MemoryManager* MMU;
 extern Lock* MMU_lock;
+extern int currentClock;
+extern int* physPageLastClock;
 
 //----------------------------------------------------------------------
 // SwapHeader
@@ -85,7 +87,7 @@ AddrSpace::AddrSpace(OpenFile *executable)
     this->noffH = noffH;
     this->executable = executable;
 // how big is address space?
-    size = noffH.code.size + noffH.initData.size + noffH.uninitData.size 
+    size = noffH.code.size + noffH.initData.size + noffH.uninitData.size
 			+ UserStackSize;	// we need to increase the size
 						// to leave room for the stack
     numPages = divRoundUp(size, PageSize);
@@ -120,16 +122,25 @@ AddrSpace::AddrSpace(OpenFile *executable)
 }
 int AddrSpace::loadIntoFreePage(int addr, int physicalPage){
 
+	int mainAddr = addr;
 	int vpn = addr/PageSize;
+	addr = vpn*PageSize;
+	int where;
+
+
 	pageTable[vpn].physicalPage = physicalPage;
 	pageTable[vpn].valid = TRUE;
+	pageTable[vpn].dirty = FALSE;
+
+	physPageLastClock[physicalPage] = currentClock++;
 
 	if(doesSwapPageExist(vpn)){
 		printf("Page got in swap space\n\n");
 		loadFromSwapSpace(vpn);
 		return 1;
 	}
-	printf("Page loading from executable\n\n");
+	printf("Page loading from executable\n");
+
 
 	///offsets are in bytes here-------------
 
@@ -139,16 +150,30 @@ int AddrSpace::loadIntoFreePage(int addr, int physicalPage){
 	int dataBase = noffH.initData.inFileAddr;
 	int uninitOffsetToStart, uninitLeft, uninitSizeToRead;
 	int uninitBase = noffH.uninitData.inFileAddr;
-	int where;
 
-	addr = addr/PageSize*PageSize;
+	int CS = 0;
+			 //noffH.code.virtualAddr;
+	int CS_size = noffH.code.size;
+	int DS = CS+CS_size;
+			 //noffH.initData.virtualAddr;
+	int DS_size = noffH.initData.size;
+	int UDS = DS+DS_size;
+			//noffH.uninitData.virtualAddr;
+	int UDS_size = noffH.uninitData.size;
+	int SS = UDS+UDS_size;
+	int SS_size = UserStackSize;
+	printf("Virtual addr: %d\n", mainAddr);
+	printf("Page table size: %d VirtualPageNo: %d\n", numPages, vpn);
+	printf("Segments:\nCS: %d to %d\nDS: %d to %d\nUDS: %d to %d\nSS: %d to %d\n", CS, CS+CS_size, DS, DS+DS_size, UDS, UDS+UDS_size, SS, SS+SS_size);
+	printf("InFile:\nCS: %d -- DS: %d -- UDS: %d\n", codeBase, dataBase, uninitBase);
 
-	if(addr>=noffH.code.virtualAddr && addr < noffH.code.virtualAddr+noffH.code.size){
+	if( CS_size>0 && addr>=CS && addr < CS+CS_size){
 		///it means the starting was in code segment ---------
+		printf("Verdict: address in Code Segment\n");
 
-		//codeOffsetToStart = (addr - noffH.code.virtualAddr)/PageSize*PageSize;
-		codeOffsetToStart = (addr - noffH.code.virtualAddr); //probable bugfix
-		codeLeft = noffH.code.size - codeOffsetToStart;
+		//codeOffsetToStart = (addr - CS)/PageSize*PageSize;
+		codeOffsetToStart = (addr - CS); //probable bugfix
+		codeLeft = CS_size - codeOffsetToStart;
 		codeSizeToRead = min(codeLeft, PageSize);
 		where = PageSize*physicalPage;
 		executable->ReadAt(machine->mainMemory+where, codeSizeToRead, codeBase+codeOffsetToStart);
@@ -157,10 +182,11 @@ int AddrSpace::loadIntoFreePage(int addr, int physicalPage){
 		if(codeSizeToRead<PageSize){  ///still something to read
 
 				dataOffsetToStart = 0;
-				dataLeft = noffH.initData.size - dataOffsetToStart;
+				dataLeft = DS_size - dataOffsetToStart;
 
 				dataSizeToRead = min(dataLeft, PageSize-codeSizeToRead);
 				where = PageSize*physicalPage+codeSizeToRead;
+				if(DS_size>0)
 				executable->ReadAt(machine->mainMemory+where, dataSizeToRead, dataBase+dataOffsetToStart);
 
 				///data read finished ------------
@@ -169,20 +195,21 @@ int AddrSpace::loadIntoFreePage(int addr, int physicalPage){
 					bzero(machine->mainMemory+where, PageSize - (codeSizeToRead+dataSizeToRead));
 
 					/*uninitOffsetToStart = 0;
-					uninitLeft = noffH.uninitData.size - uninitOffsetToStart;
+					uninitLeft = UDS_size - uninitOffsetToStart;
 					uninitSizeToRead = min(uninitLeft, PageSize);
 					where = PageSize*physicalPage;
-
-					executable->ReadAt(machine->mainMemory+where,uninitSizeToRead, uninitBase+uninitOffsetToStart); */
+					if(UDS_size>0)
+					executable->ReadAt(machine->mainMemory+where,uninitSizeToRead, uninitBase+uninitOffsetToStart);*/
 					///uninit read finished--------
 				}
 		}
 
 
 	}
-	else if(addr>=noffH.initData.virtualAddr && addr < noffH.initData.virtualAddr+noffH.initData.size){
-		dataOffsetToStart = (addr - noffH.initData.virtualAddr);
-		dataLeft = noffH.initData.size - dataOffsetToStart;
+	else if(DS_size>0 && addr>=DS && addr < DS+DS_size){
+		printf("Verdict: address in InitData Segment\n");
+		dataOffsetToStart = (addr - DS);
+		dataLeft = DS_size - dataOffsetToStart;
 		dataSizeToRead = min(dataLeft, PageSize);
 		where = PageSize*physicalPage;
 
@@ -193,37 +220,37 @@ int AddrSpace::loadIntoFreePage(int addr, int physicalPage){
 				bzero(machine->mainMemory+where, PageSize-dataSizeToRead);
 
 				/*uninitOffsetToStart = 0;
-									uninitLeft = noffH.uninitData.size - uninitOffsetToStart;
+									uninitLeft = UDS_size - uninitOffsetToStart;
 									uninitSizeToRead = min(uninitLeft, PageSize);
 									where = PageSize*physicalPage;
-
-									executable->ReadAt(machine->mainMemory+where,uninitSizeToRead, uninitBase+uninitOffsetToStart); */
+									if(UDS_size>0)
+									executable->ReadAt(machine->mainMemory+where,uninitSizeToRead, uninitBase+uninitOffsetToStart);*/
 				///uninit read finished--------
 		}
 
 
 	}
 
-	else if(addr>=noffH.uninitData.virtualAddr && addr < noffH.uninitData.virtualAddr+noffH.uninitData.size){
+	else if(UDS_size>0 && addr>=UDS && addr < UDS+UDS_size){
+		printf("Verdict: address in UninitData Segment\n");
 		where = PageSize*physicalPage;
 		bzero(machine->mainMemory+where, PageSize);
 
 		/*uninitOffsetToStart = 0;
-							uninitLeft = noffH.uninitData.size - uninitOffsetToStart;
+							uninitLeft = UDS_size - uninitOffsetToStart;
 							uninitSizeToRead = min(uninitLeft, PageSize);
 							where = PageSize*physicalPage;
-
-							executable->ReadAt(machine->mainMemory+where,uninitSizeToRead, uninitBase+uninitOffsetToStart); */
+							executable->ReadAt(machine->mainMemory+where,uninitSizeToRead, uninitBase+uninitOffsetToStart);*/
 		///uninit read finished--------
 	}
 	else {
-		printf("invalid address %d\n", addr);
-		printf("page table size: %d virtualPageNo: %d\n", numPages, vpn);
-		printf("uninit ends at: %d\n", noffH.uninitData.virtualAddr + noffH.uninitData.size);
-		printf("verdict: address in USER_STACK_SIZE\n");
+
+		printf("Verdict: address in Stack Segment\n");
 		where = PageSize*physicalPage;
 		bzero(machine->mainMemory+where, PageSize);
 	}
+	printf("\n");
+
 
 	return 0;
 }

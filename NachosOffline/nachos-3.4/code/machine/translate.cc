@@ -38,6 +38,12 @@
 // simulated machine's format of little endian.  These end up
 // being NOPs when the host machine is also little endian (DEC and Intel).
 
+
+///0----==================================-mamun added these lines---------------------
+extern int currentClock;
+extern int* physPageLastClock;
+////--------------------------------------------------------------------------------
+
 unsigned int
 WordToHost(unsigned int word) {
 #ifdef HOST_IS_BIG_ENDIAN
@@ -212,6 +218,7 @@ Machine::Translate(int virtAddr, int* physAddr, int size, bool writing)
 	if (vpn >= pageTableSize) {
 	    DEBUG('a', "virtual page # %d too large for page table size %d!\n", 
 			virtAddr, pageTableSize);
+	    printf("Virtual addr: %d, Page Table size %d\n", virtAddr, pageTableSize);
 	    return AddressErrorException;
 	} else if (!pageTable[vpn].valid) {
 	    DEBUG('a', "virtual page # %d too large for page table size %d!\n", 
@@ -219,6 +226,12 @@ Machine::Translate(int virtAddr, int* physAddr, int size, bool writing)
 	    return PageFaultException;
 	}
 	entry = &pageTable[vpn];
+	///0----==================================-mamun added these lines---------------------
+	if(!physPageLastClock){
+		physPageLastClock[entry->physicalPage] = currentClock++;
+	}
+	////--------------------------------------------------------------------------------
+
     } else {
         for (entry = NULL, i = 0; i < TLBSize; i++)
     	    if (tlb[i].valid && (((unsigned int)tlb[i].virtualPage) == vpn)) {

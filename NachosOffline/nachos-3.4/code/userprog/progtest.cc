@@ -33,6 +33,9 @@ Lock* processTable_lock;
 Lock* syscallLock;
 SynchConsole* myconsole;
 
+int currentClock;
+int* physPageLastClock;
+
  Semaphore *readAvail;
  Semaphore *writeDone;
  Console *console;
@@ -50,6 +53,9 @@ StartProcess(char *filename)
     processTable = new ProcessTable(MaxProcessNumber);
     processTable_lock = new Lock("Another processTable_lock");
     syscallLock = new Lock("Syscall lock");
+
+    currentClock = 0;
+    physPageLastClock = new int[NumPhysPages];
 
 
     console = new Console(NULL, NULL, ReadAvail, WriteDone, 0);

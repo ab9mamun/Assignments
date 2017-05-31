@@ -9,7 +9,7 @@
 
 
 class MemoryManager{
-/* Create a manager to track the allocation of numPages of physical memory.
+/* Create a manager to track the allocation of numPhysPages of physical memory.
    You will create one by calling the constructor with NumPhysPages as
    the parameter.  All physical pages start as free, unallocated pages. */
 	Lock* lock;
@@ -20,7 +20,7 @@ class MemoryManager{
 	int loadFromSwapSpacePrivate(AddrSpace* space, int vpn);
 public:
 
-MemoryManager(int numPages, int numSwapPages);
+MemoryManager(int numPhysPages, int numSwapPages);
 
 /* Allocate a free page, returning its physical page number or -1
    if there are no free pages available. */
@@ -39,7 +39,7 @@ int AllocByForce(int processNo, int vpn
 
 int* processMap;
 int* vpnMap;
-int numPages;
+int numPhysPages;
 int numSwapPages;
 int saveIntoSwapSpace(AddrSpace* space, int vpn);
 int loadFromSwapSpace(AddrSpace* space, int vpn);
