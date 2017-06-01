@@ -149,6 +149,10 @@ void ExitProcess(){
 	for(int i=0; i<pts; i++){
 		if(pageTable[i].valid)
 			MMU->FreePage(pageTable[i].physicalPage);
+		int swapPageNo = currentThread->space->swapPageMap[i];
+		if(swapPageNo>=0){
+			MMU->FreeSwapPage(swapPageNo);
+		}
 	}
 	//printf("memory freed\n");
 	//printf("processTable: %d\n", processTable);

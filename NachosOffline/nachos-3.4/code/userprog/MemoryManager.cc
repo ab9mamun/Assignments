@@ -15,6 +15,11 @@ MemoryManager::MemoryManager(int numPhysPages, int numSwapPages){
 	map = new BitMap(numPhysPages);
 	vpnMap = new int[numPhysPages];
 	processMap = new int[numPhysPages];
+
+	for(int i=0; i<numPhysPages; i++){
+		processMap[i] = -1;
+		vpnMap[i]  = -1;
+	}
 	swapSpace = new SwapPage*[numSwapPages];
 	for(int i=0; i<numSwapPages; i++){
 		swapSpace[i] = new SwapPage();
@@ -39,8 +44,16 @@ int MemoryManager::AllocPage(){
 void MemoryManager::FreePage(int physPageNum){
 	lock->Acquire();
 	map->Clear(physPageNum);
+	processMap[physPageNum] = -1;
+	vpnMap[physPageNum] = -1;
 	lock->Release();
 
+}
+
+void MemoryManager::FreeSwapPage(int swapPageNo){
+	lock->Acquire();
+	swapMap->Clear(swapPageNo);
+	lock->Release();
 }
 
 /* True if the physical page is allocated, false otherwise. */
@@ -68,7 +81,7 @@ int MemoryManager::AllocByForce(int processNo, int vpn
 	lock->Acquire();
 	int pageNum;
 	/////////Random=========================
-	pageNum = Random()% numPhysPages ; ///Random-------------replacement
+//	pageNum = Random()% numPhysPages ; ///Random-------------replacement
 
 	///////////////===========================================
 
@@ -91,6 +104,7 @@ int MemoryManager::AllocByForce(int processNo, int vpn
 
 	int oldProcess = processMap[pageNum];
 	int oldVpn = vpnMap[pageNum];
+	ASSERT(oldProcess >=0 && oldVpn>=0);
 	Thread* oldThread = (Thread*) processTable->Get(oldProcess);
 	if(oldThread){
 		printf("Swapping out a page of process: %d page: %d\nReplacing with  process: %d virtualPage: %d\n",

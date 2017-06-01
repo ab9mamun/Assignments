@@ -20,7 +20,7 @@ ProcessTable::ProcessTable(int size) {
 int ProcessTable::Alloc(void *object){
 	lock->Acquire();
 
-	int index = map->Find();
+	int index = map->FindOrdered();
 	if(index>=0){
 		table->put(index, object);
 		length++;

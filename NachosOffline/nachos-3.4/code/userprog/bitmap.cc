@@ -21,6 +21,7 @@ BitMap::BitMap(int nitems)
 { 
     numBits = nitems;
     numWords = divRoundUp(numBits, BitsInWord);
+    lastFound = numBits-1;
     map = new unsigned int[numWords];
     for (int i = 0; i < numBits; i++) 
         Clear(i);
@@ -102,6 +103,24 @@ BitMap::Find()
     return -1;
 }
 
+int BitMap::FindOrdered(){
+	for(int i=lastFound+1; i<numBits; i++){
+		if(!Test(i)){
+			Mark(i);
+			lastFound = i;
+			return i;
+		}
+	}
+	for(int i=0; i<=lastFound; i++){
+		if(!Test(i)){
+			Mark(i);
+			lastFound = i;
+			return i;
+		}
+	}
+	return -1;
+
+}
 //----------------------------------------------------------------------
 // BitMap::NumClear
 // 	Return the number of clear bits in the bitmap.

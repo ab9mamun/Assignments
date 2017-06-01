@@ -47,6 +47,8 @@ class BitMap {
 
     void Print();		// Print contents of bitmap
     
+    int FindOrdered();
+
     // These aren't needed until FILESYS, when we will need to read and 
     // write the bitmap to a file
     void FetchFrom(OpenFile *file); 	// fetch contents from disk 
@@ -55,6 +57,8 @@ class BitMap {
   private:
     int numBits;			// number of bits in the bitmap
     int numWords;			// number of words of bitmap storage
+    int lastFound;
+
 					// (rounded up if numBits is not a
 					//  multiple of the number of bits in
 					//  a word)

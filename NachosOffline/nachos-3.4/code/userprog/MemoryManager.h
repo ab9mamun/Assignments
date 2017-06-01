@@ -37,6 +37,8 @@ int Alloc(int processNo, int vpn);
 int AllocByForce(int processNo, int vpn
 		);
 
+void FreeSwapPage(int swapPageNo);
+
 int* processMap;
 int* vpnMap;
 int numPhysPages;
