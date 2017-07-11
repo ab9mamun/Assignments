@@ -135,11 +135,8 @@ END {
 
 #	printf( "AverageDelay: %15.5f PacketDeliveryRatio: %10.2f\n", rAverageDelay, rPacketDeliveryRatio ) ;
 
-<<<<<<< HEAD
 	printf( "%f\n%f\n%f\n%f\n%f\n", rThroughput/1024, rAverageDelay,rPacketDeliveryRatio, rPacketDropRatio,total_energy_consumption) ;
-=======
 	printf( "%.3f\n%.3f\n%.2f\n%.2f\n%.3f\n", rThroughput/1024, rAverageDelay,rPacketDeliveryRatio, rPacketDropRatio,total_energy_consumption) ;
->>>>>>> 46aaf96a792c5510634282acbdc46325f11efb36
 
 	#printf( "%15.2f\n%15.5f\n%15.2f\n%15.2f\n%15.2f\n%10.2f\n%10.2f\n%10.5f\n", rThroughput, rAverageDelay, nSentPackets, nReceivedPackets, nDropPackets, rPacketDeliveryRatio, rPacketDropRatio,rTime) ;
 	#printf("%15.5f\n%15.5f\n%15.5f\n%15.5f\n%15.0f\n%15.9f\n", total_energy_consumption, avg_energy_per_bit, avg_energy_per_byte, avg_energy_per_packet, total_retransmit, rEnergyEfficeincy);

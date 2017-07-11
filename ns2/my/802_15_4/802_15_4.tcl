@@ -35,11 +35,8 @@ Phy/WirelessPhy set CSThresh_ $dist(15m)
 Phy/WirelessPhy set RXThresh_ $dist(15m)
 Phy/WirelessPhy set TXThresh_ $dist(15m)
 
-<<<<<<< HEAD
 set time_duration 30 ; #[lindex $argv 5] ;#50
-=======
 set time_duration 5 ; #[lindex $argv 5] ;#50
->>>>>>> 46aaf96a792c5510634282acbdc46325f11efb36
 set start_time 5 ;#100
 set parallel_start_gap 0.0
 set cross_start_gap 0.0
@@ -148,13 +145,10 @@ set i 0;
 while {$i < $num_node } {
 
 
-<<<<<<< HEAD
 	set x_pos [expr 1+int(($x_dim-2)*0.1*rand())] ;#random settings
 	set y_pos [expr 1+int(($y_dim-2)*0.1*rand())] ;#random settings
-=======
 	set x_pos [expr int($x_dim*rand())] ;#random settings
 	set y_pos [expr 1+int($y_dim*rand())] ;#random settings
->>>>>>> 46aaf96a792c5510634282acbdc46325f11efb36
 
 	$node_($i) set X_ $x_pos;
 	$node_($i) set Y_ $y_pos;

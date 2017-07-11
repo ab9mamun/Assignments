@@ -6,11 +6,8 @@ coverage=(1 2 3 4 5)
 
 iteration=5
 
-<<<<<<< HEAD
 outputGraph="graphs_802_15_4.ps"
-=======
 outputGraph="graphs.ps"
->>>>>>> 46aaf96a792c5510634282acbdc46325f11efb36
 #graph files initialization
 rootY="YUnitText: "
 output_param=("Throughput(kbps)" "Delay(s)" "Delivery Ratio" "Drop Ratio" "Energy Consumption(J)")

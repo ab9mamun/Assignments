@@ -14,15 +14,15 @@ set node_speed [lindex $argv 3]
 
 set cbr_interval [expr 1.0/$cbr_pckt_per_sec]
 
-<<<<<<< HEAD
+
 set x_dim 20 ; #[lindex $argv 1]
 set y_dim 20 ; #[lindex $argv 1]
 set time_duration 10 ; #[lindex $argv 5] ;#50
-=======
+
 set x_dim 150 ; #[lindex $argv 1]
 set y_dim 150 ; #[lindex $argv 1]
 set time_duration 5; #[lindex $argv 5] ;#50
->>>>>>> 46aaf96a792c5510634282acbdc46325f11efb36
+
 set start_time 5 ;#100
 set parallel_start_gap 0.0
 set cross_start_gap 0.0
