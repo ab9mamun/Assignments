@@ -12,7 +12,7 @@ public class Griddle {
     static int n;
     static Scanner scn;
     static HashSet<State> visited;
-    static boolean anystate = true;
+    static boolean anystate = false;
 
     public static void main(String[] args){
         try {
@@ -77,14 +77,17 @@ public class Griddle {
                     }
                     newState = new State(s, Direction.right, i);
                     if(!visited.contains(newState)) {
+                        visited.add(s);
                         Q.add(newState);
                     }
                     newState = new State(s, Direction.up, i);
                     if(!visited.contains(newState)) {
+                        visited.add(s);
                         Q.add(newState);
                     }
                     newState = new State(s, Direction.down, i);
                     if(!visited.contains(newState)) {
+                        visited.add(s);
                         Q.add(newState);
                     }
 
