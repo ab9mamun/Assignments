@@ -1,12 +1,37 @@
 import javafx.scene.layout.Priority;
 
+import java.io.*;
 import java.util.PriorityQueue;
 import java.util.Random;
+import java.util.Scanner;
 
 public class Test {
     static int n;
 
     public static void main(String[] args) {
+
+        Scanner scn;
+
+        try{
+       scn =  new Scanner(new BufferedReader(new FileReader("src/input.txt")));
+            while(scn.hasNextInt()){
+                int x =  scn.nextInt();
+                System.out.println(x);
+                if(x==0) {
+                    System.out.println("Exiting. ");
+                    break;
+                }
+
+            }
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
+
+
+
+
+
 //        PriorityQueue<State> queue = new PriorityQueue<>();
 //        Random rand = new Random();
 //
@@ -26,26 +51,26 @@ public class Test {
 
 
 
-
-        n = 3;
-        int[][] matt = new int[n][n];
-        System.out.println(matt.length+" "+matt[0].length+" "+matt[1].length);
-        Random rand = new Random();
-
-        for(int i=0; i<n; i++){
-            for(int j=0; j<n; j++){
-                matt[i][j] = 1+ Math.abs(rand.nextInt())%9;
-               // System.out.println("I'm here");
-            }
-        }
+//
+//        n = 3;
+//        int[][] matt = new int[n][n];
+//        System.out.println(matt.length+" "+matt[0].length+" "+matt[1].length);
+//        Random rand = new Random();
+//
+//        for(int i=0; i<n; i++){
+//            for(int j=0; j<n; j++){
+//                matt[i][j] = 1+ Math.abs(rand.nextInt())%9;
+//               // System.out.println("I'm here");
+//            }
+//        }
 //
 //
 //
-        printMat(matt);
-        rotate(matt, Direction.left, 0);
-        rotate(matt, Direction.right, 1);
-        rotate(matt, Direction.up, 2);
-        rotate(matt, Direction.down, 1);
+//        printMat(matt);
+//        rotate(matt, Direction.left, 0);
+//        rotate(matt, Direction.right, 1);
+//        rotate(matt, Direction.up, 2);
+//        rotate(matt, Direction.down, 1);
 //
 //
 //
@@ -96,7 +121,7 @@ public class Test {
 
 
     public static void printMat(int[][] mat){
-        System.out.println("The matrix is:");
+       // System.out.println("The matrix is:");
         for(int[] x:mat){
             for(int y:x){
                 System.out.print(y+" ");
