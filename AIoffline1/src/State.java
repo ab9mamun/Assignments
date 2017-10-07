@@ -1,5 +1,6 @@
 import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class State implements Comparable{
     static int n;
@@ -140,5 +141,36 @@ public class State implements Comparable{
 
     public void printMovement() {
         System.out.println(movement);
+    }
+
+
+    @Override
+    public int hashCode() {
+//        int[] b = new int[n*n];
+//        for(int i=0; i<n; i++){
+//            for(int j=0; j<n; j++){
+//                b[i*n+j] = mat[i][j];
+//            }
+//        }
+        //return Arrays.hashCode(b);
+        return Arrays.hashCode(mat);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if(obj instanceof State){
+            State s = (State) obj;
+            if(mat.length!=s.mat.length) return false;
+            for(int i=0; i<n; i++){
+                if(mat[i].length!=s.mat.length) return false;
+                for(int j=0; j<n; j++){
+                    if(mat[i][j]!=s.mat[i][j]) return false;
+                }
+            }
+
+            return true;
+
+        }
+        return false;
     }
 }

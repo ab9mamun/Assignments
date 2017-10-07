@@ -1,5 +1,6 @@
 import java.io.BufferedReader;
 import java.io.FileReader;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.PriorityQueue;
 import java.util.Scanner;
@@ -8,6 +9,7 @@ public class Griddle {
     static State initState, goalState;
     static int n;
     static Scanner scn;
+    static HashSet<State> visited;
 
     public static void main(String[] args){
         try {
@@ -22,6 +24,7 @@ public class Griddle {
                 }
                 initState = new State();
                 goalState = new State();
+                visited = new HashSet<>();
                 n = temp;
 
                 initState.mat = new int[n][n];
@@ -57,6 +60,7 @@ public class Griddle {
 
         while(!Q.isEmpty()){
             State s = Q.remove();
+            visited.add(s);
             if(s.isthisgoal){
                 goalState = s;
                 break;
@@ -64,13 +68,21 @@ public class Griddle {
             else {
                 for(int i=0; i<n; i++){
                     State newState = new State(s, Direction.left, i);
-                    Q.add(newState);
+                    if(!visited.contains(newState)) {
+                        Q.add(newState);
+                    }
                     newState = new State(s, Direction.right, i);
-                    Q.add(newState);
+                    if(!visited.contains(newState)) {
+                        Q.add(newState);
+                    }
                     newState = new State(s, Direction.up, i);
-                    Q.add(newState);
+                    if(!visited.contains(newState)) {
+                        Q.add(newState);
+                    }
                     newState = new State(s, Direction.down, i);
-                    Q.add(newState);
+                    if(!visited.contains(newState)) {
+                        Q.add(newState);
+                    }
 
                 }
             }

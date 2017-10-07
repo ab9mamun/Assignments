@@ -1,34 +1,52 @@
 import javafx.scene.layout.Priority;
 
 import java.io.*;
-import java.util.PriorityQueue;
-import java.util.Random;
-import java.util.Scanner;
+import java.util.*;
 
 public class Test {
     static int n;
 
     public static void main(String[] args) {
+        State a,b,c,d;
+        int[][] matt = {{1,1,1},{2,2,2},{3,3,3}};
+        a = new State();
+        a.mat = matt.clone();
+        b = new State();
+        b.mat = matt.clone();
+        c = new State();
+        c.mat = matt.clone();
+        d = new State();
+        d.mat = matt.clone();
 
-        Scanner scn;
+        System.out.println(a.equals(d));
+        HashSet<State> set = new HashSet<>();
+        set.add(a);
+        set.add(b);
+        System.out.println(set.contains(d));
+        System.out.println(set.size());
 
-        try{
-       scn =  new Scanner(new BufferedReader(new FileReader("src/input.txt")));
-            while(scn.hasNextInt()){
-                int x =  scn.nextInt();
-                System.out.println(x);
-                if(x==0) {
-                    System.out.println("Exiting. ");
-                    break;
-                }
-
-            }
-        }
-        catch (Exception e){
-            e.printStackTrace();
-        }
+        System.out.println("Int size: "+Integer.SIZE);
 
 
+//        Scanner scn;
+//
+//        try{
+//       scn =  new Scanner(new BufferedReader(new FileReader("src/input.txt")));
+//            while(scn.hasNextInt()){
+//                int x =  scn.nextInt();
+//                System.out.println(x);
+//                if(x==0) {
+//                    System.out.println("Exiting. ");
+//                    break;
+//                }
+//
+//            }
+//        }
+//        catch (Exception e){
+//            e.printStackTrace();
+//        }
+//
+//
 
 
 
