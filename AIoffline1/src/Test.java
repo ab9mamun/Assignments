@@ -1,6 +1,5 @@
-import javafx.scene.layout.Priority;
 
-import java.io.*;
+
 import java.util.*;
 
 public class Test {
@@ -8,25 +7,12 @@ public class Test {
 
     public static void main(String[] args) {
         State a,b,c,d;
-        int[][] matt = {{1,1,1},{2,2,2},{3,3,3}};
-        a = new State();
-        a.mat = matt.clone();
-        b = new State();
-        b.mat = matt.clone();
-        c = new State();
-        c.mat = matt.clone();
-        d = new State();
-        d.mat = matt.clone();
-
-        System.out.println(a.equals(d));
-        HashSet<State> set = new HashSet<>();
-        set.add(a);
-        set.add(b);
-        System.out.println(set.contains(d));
-        System.out.println(set.size());
-
-        System.out.println("Int size: "+Integer.SIZE);
-
+        int[][] matt = {{1,5,7},{2,23,22},{13,3,73}};
+        printMat(matt);
+        System.out.println();
+        int[][] matts = matt.clone();
+        rotateMatrix(3, matts);
+        printMat(matts);
 
 //        Scanner scn;
 //
@@ -100,10 +86,10 @@ public class Test {
 
         System.out.println(dir+" "+ position);
 
-        if(dir==Direction.left) leftRotate(mat, position);
-        if(dir==Direction.right) rightRotate(mat, position);
-        if(dir==Direction.up) upRotate(mat, position);
-        if(dir==Direction.down) downRotate(mat, position);
+        if(dir== Direction.left) leftRotate(mat, position);
+        if(dir== Direction.right) rightRotate(mat, position);
+        if(dir== Direction.up) upRotate(mat, position);
+        if(dir== Direction.down) downRotate(mat, position);
 
         printMat(mat);
     }
@@ -148,6 +134,33 @@ public class Test {
         }
     }
 
+
+    static void rotateMatrix(int N, int mat[][])
+    {
+        // Consider all squares one by one
+        for (int x = 0; x < N / 2; x++)
+        {
+            // Consider elements in group of 4 in
+            // current square
+            for (int y = x; y < N-x-1; y++)
+            {
+                // store current cell in temp variable
+                int temp = mat[x][y];
+
+                // move values from right to top
+                mat[x][y] = mat[y][N-1-x];
+
+                // move values from bottom to right
+                mat[y][N-1-x] = mat[N-1-x][N-1-y];
+
+                // move values from left to bottom
+                mat[N-1-x][N-1-y] = mat[N-1-y][x];
+
+                // assign temp to left
+                mat[N-1-y][x] = temp;
+            }
+        }
+    }
 
 
 }

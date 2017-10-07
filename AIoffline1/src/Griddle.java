@@ -1,3 +1,5 @@
+
+
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.util.HashSet;
@@ -10,6 +12,7 @@ public class Griddle {
     static int n;
     static Scanner scn;
     static HashSet<State> visited;
+    static boolean anystate = true;
 
     public static void main(String[] args){
         try {
@@ -41,7 +44,7 @@ public class Griddle {
                     }
                 }
 
-                State.init(n, initState, goalState);
+                State.init(n, initState, goalState, anystate);
 
                 play();
             }
@@ -56,11 +59,11 @@ public class Griddle {
     public static void play(){
         PriorityQueue<State> Q = new PriorityQueue<>();
 
+        visited.add(initState);
         Q.add(initState);
 
         while(!Q.isEmpty()){
             State s = Q.remove();
-            visited.add(s);
             if(s.isthisgoal){
                 goalState = s;
                 break;
@@ -69,6 +72,7 @@ public class Griddle {
                 for(int i=0; i<n; i++){
                     State newState = new State(s, Direction.left, i);
                     if(!visited.contains(newState)) {
+                        visited.add(s);
                         Q.add(newState);
                     }
                     newState = new State(s, Direction.right, i);

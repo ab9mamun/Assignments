@@ -1,5 +1,5 @@
-import java.lang.reflect.Array;
-import java.util.ArrayList;
+
+
 import java.util.Arrays;
 
 public class State implements Comparable{
@@ -9,23 +9,38 @@ public class State implements Comparable{
     double totalCost;
     static State initialState;
     static State goalState;
+    static State[] optionalGoalStates;
     boolean isthisgoal;
+    static boolean anystate;
 
     State parentState;
     String movement;
 
 
-    public static void init(int n, State is, State gs){
+    public static void init(int n, State is, State gs, boolean a_state){
         State.n = n;
         initialState = is;
         goalState = gs;
         is.costFromInit = 0;
-        is.totalCost = is.h();
+
         is.parentState = null;
         is.isthisgoal = false;
         gs.isthisgoal = true;
         is.movement = "Initially";
         gs.movement = "Goal State";
+        anystate = a_state;
+
+        if(a_state){
+            optionalGoalStates = new State[4];
+            optionalGoalStates[0] = goalState;
+            for(int i=1; i<4; i++){
+                optionalGoalStates[i] = new State();
+                optionalGoalStates[i].mat = optionalGoalStates[i-1].mat.clone();
+                rotateMatrix(n, optionalGoalStates[i].mat);
+            }
+
+        }
+        is.totalCost = is.h();
 
     }
 
@@ -41,10 +56,10 @@ public class State implements Comparable{
         parentState = parent;
 
         if(dir==Direction.left || dir==Direction.right){
-            movement = "Row    "+position+": "+dir;
+            movement = "Row    "+(position+1)+": "+dir;
         }
         else {
-            movement = "Column "+position+": "+dir;
+            movement = "Column "+(position+1)+": "+dir;
         }
 
         for(int i=0; i<n; i++){
@@ -62,7 +77,7 @@ public class State implements Comparable{
     private  void rotate(int[][] mat, Direction dir, int position) {
 
         if(dir==Direction.left) leftRotate(mat, position);
-        if(dir==Direction.right) rightRotate(mat, position);
+        if(dir== Direction.right) rightRotate(mat, position);
         if(dir==Direction.up) upRotate(mat, position);
         if(dir==Direction.down) downRotate(mat, position);
 
@@ -98,11 +113,11 @@ public class State implements Comparable{
     }
 
     //missmatch heuristic function-----------
-    public double h(){
+    public int h(State goal){
         int missmatch=0;
         for(int i=0; i<n; i++){
             for(int j=0; j<n; j++){
-                if(mat[i][j]!=goalState.mat[i][j]){
+                if(mat[i][j] != goal.mat[i][j]){
                     missmatch++;
                 }
             }
@@ -110,7 +125,19 @@ public class State implements Comparable{
 
         if(missmatch==0) isthisgoal = true;
 
-        return ((double) missmatch)/n;
+        return  missmatch;
+    }
+
+    public double h(){
+        int missmatch = h(goalState);
+        if(!anystate) return missmatch*1.0/n;
+
+        for(int i=1; i<4; i++)
+            missmatch = Math.min(missmatch, h(optionalGoalStates[i]));
+
+        if(missmatch==0) isthisgoal = true;
+        return missmatch*1.0/n;
+
     }
 
     public double getTotalCost(){
@@ -172,5 +199,33 @@ public class State implements Comparable{
 
         }
         return false;
+    }
+
+
+    static void rotateMatrix(int N, int mat[][])
+    {
+        // Consider all squares one by one
+        for (int x = 0; x < N / 2; x++)
+        {
+            // Consider elements in group of 4 in
+            // current square
+            for (int y = x; y < N-x-1; y++)
+            {
+                // store current cell in temp variable
+                int temp = mat[x][y];
+
+                // move values from right to top
+                mat[x][y] = mat[y][N-1-x];
+
+                // move values from bottom to right
+                mat[y][N-1-x] = mat[N-1-x][N-1-y];
+
+                // move values from left to bottom
+                mat[N-1-x][N-1-y] = mat[N-1-y][x];
+
+                // assign temp to left
+                mat[N-1-y][x] = temp;
+            }
+        }
     }
 }
