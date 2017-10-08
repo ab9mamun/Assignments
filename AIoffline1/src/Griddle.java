@@ -12,9 +12,10 @@ public class Griddle {
     static int n;
     static Scanner scn;
     static HashSet<State> visited;
-    static boolean anystate = false;
+    static boolean anystate = true;
 
     public static void main(String[] args){
+
         try {
 
             scn = new Scanner(new BufferedReader(new FileReader("src/input.txt")));
@@ -25,6 +26,7 @@ public class Griddle {
                     System.out.println("Exiting..");
                     break;
                 }
+                long time = System.currentTimeMillis();
                 initState = new State();
                 goalState = new State();
                 visited = new HashSet<>();
@@ -47,6 +49,8 @@ public class Griddle {
                 State.init(n, initState, goalState, anystate);
 
                 play();
+                long end = System.currentTimeMillis();
+                System.out.println("Time elapsed "+ (end-time) + " ms");
             }
 
         }catch (Exception e){
@@ -57,6 +61,7 @@ public class Griddle {
     }
 
     public static void play(){
+
         PriorityQueue<State> Q = new PriorityQueue<>();
 
         visited.add(initState);
