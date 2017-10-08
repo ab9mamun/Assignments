@@ -12,6 +12,7 @@ public class ServerThread implements Runnable {
      BufferedReader reader;
      InputStream fileDownloader;
      OutputStream fileUploader;
+     String receiver_stdid;
 
     public ServerThread(Socket sock){
         t = new Thread(this);
@@ -34,7 +35,15 @@ public class ServerThread implements Runnable {
                 String[] tokens = msg.split(":");
                 if(msg.startsWith("stdid")){
                     stdid = tokens[1];
-                    System.out.println(stdid);
+                    Server.threads.put(stdid, this);
+                    System.out.println("Student "+stdid+" connected");
+
+                    writeMessage("maximum_size:"+Server.maximum_size);
+                }
+                else if(msg.startsWith("wants_to_send")){
+                    receiver_stdid = tokens[1];
+                    int file_size = Integer.parseInt(tokens[2]);
+                    System.out.println("File request: "+tokens[1]);
                 }
             }
 
@@ -42,6 +51,11 @@ public class ServerThread implements Runnable {
         }
         catch (Exception e){
             e.printStackTrace();
+            System.out.println("Student "+stdid+" disconnected");
         }
+    }
+    public void writeMessage(String msg){
+        writer.println(msg);
+        writer.flush();
     }
 }
