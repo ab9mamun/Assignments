@@ -55,7 +55,14 @@ public class Client {
             receiver_stdid = scn.nextInt() + "";
             int file_no = scn.nextInt();
             if (file_no >= 1 && file_no <= 3){
-                sendFile(file_no);
+
+                new Thread(){
+                    @Override
+                    public void run(){
+                        sendFile(file_no);
+                    }
+                }.start();
+
             }
 
 
@@ -69,7 +76,7 @@ public class Client {
 
     public void sendFile(int file_no){
         enterCritical();
-        filepath = "/src/file_" + file_no;
+        filepath = "src/file_" + file_no+".txt";
         try
         {
             File file = new File(filepath);
@@ -77,11 +84,12 @@ public class Client {
             BufferedInputStream bis = new BufferedInputStream(fis);
 
             int size = (int) file.length();
+            System.out.println("File length is : "+size);
             byte[] data  = new byte [size];
             writeAsync("wants_to_send:"+receiver_stdid+":"+size);
 
             while(!ready){
-                Thread.sleep(500);
+                Thread.sleep(50);
             }
             ready = false;
 
@@ -101,7 +109,7 @@ public class Client {
         }
         catch(Exception e)
         {
-            System.err.println("Could not transfer file.");
+            e.printStackTrace();
         }
         finally {
             exitCritical();
@@ -144,6 +152,10 @@ public class Client {
                         if(msg.startsWith("maximum_size")){
                             maximum_size = Integer.parseInt(tokens[1]);
                             System.out.println("Maximum file size: "+maximum_size);
+                        }
+                        else if(msg.startsWith("ready")){
+                            System.out.println("Server is ready to receive file");
+                            ready = true;
                         }
 
                     }
