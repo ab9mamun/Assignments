@@ -23,6 +23,7 @@ public class Client {
     Thread readThread;
     Lock lock;
     boolean ready;
+    int max_chunk;
 
     public Client() {
 
@@ -156,6 +157,12 @@ public class Client {
                         else if(msg.startsWith("ready")){
                             System.out.println("Server is ready to receive file");
                             ready = true;
+                            max_chunk = Integer.parseInt(tokens[1]);
+                        }
+
+                        else if(msg.startsWith("wants_to_send")){
+                            int file_size = Integer.parseInt(tokens[1]);
+                            downloadFile(file_size);
                         }
 
                     }
@@ -165,5 +172,39 @@ public class Client {
             }
         };
         readThread.start();
+    }
+
+    private void downloadFile(int size){
+
+        try {
+
+
+
+            BufferedOutputStream bos = new BufferedOutputStream(
+                    new FileOutputStream("src/downloaded_by_"+stdid+".txt")
+            );
+            int total = 0;
+
+            byte[] contents = new byte[size];
+            writeAsync("ready");
+
+            while (total<size)    //loop is continued until received byte=totalfilesize
+            {
+                int bytesRead = fileDownloader.read(contents, total, size-total);
+                if(bytesRead<=0) break;
+                bos.write(contents, total, bytesRead);
+                total+= bytesRead;
+                bos.flush();
+                System.out.println("file receiving");
+            }
+
+            System.out.println("file reading end");
+            bos.close();
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
+
+
     }
 }

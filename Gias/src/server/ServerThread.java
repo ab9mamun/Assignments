@@ -10,12 +10,15 @@ public class ServerThread implements Runnable {
     Socket socket;
     String stdid;
     Lock lock;
+    int max_chunk;
+    boolean ready;
 
      PrintWriter writer;
      BufferedReader reader;
      InputStream fileDownloader;
      OutputStream fileUploader;
      String receiver_stdid;
+     byte[] contents;
 
     public ServerThread(Socket sock){
         t = new Thread(this);
@@ -27,6 +30,7 @@ public class ServerThread implements Runnable {
     public void run(){
 
         lock = new ReentrantLock();
+        ready = false;
         try{
 
             reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
@@ -49,6 +53,19 @@ public class ServerThread implements Runnable {
                     int file_size = Integer.parseInt(tokens[2]);
                     System.out.println("Student "+stdid+" wants to send file");
                     downloadFile(file_size);
+
+                    ServerThread thread = Server.threads.get(receiver_stdid);
+                    if(thread!=null){
+                        new Thread(){
+                            @Override
+                            public void run(){
+                                thread.sendFile(contents);
+                            }
+                        }.start();
+                    }
+                }
+                else if(msg.startsWith("ready")){
+                    ready = true;
                 }
             }
 
@@ -88,13 +105,14 @@ public class ServerThread implements Runnable {
 
 
             BufferedOutputStream bos = new BufferedOutputStream(
-                    new FileOutputStream("src/downloaded.txt")
+                    new FileOutputStream("src/downloaded_by_server.txt")
             );
             int total = 0;
 
-            byte[] contents = new byte[size];
+            contents = new byte[size];
+            max_chunk = Math.abs(Server.random.nextInt())%5 +1;
 
-            writeAsync("ready");
+            writeAsync("ready:"+max_chunk);
 
             while (total<size)    //loop is continued until received byte=totalfilesize
             {
@@ -112,6 +130,53 @@ public class ServerThread implements Runnable {
         catch (Exception e){
             e.printStackTrace();
         }
+
+
+    }
+
+
+
+
+    public void sendFile(byte[] data){
+        enterCritical();
+
+        try
+        {
+
+            int size = (int) data.length;
+            System.out.println("File length is : "+size);
+            System.out.println("Trying to send file to Student "+stdid);
+            writeAsync("wants_to_send:"+size);
+
+            while(!ready){
+                Thread.sleep(50);
+            }
+            ready = false;
+            max_chunk = 5;
+            System.out.println("Student "+stdid +" is ready to receive");
+
+            int total = 0;
+            while(total<size){
+
+                int byteRead = Math.min(max_chunk, size-total);
+                if(byteRead<=0) break;
+                fileUploader.write(data, total, byteRead);
+                total+= byteRead;
+                fileUploader.flush();
+                System.out.println("Sending file ..");
+            }
+
+            System.out.println("File sent successfully!");
+        }
+        catch(Exception e)
+        {
+            e.printStackTrace();
+        }
+        finally {
+            exitCritical();
+        }
+        //    writer.println("Downloaded.");
+        //  writer.flush();
 
 
     }
