@@ -52,6 +52,10 @@ public class ServerThread implements Runnable {
                     receiver_stdid = tokens[1];
                     int file_size = Integer.parseInt(tokens[2]);
                     System.out.println("Student "+stdid+" wants to send file");
+                    if(file_size>Server.maximum_size) {
+                        System.out.println("File size limit exceeded. Ignoring transfer..");
+                        continue;
+                    }
                     downloadFile(file_size);
 
                     ServerThread thread = Server.threads.get(receiver_stdid);
@@ -63,6 +67,7 @@ public class ServerThread implements Runnable {
                             }
                         }.start();
                     }
+                    else System.out.println("Student "+receiver_stdid+" not connected");
                 }
                 else if(msg.startsWith("ready")){
                     ready = true;
