@@ -1,4 +1,5 @@
 import random
+import time
 
 #function definitions------------------
 
@@ -36,46 +37,49 @@ def find_neighbor(cur_state):
     return state
 
 
-def random_state(requirements):
+def random_state(require_ments):
     state = []
     for i in range(num_slots):
         state.append([])
-    for req in requirements:
+    for req in require_ments:
         k = random.randrange(num_slots)
         state[k].append(req)
 
     return state
 
 
-def hill_climb_stoc(requirements):
-    best_state = random_state(requirements)
+def hill_climb_stoc(require_ments):
+    best_state = random_state(require_ments)
     best_cost = cost_func(best_state)
     if best_cost == 0:
         return best_state, best_cost
     for iterations in range(random_restart_limit):
-        state = random_state(requirements)
-        cost = cost_func(state)
+        print('Random restart: ', iterations+1)
+        state = random_state(require_ments)
         better_neighbor_found = True
 
         while better_neighbor_found:
             better_neighbor_found = False
             for attempt in range(neighbor_attempt_limit):
                 neighbor = find_neighbor(state)
-                if neighbor is "failed":
+                if neighbor == "failed":
                     continue
                 neighbor_cost = cost_func(neighbor)
-                if neighbor_cost < cost:
-                    state, cost = neighbor, neighbor_cost
+                if neighbor_cost < cost_func(state):
+                    state = neighbor.copy()
                     #print(state, cost)
                     better_neighbor_found = True
                     break
         #found a local optima, check for global
-        #print('Local optima: ',state, cost)
-        if cost < best_cost:
-            best_state, best_cost = state, cost
-        #print('Global optima: ', best_state, best_cost)
+        print('Local optima: ', cost_func(state), end=' ')
+        if cost_func(state) < cost_func(best_state):
+            best_state = state.copy()
+            best_cost = cost_func(best_state)
+            if best_cost == 0:
+                return best_state, 0
+        print('Global optima: ', cost_func(best_state))
 
-    return best_state, best_cost
+    return best_state, cost_func(best_state)
 
 
 def print_state(state):
@@ -94,9 +98,9 @@ def print_state(state):
 def initialize():
     periods = 6
     days = 5
-    weight_vector = (1,1,1)
+    weight__vector = (1,1,1)
     fname = 'input.txt'
-    requirements = []
+    require_ments = []
     with open(fname) as f:
         content = f.readlines()
     # you may also want to remove whitespace characters like `\n` at the end of each line
@@ -117,33 +121,38 @@ def initialize():
             times = int(words[8])
            # print(teacher, cls, room, times)
             for i in range(times):
-                requirements.append((teacher, cls, room))
+                require_ments.append((teacher, cls, room))
         elif words[0] == 'Importance':
             metric = words[2]
             weight = int(words[4])
             if metric == 'Teacherclashes':
-                weight_vector = (weight, weight_vector[1],weight_vector[2])
+                weight__vector = (weight, weight__vector[1],weight__vector[2])
             elif metric == 'Classclashes':
-                weight_vector = (weight_vector[0], weight,weight_vector[2])
+                weight__vector = (weight__vector[0], weight,weight__vector[2])
             elif metric == 'Roomclashes':
-                weight_vector = (weight_vector[0], weight_vector[1], weight)
+                weight__vector = (weight__vector[0], weight__vector[1], weight)
 
-    return periods, days, weight_vector, requirements
+    return periods, days, weight__vector, require_ments
 
 
+start_time = time.time()
 periods_per_day, days_per_week, weight_vector, requirements = initialize()
-print(periods_per_day, days_per_week, weight_vector)
+#print(periods_per_day, days_per_week, weight_vector)
 num_slots = periods_per_day*days_per_week
 req_length = 3
-random_restart_limit = 50
-neighbor_attempt_limit = 1000
+random_restart_limit = 400
+neighbor_attempt_limit = 100
 
-#state, cost = hill_climb_stoc(requirements)
-#print('Cost value:', cost)
-#print_state(state)
+final_state, final_cost = hill_climb_stoc(requirements)
+print('Cost value:', final_cost, cost_func(final_state))
+print_state(final_state)
+print(final_state)
 
-#temp = [[(1, 3, 5)], [(2, 4, 7), (1, 2, 3), (1, 3, 7)]]
-#print(cost_func(temp))
+print('Execution time:',time.time() - start_time, 's')
+
+# temp = [[(2, 4, 3)], [(1, 4, 2), (3, 4, 1), (2, 1, 2), (2, 4, 2), (4, 1, 2), (3, 1, 1), (3, 3, 3), (2, 3, 4), (2, 1, 4)], [(1, 1, 1)], [(3, 3, 1), (1, 4, 2)], [(2, 3, 1), (1, 4, 1)], [(1, 2, 4)], [(4, 1, 2), (4, 3, 1), (1, 1, 4)], [(2, 1, 2), (4, 4, 2), (3, 2, 1)], [(2, 2, 4), (1, 3, 2), (3, 2, 3)], [(3, 2, 3), (1, 3, 1)], [(3, 4, 1), (1, 4, 3), (3, 4, 1)], [(4, 2, 2), (4, 1, 3), (4, 3, 1), (1, 4, 4), (4, 2, 3), (3, 4, 3), (2, 2, 4), (2, 2, 4), (3, 2, 2), (1, 3, 4), (2, 1, 1), (4, 3, 1), (4, 4, 4)], [(2, 1, 3), (2, 1, 2), (4, 2, 4)], [(1, 2, 1), (3, 1, 4), (1, 4, 4)], [(4, 4, 1)], [(3, 2, 2), (1, 3, 4), (1, 1, 4), (1, 1, 4), (4, 2, 4), (3, 3, 3), (3, 2, 3), (3, 2, 3), (2, 2, 1), (1, 3, 3), (4, 2, 1), (2, 1, 2), (3, 1, 4), (3, 3, 3), (4, 4, 1)], [(1, 4, 3), (2, 4, 2), (4, 3, 1), (1, 4, 3), (4, 4, 2)], [(3, 1, 2), (4, 1, 1), (3, 3, 4), (3, 2, 2), (2, 3, 4), (4, 2, 2), (4, 1, 3), (3, 4, 4), (3, 4, 3), (2, 4, 1), (1, 1, 3), (1, 4, 3), (4, 3, 1)], [(4, 2, 4), (3, 1, 3), (4, 2, 4), (3, 4, 2)], [(2, 3, 4), (4, 2, 1), (3, 3, 3), (1, 4, 1)], [(4, 3, 1)], [(2, 2, 2), (2, 2, 4), (1, 3, 4), (2, 3, 3), (4, 3, 4), (2, 3, 2), (2, 3, 2), (1, 1, 2), (2, 4, 1), (1, 3, 3), (4, 4, 3), (2, 2, 2)], [(1, 1, 1), (4, 3, 3), (4, 1, 1)], [(2, 1, 1), (1, 4, 3)], [(3, 3, 4), (2, 1, 2), (1, 4, 3), (2, 2, 2)], [(3, 2, 4)], [(1, 1, 3)], [(2, 2, 2), (1, 1, 2), (3, 3, 2)], [(3, 2, 3)], [(4, 1, 4)]]
+# # [[(4, 2, 1), (2, 1, 4), (1, 2, 4), (2, 3, 3), (4, 2, 2)], [(1, 4, 1)], [(1, 3, 3), (2, 4, 1), (3, 3, 4), (4, 4, 2), (1, 4, 3), (1, 4, 4), (4, 2, 4)], [(1, 4, 3), (3, 1, 4)], [(3, 2, 3), (4, 4, 2), (3, 3, 3), (2, 1, 2), (3, 4, 3)], [(3, 1, 2), (3, 4, 1)], [(4, 2, 4), (4, 3, 3), (3, 4, 1), (3, 3, 2), (1, 1, 1)], [(3, 2, 3), (4, 1, 1), (1, 4, 4), (4, 3, 1), (4, 1, 3)], [(2, 1, 2), (4, 2, 4), (4, 1, 2)], [(1, 4, 3), (1, 4, 3), (2, 4, 2), (2, 1, 3), (2, 2, 2), (2, 3, 2)], [(3, 2, 2), (4, 3, 1), (4, 2, 1)], [(2, 1, 2), (1, 4, 1), (4, 3, 4), (2, 3, 4), (1, 3, 4), (3, 4, 4), (3, 4, 2), (4, 3, 1)], [(3, 2, 3), (1, 1, 2)], [(2, 3, 2), (2, 2, 2), (3, 1, 1)], [(2, 2, 4), (2, 2, 1)], [(4, 1, 1)], [(1, 1, 3), (3, 2, 2), (3, 3, 1)], [(3, 3, 4), (3, 3, 3), (1, 1, 2)], [(3, 1, 4), (3, 3, 3)], [(2, 3, 1), (2, 2, 4), (2, 3, 4), (4, 1, 3), (1, 3, 3)], [(2, 4, 2)], [(1, 3, 4), (4, 3, 1), (4, 4, 4), (2, 2, 4), (3, 2, 3), (3, 3, 3), (1, 1, 4), (4, 1, 4), (2, 1, 2), (4, 2, 4), (4, 3, 1), (1, 2, 1), (4, 4, 1)], [(4, 4, 3), (1, 1, 3), (3, 4, 1), (3, 4, 3)], [(3, 2, 3), (1, 1, 4), (2, 1, 2), (2, 3, 4), (3, 2, 2), (4, 1, 2), (4, 3, 1), (4, 4, 1)], [(2, 1, 1), (1, 4, 2), (2, 4, 1), (1, 3, 2)], [(2, 1, 1), (1, 4, 3), (4, 2, 3), (3, 2, 1)], [(1, 3, 1), (3, 2, 4), (2, 2, 4), (4, 2, 2), (1, 4, 3), (3, 1, 3)], [(2, 2, 2), (2, 2, 2)], [(1, 1, 1)], [(1, 4, 2), (1, 3, 4), (1, 1, 4), (2, 4, 3)]]
+# print(cost_func(temp))
 
 
 #Garbage-----------------------------------------------------
