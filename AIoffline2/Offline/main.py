@@ -1,16 +1,5 @@
 import random
 
-#global variables----------------
-periods_per_day = 6
-days_per_week = 5
-req_length = 3
-random_restart_limit = 20
-neighbor_attempt_limit = 1000
-weight_vector = (1, 1, 10)
-
-num_slots = periods_per_day*days_per_week
-
-
 #function definitions------------------
 
 def cost_func(state):
@@ -32,7 +21,7 @@ def find_neighbor(cur_state):
     state = cur_state.copy()
     i = random.randrange(0, len(state))
     j = random.randrange(0, len(state))
-    if i==j:
+    if i == j:
         return "failed"
 
     from_slot = state[i]
@@ -77,14 +66,14 @@ def hill_climb_stoc(requirements):
                 neighbor_cost = cost_func(neighbor)
                 if neighbor_cost < cost:
                     state, cost = neighbor, neighbor_cost
-                    print(state, cost)
+                    #print(state, cost)
                     better_neighbor_found = True
                     break
         #found a local optima, check for global
-        print('Local optima: ',state, cost)
+        #print('Local optima: ',state, cost)
         if cost < best_cost:
             best_state, best_cost = state, cost
-        print('Global optima: ', best_state, best_cost)
+        #print('Global optima: ', best_state, best_cost)
 
     return best_state, best_cost
 
@@ -102,14 +91,56 @@ def print_state(state):
                 print('Teacher', req[0], 'Class', req[1], 'Room', req[2])
         print('-----------------------')
 
+def initialize():
+    periods = 6
+    days = 5
+    weight_vector = (1,1,1)
+    fname = 'input.txt'
+    requirements = []
+    with open(fname) as f:
+        content = f.readlines()
+    # you may also want to remove whitespace characters like `\n` at the end of each line
+    content = [x.strip() for x in content]
+    f.close()
+    for line in content:
+        #   print(line)
+        words = line.split(" ")
+       # print(words)
+        if words[0] == "Timetable":
+            periods = int(words[2])
+            days = int(words[6])
+            #print(periods, days)
+        elif words[0] == 'Schedule':
+            cls = int(words[1][1:])
+            teacher = int(words[5][1:])
+            room = int(words[7][1:])
+            times = int(words[8])
+           # print(teacher, cls, room, times)
+            for i in range(times):
+                requirements.append((teacher, cls, room))
+        elif words[0] == 'Importance':
+            metric = words[2]
+            weight = int(words[4])
+            if metric == 'Teacherclashes':
+                weight_vector = (weight, weight_vector[1],weight_vector[2])
+            elif metric == 'Classclashes':
+                weight_vector = (weight_vector[0], weight,weight_vector[2])
+            elif metric == 'Roomclashes':
+                weight_vector = (weight_vector[0], weight_vector[1], weight)
 
-current_state = [[(1,2,3),(1,3,5)], [(1,3,7), (2,4,7)]]
-#num_slots = 2
-requirements = [(1,2,3), (1,3,5), (1,3,7), (2,4,7)]
-#print(random_state(requirements))
-state, cost = hill_climb_stoc(requirements)
-print('Cost value:',cost)
-print_state(state)
+    return periods, days, weight_vector, requirements
+
+
+periods_per_day, days_per_week, weight_vector, requirements = initialize()
+print(periods_per_day, days_per_week, weight_vector)
+num_slots = periods_per_day*days_per_week
+req_length = 3
+random_restart_limit = 50
+neighbor_attempt_limit = 1000
+
+#state, cost = hill_climb_stoc(requirements)
+#print('Cost value:', cost)
+#print_state(state)
 
 #temp = [[(1, 3, 5)], [(2, 4, 7), (1, 2, 3), (1, 3, 7)]]
 #print(cost_func(temp))
