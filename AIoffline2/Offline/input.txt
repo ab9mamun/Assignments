@@ -1,4 +1,4 @@
-Timetable data 8 periods per day 5 days per week
+Timetable data 120 periods per day 5 days per week
 Schedule C1 taught S1 by T1 in R2 1 times
 Schedule C4 taught S1 by T3 in R3 1 times
 Schedule C2 taught S1 by T2 in R4 1 times
