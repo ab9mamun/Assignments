@@ -83,7 +83,7 @@ class StartEvent(Event):
         
     def process(self, sim):
         #None
-        A = -sim.params.lambd * math.log(rand.uniform(0,1))
+        A = random.expovariate(sim.params.lambd)
         sim.scheduleEvent(ArrivalEvent(sim.now() +A , sim))
         sim.states.last_eventTime = sim.now()
         sim.scheduleEvent(ExitEvent(1000, sim))
@@ -243,8 +243,8 @@ def experiment3():
 
 def main():
     experiment1()
-    experiment2(1)
-    experiment3()
+    #experiment2(1)
+    #experiment3()
 
           
 if __name__ == "__main__":
