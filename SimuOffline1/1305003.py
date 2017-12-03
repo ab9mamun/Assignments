@@ -52,12 +52,22 @@ class States:
 
         
     def printResults(self, sim):
+        analytic_wq = sim.params.lambd / (sim.params.mu * (sim.params.mu - sim.params.lambd))
+        analytic_lq = sim.params.lambd * analytic_wq
+
         # DO NOT CHANGE THESE LINES
         print ('MMk Results: lambda = %lf, mu = %lf, k = %d' %(sim.params.lambd, sim.params.mu, sim.params.k))
         print ('MMk Total customer served: %d' %(self.served)   )
+        print()
         print ('MMk Average queue length: %lf' %(self.avgQlength))
+        print('Analytical Average queue length: ',analytic_lq)
+        print()
         print ('MMk Average customer delay in queue: %lf' %(self.avgQdelay)  )
+        print('Analytical Average customer delay in queue: ', analytic_wq)
+        print()
         print ('MMk Time-average server utility: %lf' %(self.util))
+        print('Analytical Time-average server utility: ', min(1,sim.params.lambd/sim.params.mu))
+
         
     def getResults(self, sim):
         return self. avgQlength, self.avgQdelay, self.util
@@ -83,10 +93,11 @@ class StartEvent(Event):
         
     def process(self, sim):
         #None
-        A = random.expovariate(sim.params.lambd)
+        U = rand.uniform(0,1)
+        A = -math.log(U)/sim.params.lambd
         sim.scheduleEvent(ArrivalEvent(sim.now() +A , sim))
         sim.states.last_eventTime = sim.now()
-        sim.scheduleEvent(ExitEvent(1000, sim))
+        sim.scheduleEvent(ExitEvent(1000000, sim))
 
 
 class ExitEvent(Event):    
@@ -106,13 +117,15 @@ class ArrivalEvent(Event):
         self.eventTime = eventTime
     def process(self, sim):
         #None
-        A = random.expovariate(sim.params.lambd)
+        U = rand.uniform(0, 1)
+        A = -math.log(U) / sim.params.lambd
         sim.scheduleEvent(ArrivalEvent(sim.now() + A, sim))
         sim.states.queue_area += (sim.now() - sim.states.last_eventTime) * len(sim.states.queue)
         sim.states.util_area += (sim.now() - sim.states.last_eventTime)*(sim.states.busy_count/sim.params.k)
         if sim.states.busy_count < sim.params.k:
             sim.states.busy_count += 1
-            D = random.expovariate(sim.params.mu)
+            U = rand.uniform(0, 1)
+            D = -math.log(U) / sim.params.mu
             sim.scheduleEvent(DepartureEvent(sim.now() + D, sim))
         else:
             sim.states.queue.append(self.eventTime)
@@ -131,12 +144,13 @@ class DepartureEvent(Event):
 
             sim.states.queue_area+= (sim.now() - sim.states.last_eventTime)*len(sim.states.queue)
 
-            D = random.expovariate(sim.params.mu)
+            U = rand.uniform(0, 1)
+            D = -math.log(U) / sim.params.mu
             sim.scheduleEvent(DepartureEvent(sim.now() + D, sim))
             now_serving_arrival_time = sim.states.queue.pop()
             sim.states.total_delay+= (sim.now() - now_serving_arrival_time)
         else:
-            random.expovariate(0.7)
+          #  random.expovariate(0.7)
             sim.states.busy_count -= 1
         sim.states.last_eventTime = sim.now()
 
