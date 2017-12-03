@@ -106,13 +106,13 @@ class ArrivalEvent(Event):
         self.eventTime = eventTime
     def process(self, sim):
         #None
-        A = -sim.params.lambd * math.log(rand.uniform(0, 1))
+        A = random.expovariate(sim.params.lambd)
         sim.scheduleEvent(ArrivalEvent(sim.now() + A, sim))
         sim.states.queue_area += (sim.now() - sim.states.last_eventTime) * len(sim.states.queue)
         sim.states.util_area += (sim.now() - sim.states.last_eventTime)*(sim.states.busy_count/sim.params.k)
         if sim.states.busy_count < sim.params.k:
             sim.states.busy_count += 1
-            D = -sim.params.mu * math.log(rand.uniform(0,1))
+            D = random.expovariate(sim.params.mu)
             sim.scheduleEvent(DepartureEvent(sim.now() + D, sim))
         else:
             sim.states.queue.append(self.eventTime)
@@ -131,11 +131,12 @@ class DepartureEvent(Event):
 
             sim.states.queue_area+= (sim.now() - sim.states.last_eventTime)*len(sim.states.queue)
 
-            D = -sim.params.mu * math.log(rand.uniform(0, 1))
+            D = random.expovariate(sim.params.mu)
             sim.scheduleEvent(DepartureEvent(sim.now() + D, sim))
             now_serving_arrival_time = sim.states.queue.pop()
             sim.states.total_delay+= (sim.now() - now_serving_arrival_time)
         else:
+            random.expovariate(0.7)
             sim.states.busy_count -= 1
         sim.states.last_eventTime = sim.now()
 
