@@ -8,13 +8,15 @@ For the sake of comparison, while plotting results from simulation, also produce
 
 import heapq
 import random
+import math
 import matplotlib.pyplot as plt
+import numpy.random as rand
 
 
 # Parameters
 class Params:
     def __init__(self, lambd, mu, k):        
-        self.lambd = lambd 
+        self.lambd = lambd
         self.mu = mu
         self.k = k
 
@@ -24,7 +26,12 @@ class States:
     def __init__(self):
         
         # States
-        self.queue = []        
+        self.queue = []
+        self.busy = False
+
+        self.util_area = 0
+        self.queue_area = 0
+        self.last_eventTime = 0
         
         # Statistics
         self.util = 0.0         
@@ -69,7 +76,9 @@ class StartEvent(Event):
         self.sim = sim
         
     def process(self, sim):
-        None
+        #None
+        A = -sim.params.lambd * math.log(rand.uniform(0,1))
+        sim.scheduleEvent(ArrivalEvent(sim.now() +A , sim))
 
 
 class ExitEvent(Event):    
@@ -82,14 +91,33 @@ class ExitEvent(Event):
         None
 
                                 
-class ArrivalEvent(Event):        
+class ArrivalEvent(Event):
+    def __init__(self, eventTime, sim):
+        self.eventType = 'ARRIVAL'
+        self.sim = sim
+        self.eventTime = eventTime
     def process(self, sim):
-        None
+        #None
+        A = -sim.params.lambd * math.log(rand.uniform(0, 1))
+        sim.scheduleEvent(ArrivalEvent(sim.now() + A, sim))
+        if not sim.states.busy:
+            sim.states.busy = True
+            D = -sim.params.mu * math.log(rand.uniform(0,1))
+            sim.scheduleEvent(DepartureEvent(sim.now() + D, sim))
+        else:
+            sim.states.queue.append(self.eventTime)
 
 
-class DepartureEvent(Event):            
+
+class DepartureEvent(Event):
+    def __init__(self, eventTime, sim):
+        self.eventType = 'DEPARTURE'
+        self.sim = sim
+        self.eventTime = eventTime
     def process(self, sim):
-        None                                       
+        if len(sim.states.queue) > 0:
+            D = -sim.params.mu * math.log(rand.uniform(0, 1))
+            sim.scheduleEvent(DepartureEvent(sim.now() + D, sim))
 
 
 class Simulator:
