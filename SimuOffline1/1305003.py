@@ -27,7 +27,7 @@ class States:
         
         # States
         self.queue = []
-        self.busy = False
+        self.busy_count = 0
 
         self.util_area = 0
         self.queue_area = 0
@@ -109,12 +109,12 @@ class ArrivalEvent(Event):
         A = -sim.params.lambd * math.log(rand.uniform(0, 1))
         sim.scheduleEvent(ArrivalEvent(sim.now() + A, sim))
         sim.states.queue_area += (sim.now() - sim.states.last_eventTime) * len(sim.states.queue)
-        if not sim.states.busy:
-            sim.states.busy = True
+        sim.states.util_area += (sim.now() - sim.states.last_eventTime)*(sim.states.busy_count/sim.params.k)
+        if sim.states.busy_count < sim.params.k:
+            sim.states.busy_count += 1
             D = -sim.params.mu * math.log(rand.uniform(0,1))
             sim.scheduleEvent(DepartureEvent(sim.now() + D, sim))
         else:
-            sim.states.util_area += (sim.now() - sim.states.last_eventTime)
             sim.states.queue.append(self.eventTime)
         sim.states.last_eventTime = sim.now()
 
@@ -125,7 +125,7 @@ class DepartureEvent(Event):
         self.sim = sim
         self.eventTime = eventTime
     def process(self, sim):
-        sim.states.util_area += (sim.now() - sim.states.last_eventTime) #system must be busy----
+        sim.states.util_area += (sim.now() - sim.states.last_eventTime) * (sim.states.busy_count / sim.params.k)
         sim.states.served+= 1
         if len(sim.states.queue) > 0:
 
@@ -136,7 +136,7 @@ class DepartureEvent(Event):
             now_serving_arrival_time = sim.states.queue.pop()
             sim.states.total_delay+= (sim.now() - now_serving_arrival_time)
         else:
-            sim.states.busy = False
+            sim.states.busy_count -= 1
         sim.states.last_eventTime = sim.now()
 
 
