@@ -196,7 +196,7 @@ def experiment1():
     sim.printResults()
 
 
-def experiment2():
+def experiment2(k):
     seed = 110
     mu = 1000.0 / 60
     ratios = [u / 10.0 for u in range(1, 11)]
@@ -207,7 +207,7 @@ def experiment2():
     
     for ro in ratios:
         sim = Simulator(seed)
-        sim.configure(Params(mu * ro, mu, 1), States())    
+        sim.configure(Params(mu * ro, mu, k), States())
         sim.run()
         
         length, delay, utl = sim.getResults()
@@ -237,13 +237,13 @@ def experiment2():
 def experiment3():
     # Similar to experiment2 but for different values of k; 1, 2, 3, 4
     # Generate the same plots
-    None
-
+    for k in range(2,5):
+        experiment2(k)
 
 def main():
     experiment1()
-    #experiment2()
-    #experiment3()
+    experiment2(1)
+    experiment3()
 
           
 if __name__ == "__main__":
