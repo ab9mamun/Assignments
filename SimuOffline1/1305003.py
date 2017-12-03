@@ -32,6 +32,7 @@ class States:
         self.util_area = 0
         self.queue_area = 0
         self.last_eventTime = 0
+        self.total_delay = 0
         
         # Statistics
         self.util = 0.0         
@@ -43,7 +44,12 @@ class States:
         None
     
     def finish(self, sim):
-        None
+
+        self.util = self.util_area/self.last_eventTime
+        self.avgQdelay = self.total_delay/self.served
+        self.avgQlength = self.queue_area/self.last_eventTime
+
+
         
     def printResults(self, sim):
         # DO NOT CHANGE THESE LINES
@@ -79,6 +85,8 @@ class StartEvent(Event):
         #None
         A = -sim.params.lambd * math.log(rand.uniform(0,1))
         sim.scheduleEvent(ArrivalEvent(sim.now() +A , sim))
+        sim.states.last_eventTime = sim.now()
+        sim.scheduleEvent(ExitEvent(1000, sim))
 
 
 class ExitEvent(Event):    
@@ -88,7 +96,7 @@ class ExitEvent(Event):
         self.sim = sim
     
     def process(self, sim):
-        None
+        sim.states.last_eventTime = sim.now()
 
                                 
 class ArrivalEvent(Event):
@@ -100,13 +108,15 @@ class ArrivalEvent(Event):
         #None
         A = -sim.params.lambd * math.log(rand.uniform(0, 1))
         sim.scheduleEvent(ArrivalEvent(sim.now() + A, sim))
+        sim.states.queue_area += (sim.now() - sim.states.last_eventTime) * len(sim.states.queue)
         if not sim.states.busy:
             sim.states.busy = True
             D = -sim.params.mu * math.log(rand.uniform(0,1))
             sim.scheduleEvent(DepartureEvent(sim.now() + D, sim))
         else:
+            sim.states.util_area += (sim.now() - sim.states.last_eventTime)
             sim.states.queue.append(self.eventTime)
-
+        sim.states.last_eventTime = sim.now()
 
 
 class DepartureEvent(Event):
@@ -115,9 +125,19 @@ class DepartureEvent(Event):
         self.sim = sim
         self.eventTime = eventTime
     def process(self, sim):
+        sim.states.util_area += (sim.now() - sim.states.last_eventTime) #system must be busy----
+        sim.states.served+= 1
         if len(sim.states.queue) > 0:
+
+            sim.states.queue_area+= (sim.now() - sim.states.last_eventTime)*len(sim.states.queue)
+
             D = -sim.params.mu * math.log(rand.uniform(0, 1))
             sim.scheduleEvent(DepartureEvent(sim.now() + D, sim))
+            now_serving_arrival_time = sim.states.queue.pop()
+            sim.states.total_delay+= (sim.now() - now_serving_arrival_time)
+        else:
+            sim.states.busy = False
+        sim.states.last_eventTime = sim.now()
 
 
 class Simulator:
@@ -222,8 +242,8 @@ def experiment3():
 
 def main():
     experiment1()
-    experiment2()
-    experiment3()
+    #experiment2()
+    #experiment3()
 
           
 if __name__ == "__main__":
