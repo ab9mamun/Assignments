@@ -97,7 +97,7 @@ class StartEvent(Event):
         A = -math.log(U)/sim.params.lambd
         sim.scheduleEvent(ArrivalEvent(sim.now() +A , sim))
         sim.states.last_eventTime = sim.now()
-        sim.scheduleEvent(ExitEvent(1000000, sim))
+        sim.scheduleEvent(ExitEvent(1000, sim))
 
 
 class ExitEvent(Event):    
@@ -252,7 +252,7 @@ def experiment2(k):
 def experiment3():
     # Similar to experiment2 but for different values of k; 1, 2, 3, 4
     # Generate the same plots
-    for k in range(2,5):
+    for k in range(1,5):
         experiment2(k)
 
 def main():
