@@ -12,6 +12,8 @@ def draw_board(board):
         for j in range(8):
             print(dup_board[i][j], end=' ')
         print()
+    sb, sw = get_score(dup_board)
+    print('Black:',sb,'White:',sw)
 
 
 def init_board():
@@ -95,10 +97,7 @@ def make_move(board, color, x, y):
             board[i][j] = color #flip the cell
 
         #toggle the turn
-        if turn == 'b':
-            turn = 'w'
-        else:
-            turn = 'b'
+        toggle_turn()
         return True
     return False
 
@@ -128,8 +127,15 @@ def get_board_with_valid_moves(board, color):
     return dup_board
 
 
+#---basic functionalities end here--
+
 def ask_for_move(board, human=False):
-    global turn
+    global turn, turn_failed
+    if len(get_valid_moves(board, turn)) == 0:
+        toggle_turn()
+        turn_failed += 1
+        return
+
     x, y = 0, 0
     if human:
         print('Turn for '+str(turn)+': ', end='')
@@ -137,12 +143,37 @@ def ask_for_move(board, human=False):
         x = int(string[0])
         y = int(string[1])
     make_move(board, turn, x, y)
+    turn_failed = 0
+
+
+def heuristic1(board):
+    None
+
+
+def heuristic2(board):
+    None
+
+
+def heuristic3(board):
+    None
+
+
+def get_score(board):
+    b_score = 0
+    w_score = 0
+    for x in range(8):
+        for y in range(8):
+            if board[x][y] == 'b':
+                b_score+= 1
+            elif board[x][y] == 'w':
+                w_score+= 1
+    return b_score, w_score
 
 
 def run_game(board):
-    global turn
+    global turn, turn_failed
     draw_board(board)
-    while True:
+    while turn_failed < 2:
         ask_for_move(board, True)
         draw_board(board)
 
@@ -150,14 +181,31 @@ def run_game(board):
 #----------------------
 # -global variables
 turn = 'b'
+turn_failed = 0
 #----------------------
+
+
+def init_globals():
+    global turn, turn_failed
+    turn = 'b'
+    turn_failed = 0
+
+
+def toggle_turn():
+    global turn
+    if turn == 'b':
+        turn = 'w'
+    else:
+        turn = 'b'
 
 
 def main():
     global turn
-    print('Hello world')
+    print('Welcome to Reversi')
+    init_globals()
     board = init_board()
     run_game(board)
+    #print(get_score(board))
 
 
 if __name__ == "__main__":
