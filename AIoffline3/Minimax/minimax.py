@@ -298,6 +298,14 @@ def run_game(board):
         if turn_failed==0:
             draw_board(board)
 
+def run_game_hum(board):
+    global turn, turn_failed
+    draw_board(board)
+    while turn_failed < 2:
+        ask_for_move(board, turn == 'w')
+        if turn_failed == 0:
+            draw_board(board)
+
 
 #----------------------
 # -global variables
@@ -326,7 +334,7 @@ def init_globals():
     turn = 'b'
     turn_failed = 0
 
-    depth1 = 5
+    depth1 = 6
     depth2 = 2
 
     heuristic_num = 1
@@ -338,6 +346,8 @@ def main():
     init_globals()
     board = init_board()
     run_game(board)
+
+    #run_game_hum(board)
     #print(get_score(board))
     # make_move(board, turn, 3,2)
     # print(heuristic1(board, turn))
