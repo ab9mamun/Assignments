@@ -1,4 +1,4 @@
-
+from numpy import random as rand
 def draw_board(board):
     global turn
     dup_board = get_board_with_valid_moves(board, turn)
@@ -39,13 +39,7 @@ def is_valid_move(board, color, x, y):
     else:
         other_color = 'w'
 
-    #now check for the 8 directions..........
-    #by shifting horizontally -1,0, 1
 
-    directions = [] #holds all the directions
-    for x_d in range(-1,2):
-        for y_d in range(-1,2):
-            directions.append((x_d, y_d))
     #this will add an additional 0, 0.. which we can ignore
     for x_d, y_d in directions:
         i, j = x, y
@@ -150,14 +144,7 @@ def ask_for_move(board, human=False):
 
 #positional heuristic
 def heuristic1(board, color):
-    weight = [[4,-3,2,2,2,2,-3,4],
-              [-3,-4,-1,-1,-1,-1,-4,-3],
-              [2,-1,1,0,0,1,-1,2],
-              [2,-1,0,1,1,0,-1,2],
-              [2,-1,0,1,1,0,-1,2],
-              [2,-1,1,0,0,1,-1,2],
-              [-3,-4,-1,-1,-1,-4,-3],
-              [4,-3,2,2,2,2,-3,4]]
+    global weight
 
     value = 0
     if color == 'b':
@@ -196,6 +183,9 @@ def heuristic2(board, color):
             my_c+= 1
         elif board[x][y] == other_color:
             other_c+= 1
+
+    if my_mob+other_mob == 0:
+        return  w1*(my_c-other_c)
 
     value = w1*(my_c-other_c) + w2*(my_mob-other_mob)*1.0/(my_mob+other_mob)
     return value
@@ -298,6 +288,9 @@ def run_game(board):
         if turn_failed==0:
             draw_board(board)
 
+    sb, sw = get_score(board)
+    update_stat(sb, sw)
+
 def run_game_hum(board):
     global turn, turn_failed
     draw_board(board)
@@ -315,7 +308,39 @@ heuristic_num = 3
 depth1 = 6
 depth2 = 6
 INFINITY = 99999
+black_win = 0
+white_win = 0
+
+directions = []
+
+weight = [[10, -3, 2, 2, 2, 2, -3, 10],
+          [-3, -4, -1, -1, -1, -1, -4, -3],
+          [2, -1, 1, 0, 0, 1, -1, 2],
+          [2, -1, 0, 1, 1, 0, -1, 2],
+          [2, -1, 0, 1, 1, 0, -1, 2],
+          [2, -1, 1, 0, 0, 1, -1, 2],
+          [-3, -4, -1, -1, -1, -1, -4, -3],
+          [10, -3, 2, 2, 2, 2, -3, 10]]
 #----------------------
+
+
+def update_stat(sb, sw):
+    global black_win,white_win, depth1, depth2, heuristic_num
+    if sb>sw:
+        black_win+= 1
+        winner = 'Black'
+    elif sw>sb:
+        white_win+= 1
+        winner = 'White'
+    else:
+        winner = 'Tie'
+
+    print('---------------------')
+    print('Depths: Black',depth1, 'White', depth2)
+    print('Heuristic:', heuristic_num)
+    print('Winner:', winner)
+    print('Total wins: Black',black_win, 'White',white_win)
+    print('---------------------')
 
 
 
@@ -329,28 +354,57 @@ def toggle_turn():
         turn = 'b'
 
 
-def init_globals():
-    global turn, turn_failed, depth1, depth2
-    turn = 'b'
+def init_globals(turn_, depth1_, depth2_, he_num):
+    global turn, turn_failed, depth1, depth2, heuristic_num, directions
+    turn = turn_
     turn_failed = 0
 
-    depth1 = 6
-    depth2 = 2
+    depth1 = depth1_
+    depth2 = depth2_
 
-    heuristic_num = 1
+    heuristic_num = he_num
+    print('Parameters: First turn',turn_, 'Black depth', depth1, 'White depth', depth2, 'Heuristic', heuristic_num)
+
+    # now check for the 8 directions..........
+    # by shifting horizontally -1,0, 1
+
+    directions = []  # holds all the directions
+    for x_d in range(-1, 2):
+        for y_d in range(-1, 2):
+            directions.append((x_d, y_d))
+
+
+def experiment1(k):
+    for i in range(k):
+        if i%2 == 0:
+            turn_ = 'b'
+        else:
+            turn_ = 'w'
+        init_globals(turn_, rand.randint(2,8), rand.randint(2,8), rand.randint(1,4))
+        board = init_board()
+        run_game(board)
+
+
+def experiment2():
+    init_globals('b', 6, 2, 1)
+    board = init_board()
+    run_game(board)
+
+
+def experiment3():
+    init_globals('b', 6, 2, 1)
+    board = init_board()
+    run_game_hum(board)
 
 
 def main():
     global turn
     print('Welcome to Reversi')
-    init_globals()
-    board = init_board()
-    run_game(board)
 
-    #run_game_hum(board)
-    #print(get_score(board))
-    # make_move(board, turn, 3,2)
-    # print(heuristic1(board, turn))
+    #experiment1(1)
+    experiment2()
+    #experiment3()
+
 
 
 if __name__ == "__main__":
